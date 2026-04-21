@@ -1,0 +1,13 @@
+{
+    "code": "test",
+
+    "behaviors": [
+
+    ],
+    "attributes": {
+    },
+    "creativeinventory": {
+        "general": [ "*" ],
+        "examplemod": [ "*" ]
+    }
+}

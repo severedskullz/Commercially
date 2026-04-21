@@ -1,0 +1,7 @@
+Need to figure out how to better separate the interfaces. IShopProvider shouldnt need IInventoryProvider, IEntityProvider, and IOwnableReference as extended interfaces just to access ID, Inventory, etc.. This leads to issues where im 
+no longer able to KISS and avoid cross cutting concerns.
+
+ICurrencySinkProvider : IOwnableReference, IInventoryProvider
+- This just allows us to know it can accept Coupons, Payment, and potentially has a TradePass. It is also used for Coupons to check if the ID matches...
+- May need to re-think this system... What if we set the ID to a City, which has a Register, which has a Shop? The ID would have ot match at the Register level, and not the City. If we wanted to match on City, its impossible
+- IDExistInChain(int id) method possible? Iterate through the parents until we find the ID? Still requires ICurrencySinkProvider to be an OwnableReferenced though... Dunno

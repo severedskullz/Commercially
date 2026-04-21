@@ -1,0 +1,11 @@
+{
+    "type": "code",
+    "modid": "commercially",
+    "name": "Commercially",
+    "authors": ["Severed Skullz"],
+    "description": "To be added",
+    "version": "0.0.1",
+    "dependencies": {
+        "game": ""
+    }
+}
