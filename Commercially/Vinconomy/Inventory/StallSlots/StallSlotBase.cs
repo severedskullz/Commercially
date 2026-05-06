@@ -81,11 +81,19 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 Itemstack = currencyStack
             };
 
+
             ItemStack productStack = tree.GetItemstack(PRODUCT);
             Product = new VinconCloningSlot(this.Inventory)
             {
                 Itemstack = productStack
             };
+
+            if (Inventory.Api?.World != null)
+            {
+                currencyStack?.ResolveBlockOrItem(Inventory.Api.World);
+                productStack?.ResolveBlockOrItem(Inventory.Api.World);
+            }
+
             IsFuzzyMatching = tree.GetBool(FUZZY_MATCHING);
         }
 
@@ -96,11 +104,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public virtual int GetProductQuantity()
         {
+            if (Product?.Itemstack == null) return 0;
+
             ItemSlot[] items = GetStallSlots();
             int amount = 0;
             foreach (ItemSlot item in items)
             {
-                if (item?.Itemstack != null)
+                if (item?.Itemstack != null && item?.Itemstack.Collectible.Code == Product?.Itemstack?.Collectible.Code)
                 {
                     amount += item.Itemstack.StackSize;
                 }
@@ -115,7 +125,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             ItemSlot[] slots = GetStallSlots();
             foreach (var item in slots)
             {
-                if (TradingUtil.isMatchingItem(Product?.Itemstack, item?.Itemstack, this.Inventory.Api.World, IsFuzzyMatching))
+                if (TradingUtil.IsMatchingItem(Product?.Itemstack, item?.Itemstack, this.Inventory.Api.World, IsFuzzyMatching))
                 {
                     return item;
                 }

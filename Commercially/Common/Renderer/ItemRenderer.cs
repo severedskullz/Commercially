@@ -1,4 +1,4 @@
-﻿using Commercially.Common;
+﻿using Commercially.Common.Util;
 using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -36,9 +36,7 @@ namespace Commercially.Common.Renderer
 
                 }
 
-
                 stall.SetNowTesselatingObj(stack.Collectible);
-                stall.SetNowTesselatingShape(null);
 
                 if (stack.Item.Shape?.Base != null)
                 {

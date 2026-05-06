@@ -2,7 +2,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace Commercially.Common
+namespace Commercially.Common.Util
 {
     public static class ComponentUtils
     {

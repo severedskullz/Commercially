@@ -1,4 +1,6 @@
-﻿namespace Commercially.Common
+﻿using Commercially.Common.Util;
+
+namespace Commercially.Common
 {
     public interface IService : IComponent
     {

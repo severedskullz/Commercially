@@ -1,7 +1,5 @@
-﻿
-
-using Commercially.Common;
-using Commercially.Common.Slots;
+﻿using Commercially.Common.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using System;
 using Vintagestory.API.Common;
@@ -41,7 +39,7 @@ namespace Commercially.Vinconomy.Trading
                 }
                 else
                 {
-                    if (TradingUtil.isMatchingItem(itemSlot.Itemstack, request.CurrencyNeeded, request.Api.World, false))
+                    if (TradingUtil.IsMatchingItem(itemSlot.Itemstack, request.CurrencyNeeded, request.Api.World, false))
                     {
                         qntyLeft -= maxStackSize - itemSlot.StackSize;
                     }
@@ -56,6 +54,12 @@ namespace Commercially.Vinconomy.Trading
             return (qntyLeft <= 0);
         }
 
+        public static bool HasEnoughStock(TradeRequest request)
+        {
+            if (request.IsAdminShop) return true;
+            return (request.ProductSourceSlots.TotalCount / request.GetFinalProductNeededPerPurchase()) > 0;
+        }
+
         public static int GetNumTradesForStock(TradeRequest request)
         {
             if (request.IsAdminShop) return request.NumPurchases;
@@ -67,7 +71,7 @@ namespace Commercially.Vinconomy.Trading
             int currencyRequired = request.GetFinalCurrencyNeededPerPurchase();
             int totalCurrecny = request.CurrencySourceSlots.TotalCount;
 
-            return totalCurrecny >= currencyRequired * request.NumPurchases;
+            return totalCurrecny >= currencyRequired;
 
         }
 

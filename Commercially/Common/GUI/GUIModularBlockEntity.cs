@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.BlockEntities;
 using Commercially.Common.BlockEntityBehaviors;
+using Commercially.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using Vintagestory.API.Client;
@@ -8,7 +9,7 @@ using Vintagestory.API.Server;
 
 namespace Commercially.Common.GUI
 {
-    public class GUIModularBlockEntity : GuiDialogBlockEntity
+    public class GUIModularBlockEntity : GuiDialogBlockEntity, IModularGui
     {
         public const string CODE = "commercially:ModularBlockEntity";
 
@@ -37,7 +38,7 @@ namespace Commercially.Common.GUI
 
         public IOwnable Ownable => this.BlockEntity.Ownable;
         public InteractionManager InteractionManager => this.BlockEntity.InteractionManager;
-
+        public GuiComposer Composer => this.SingleComposer;
 
 
         public GUIModularBlockEntity(string dialogTitle, BECommercialBase blockEntity) : base(dialogTitle, blockEntity.Pos, (ICoreClientAPI)blockEntity.Api)
@@ -125,7 +126,7 @@ namespace Commercially.Common.GUI
             FullRecompose();
         }
 
-        private GuiTab[] GetTabs()
+        public GuiTab[] GetTabs()
         {
             List<GuiTab> guiTabs = new List<GuiTab>();
             int i = 0;
@@ -141,12 +142,25 @@ namespace Commercially.Common.GUI
             return guiTabs.ToArray();
         }
 
+        /// <summary>
+        /// Sends an arbitrary packet. Only really initended to be used for Inventory packets, since Tyron is yet again inconsistent with his methods.
+        /// </summary>
+        /// <param name="p"></param>
         public void SendPacket(object p)
         {
             capi.Network.SendBlockEntityPacket(BlockEntityPosition.X, BlockEntityPosition.Y, BlockEntityPosition.Z, p);
-
         }
 
-        
+        public void SendPacket(int packetId, byte[] p)
+        {
+            capi.Network.SendBlockEntityPacket(BlockEntityPosition, packetId, p);
+        }
+
+        public void SendPacket(int packetId, object p)
+        {
+            capi.Network.SendBlockEntityPacket(BlockEntityPosition, packetId, p);
+        }
+
+
     }
 }

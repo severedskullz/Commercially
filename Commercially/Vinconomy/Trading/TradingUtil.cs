@@ -1,5 +1,6 @@
-﻿using Commercially.Common;
+﻿using Commercially.Common.Interfaces;
 using Commercially.Common.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using System;
@@ -13,7 +14,7 @@ namespace Commercially.Vinconomy.Trading
     public class TradingUtil
     {
 
-        public static bool isMatchingItem(ItemStack desired, ItemStack toCompare, IWorldAccessor world, bool isFuzzy = false)
+        public static bool IsMatchingItem(ItemStack desired, ItemStack toCompare, IWorldAccessor world, bool isFuzzy = false)
         {
             if (desired == null || toCompare == null) return false;
 
@@ -61,13 +62,13 @@ namespace Commercially.Vinconomy.Trading
             }
 
             ItemSlot handItem = customer.InventoryManager.ActiveHotbarSlot;
-            if (isMatchingItem(desiredItem, handItem.Itemstack, customer.Entity.World, isFuzzy))
+            if (IsMatchingItem(desiredItem, handItem.Itemstack, customer.Entity.World, isFuzzy))
             {
                 aggregatedSlots.Add(handItem);
             }
 
             ItemSlot offhandItem = customer.InventoryManager.OffhandHotbarSlot;
-            if (isMatchingItem(desiredItem, offhandItem.Itemstack, customer.Entity.World, isFuzzy))
+            if (IsMatchingItem(desiredItem, offhandItem.Itemstack, customer.Entity.World, isFuzzy))
             {
                 aggregatedSlots.Add(offhandItem);
             }
@@ -76,7 +77,7 @@ namespace Commercially.Vinconomy.Trading
             foreach (ItemSlot itemSlot in hotbarInv)
             {
                 if (handItem == itemSlot || itemSlot.Itemstack == null) { continue; }
-                if (isMatchingItem(desiredItem, itemSlot.Itemstack, customer.Entity.World, isFuzzy))
+                if (IsMatchingItem(desiredItem, itemSlot.Itemstack, customer.Entity.World, isFuzzy))
                 {
                     aggregatedSlots.Add(itemSlot);
                 }
@@ -86,7 +87,7 @@ namespace Commercially.Vinconomy.Trading
             foreach (ItemSlot itemSlot in characterInv)
             {
                 if (handItem == itemSlot) { continue; }
-                if (isMatchingItem(desiredItem, itemSlot.Itemstack, customer.Entity.World, isFuzzy))
+                if (IsMatchingItem(desiredItem, itemSlot.Itemstack, customer.Entity.World, isFuzzy))
                 {
                     aggregatedSlots.Add(itemSlot);
                 }

@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Slots;
 using Commercially.Vinconomy.Trading;
-using System;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -65,6 +64,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 new VinconItemSlot(Inventory, this.StallSlotCount, i);
                 ItemStack itemStack = tree.GetItemstack("slot" + i);
                 Products[i].Itemstack = itemStack;
+                if (Inventory.Api?.World != null)
+                {
+                    itemStack?.ResolveBlockOrItem(Inventory.Api.World);
+                }
             }
         }
 
@@ -101,7 +104,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             AggregatedSlots slots = new AggregatedSlots(api);
             foreach (var slot in Products)
             {
-                if (slot.Itemstack != null && TradingUtil.isMatchingItem(Product.Itemstack, slot.Itemstack, api.World))
+                if (slot.Itemstack != null && TradingUtil.IsMatchingItem(Product.Itemstack, slot.Itemstack, api.World))
                 {
                     slots.Add(slot);
                 }

@@ -1,0 +1,457 @@
+﻿
+using Commercially.Common;
+using Commercially.Common.Renderer;
+using Commercially.Common.Util;
+using Commercially.Vinconomy.Interfaces;
+using System;
+using System.Collections.Generic;
+using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.API.Util;
+using Vintagestory.GameContent;
+
+namespace Commercially.Vinconomy.BlockEntityBehaviors
+{
+    public class BEDisplayContentsBehavior : BlockEntityBehavior, IShapeTesselator
+    {
+        protected CommerciallyModSystem CommerciallyCore;
+        IStallInventoryProvider _InventoryProvider;
+
+
+        public BEDisplayContentsBehavior(BlockEntity blockentity) : base(blockentity)
+        {
+        }
+        public override void Initialize(ICoreAPI api, JsonObject properties)
+        {
+            base.Initialize(api, properties);
+            _InventoryProvider = this.GetComponent<IStallInventoryProvider>();
+            CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
+
+            TfData = new TransformationData[_InventoryProvider.StallCount];
+            for (int i = 0; i < _InventoryProvider.StallCount; i++)
+            {
+                TransformationData tdata = new();
+                tdata.Reset();
+                TfData[i] = tdata;
+            }
+            //api.Event.RegisterEventBusListener()
+        }
+
+
+        public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
+        {
+            TesselateDisplayedItems(mesher, tessThreadTesselator);
+            return false;
+        }
+
+        protected void TesselateDisplayedItems(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
+        {
+            if (mesher == null)
+                return;
+            
+
+            if (ShouldRenderInventory)
+            {
+                MeshData mesh = null;
+                ItemSlot slot = null;
+                for (int i = 0; i < _InventoryProvider.StallCount; i++)
+                {
+                    try
+                    {
+                        slot = _InventoryProvider.GetStallSlot(i).Product;
+                        
+                        if (slot?.Itemstack != null && _InventoryProvider.GetStallSlot(i).GetNumPurchasesRemaining() > 0 && TfData != null)
+                        {
+                            mesh = GetOrCreateMesh(slot, i);
+                            if (mesh != null)
+                            {
+                                float[] matricies = TfData[i].BuildMatrix();
+                                mesher.AddMeshData(mesh, matricies);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        CommerciallyCore.Mod.Logger.Error($"Had some trouble rendering mesh in a stall @ {Pos.X} {Pos.Y} {Pos.Z} for slot {i}. Exception was {e.Message}");
+                    }
+
+                }
+            }
+            
+        }
+
+        protected virtual void UpdateMesh(int index)
+        {
+            if (Api != null && Api.Side != EnumAppSide.Server && !_InventoryProvider.Inventory[index].Empty)
+            {
+                GetOrCreateMesh(_InventoryProvider.Inventory[index], index);
+            }
+        }
+
+        protected virtual string GetMeshCacheKey(ItemSlot slot)
+        {
+            ItemStack stack = slot.Itemstack;
+            if (stack == null)
+                return null;
+
+            if (stack.Collectible is IContainedMeshSource containedMeshSource)
+            {
+                return containedMeshSource.GetMeshCacheKey(slot);
+            }
+
+            return stack.Collectible.Code.ToString();
+        }
+
+        protected MeshData GetMesh(ItemSlot stack)
+        {
+            string meshCacheKey = GetMeshCacheKey(stack);
+            MeshCache.TryGetValue(meshCacheKey, out var value);
+            return value;
+        }
+
+        protected virtual MeshData GetOrCreateMesh(ItemSlot slot, int index)
+        {
+            ICoreClientAPI capi = Api as ICoreClientAPI;
+
+            MeshData mesh = GetMesh(slot);
+            if (mesh != null) return mesh;
+
+            var stack = slot.Itemstack;
+            CompositeShape customShape = stack.Collectible.Attributes?["displayedShape"].AsObject<CompositeShape>(null, stack.Collectible.Code.Domain);
+            if (customShape != null)
+            {
+                string customkey = "displayedShape-" + customShape.ToString();
+                mesh = ObjectCacheUtil.GetOrCreate(capi, customkey, () =>
+                    capi.TesselatorManager.CreateMesh(
+                        "displayed item shape",
+                        customShape,
+                        (shape, name) => new ContainedTextureSource(capi, capi.BlockTextureAtlas, shape.Textures, string.Format("For displayed item {0}", stack.Collectible.Code)),
+                        null
+                ));
+            }
+            else
+            {
+                IContainedMeshSource meshSource = stack.Collectible?.GetCollectibleInterface<IContainedMeshSource>();
+
+                if (meshSource != null)
+                {
+                    mesh = meshSource.GenMesh(slot, capi.BlockTextureAtlas, Pos);
+                }
+            }
+
+            if (mesh == null)
+            {
+                mesh = GetDefaultMesh(stack);
+            }
+
+            ApplyDefaultTranforms(stack, mesh);
+
+            string key = GetMeshCacheKey(slot);
+            MeshCache[key] = mesh;
+
+            return mesh;
+        }
+
+        protected void ApplyDefaultTranforms(ItemStack stack, MeshData mesh)
+        {
+            ModelTransform transform = stack.Collectible.Attributes?[AttributeTransformCode].AsObject<ModelTransform>();
+            if (AttributeTransformCode == "onshelfTransform") // special logic because shelves a little more complicated
+            {
+                transform = stack.Collectible.GetCollectibleInterface<IShelvable>()?.GetOnShelfTransform(stack) ?? transform;
+                transform ??= stack.Collectible.Attributes?["onDisplayTransform"].AsObject<ModelTransform>();
+            }
+            if (transform != null)
+            {
+                transform.EnsureDefaultValues();
+                mesh.ModelTransform(transform);
+            }
+
+            if (stack.Class == EnumItemClass.Item && (stack.Item.Shape == null || stack.Item.Shape.VoxelizeTexture))
+            {
+                mesh.Rotate(GameMath.PIHALF, 0, 0);
+                mesh.Scale(0.33f, 0.33f, 0.33f);
+                mesh.Translate(0, -7.5f / 16f, 0f);
+            }
+        }
+
+        protected MeshData GetOrCreateMesh_Old(ItemSlot slot, int index)
+        {
+            MeshData modeldata = GetMesh(slot);
+            if (modeldata != null)
+            {
+                return modeldata;
+            }
+
+            IItemRenderer renderer = CommerciallyCore.GetRenderer(slot);
+            if (renderer != null)
+            {
+                ItemStack stack = slot.Itemstack;
+                modeldata = renderer.CreateMesh(this, slot, index);
+                if (modeldata == null)
+                {
+                    //Don't crash if we couldnt get the model for some reason
+                    return null;
+                }
+
+                //Bypass the Display and Shelvable transforms for Armor Stands, where we want the model coordinates to match the character, not the zero'd positions.
+                if (!BypassShelvableAttributes || true) //TODO: Temporarily bypass this while im working on it. Dont forget to remove!
+                {
+                    ModelTransform modelTransform = null;
+                    // pick our preselected Attribute Transform Code
+                    if (stack.Collectible.Attributes?[AttributeTransformCode].Exists ?? false)
+                    {
+                        modelTransform = stack.Collectible.Attributes?[AttributeTransformCode].AsObject<ModelTransform>();
+                    }
+                    else if (stack.Block is IShelvable)
+                    {
+                        modelTransform = (stack.Block as IShelvable).GetOnShelfTransform(stack);
+                    }
+                    else if (stack.Collectible.Attributes?["onDisplayTransform"].Exists ?? false)
+                    {
+                        modelTransform = stack.Collectible.Attributes?["onDisplayTransform"].AsObject<ModelTransform>();
+
+                    }
+                    else if (stack.Collectible.Attributes?["groundStorageTransform"].Exists ?? false)
+                    {
+                        modelTransform = stack.Collectible.Attributes?["groundStorageTransform"].AsObject<ModelTransform>();
+
+                    }
+
+                    if (modelTransform != null)
+                    {
+                        modelTransform.EnsureDefaultValues();
+                        modeldata.ModelTransform(modelTransform);
+                    }
+                    // Should be handled by IShelvable, but I still see it in the JSON
+                    else if (stack.Collectible.Attributes?["shelvable"].Exists ?? false)
+                    {
+                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.85f, 0.85f, 0.85f);
+                    }
+                    else
+                    {
+                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.35f, 0.35f, 0.35f);
+                    }
+
+                }
+
+                if (stack.Class == EnumItemClass.Item && (stack.Item.Shape == null || stack.Item.Shape.VoxelizeTexture))
+                {
+                    modeldata.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), MathF.PI / 2f, 0f, 0f);
+                    modeldata.Scale(new Vec3f(0.5f, 0.5f, 0.5f), 0.35f, 0.35f, 0.35f);
+                    modeldata.Translate(0f, -15f / 32f, 0f);
+                }
+
+
+                if (renderer.ShouldCache(stack))
+                {
+                    string meshCacheKey = GetMeshCacheKey(slot);
+                    MeshCache[meshCacheKey] = modeldata;
+                }
+            }
+
+
+
+            return modeldata;
+        }
+
+        public virtual string ClassCode => _InventoryProvider.Inventory.ClassName;
+        protected Dictionary<string, MeshData> MeshCache => ObjectCacheUtil.GetOrCreate(Api, "meshesDisplay-" + ClassCode, () => new Dictionary<string, MeshData>());
+
+
+        protected float[][] GenTransformationMatrices()
+        {
+            int stallCount = _InventoryProvider.StallCount;
+            float[][] tfMatrices = new float[stallCount][];
+            for (int index = 0; index < stallCount; index++)
+            {
+                TransformationData data = TfData[index];
+                tfMatrices[index] = data.BuildMatrix();
+            }
+            return tfMatrices;
+        }
+
+
+        CollectibleObject nowTesselatingObj = null;
+        Shape nowTesselatingShape = null;
+        private string AttributeTransformCode;
+        private bool BypassShelvableAttributes;
+        private bool ShouldRenderInventory = true;
+        private TransformationData[] TfData;
+
+        public void SetNowTesselatingObj(CollectibleObject collectible)
+        {
+            nowTesselatingObj = collectible;
+            nowTesselatingShape = null;
+        }
+
+        public void SetNowTesselatingShape(Shape shape)
+        {
+            nowTesselatingShape = shape;
+            nowTesselatingObj = null;
+        }
+
+        public virtual void UpdateMeshes()
+        {
+            if (Api != null && Api.Side != EnumAppSide.Server && _InventoryProvider.StallCount != 0)
+            {
+                for (int i = 0; i < _InventoryProvider.StallCount; i++)
+                {
+                    UpdateMesh(i);
+                }
+
+                //tfMatrices = GenTransformationMatrices();
+            }
+        }
+
+        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
+        {
+            UpdateMeshes();
+            this.GetBlockEntity().MarkDirty(true);
+            base.FromTreeAttributes(tree, worldAccessForResolve);
+        }
+
+        public Size2i AtlasSize => ((ICoreClientAPI)Api)?.BlockTextureAtlas.Size;
+
+        public virtual TextureAtlasPosition this[string textureCode]
+        {
+            get
+            {
+                //if (texSource != null) return texSource[textureCode];
+
+                IDictionary<string, CompositeTexture> textures = nowTesselatingObj is Item item ? item.Textures : (nowTesselatingObj as Block).Textures;
+                AssetLocation texturePath = null;
+
+                // Prio 1: Get from collectible textures
+                if (textures.TryGetValue(textureCode, out CompositeTexture tex))
+                {
+                    texturePath = tex.Baked.BakedName;
+                }
+
+                // Prio 2: Get from collectible textures, use "all" code
+                if (texturePath == null && textures.TryGetValue("all", out tex))
+                {
+                    texturePath = tex.Baked.BakedName;
+                }
+
+                // Prio 3: Get from currently tesselating shape
+                if (texturePath == null)
+                {
+                    nowTesselatingShape?.Textures.TryGetValue(textureCode, out texturePath);
+                }
+
+                // Prio 4: The code is the path
+                if (texturePath == null)
+                {
+                    texturePath = new AssetLocation(textureCode);
+                }
+
+                return GetOrCreateTexPos(texturePath);
+            }
+        }
+
+        protected MeshData GetDefaultMesh(ItemStack stack)
+        {
+            MeshData mesh;
+            ICoreClientAPI capi = Api as ICoreClientAPI;
+            if (stack.Class == EnumItemClass.Block)
+            {
+                mesh = capi.TesselatorManager.GetDefaultBlockMesh(stack.Block).Clone();
+            }
+            else
+            {
+                nowTesselatingObj = stack.Collectible;
+                nowTesselatingShape = null;
+                if (stack.Item.Shape?.Base != null)
+                {
+                    nowTesselatingShape = capi.TesselatorManager.GetCachedShape(stack.Item.Shape.Base);
+                }
+                capi.Tesselator.TesselateItem(stack.Item, out mesh, this);
+
+                mesh.RenderPassesAndExtraBits.Fill((short)EnumChunkRenderPass.BlendNoCull);
+            }
+
+            return mesh;
+        }
+
+
+        protected TextureAtlasPosition GetOrCreateTexPos(AssetLocation texturePath)
+        {
+            ICoreClientAPI capi = (ICoreClientAPI)Api;
+            TextureAtlasPosition texPos = capi.BlockTextureAtlas[texturePath];
+            if (texPos == null && !capi.BlockTextureAtlas.GetOrInsertTexture(texturePath, out var _, out texPos))
+            {
+                capi.World.Logger.Warning("For render in block " + Block.Code?.ToString() + ", item {0} defined texture {1}, no such texture found.", nowTesselatingObj.Code, texturePath);
+                return capi.BlockTextureAtlas.UnknownTexturePosition;
+            }
+
+            return texPos;
+        }
+    }
+
+
+
+    public class TransformationData()
+    {
+        public int index;
+        public int shelf;
+        public int segment;
+        public int item;
+
+        public float preRotate = 0;
+        public float x, y, z;
+        public float offsetX, offsetY, offsetZ;
+        public float rotX, rotY, rotZ;
+        public float offsetRotX, offsetRotY, offsetRotZ;
+        public float scaleX, scaleY, scaleZ;
+        public float offsetOriginX, offsetOriginY, offsetOriginZ;
+
+        public bool hidden;
+
+        /// <summary>
+        /// Resets all properties to 0, except preRotate.
+        /// </summary>
+        public void Reset()
+        {
+            x = y = z = 0;
+            offsetX = offsetY = offsetZ = 0;
+            rotX = rotY = rotZ = 0;
+            offsetRotX = offsetRotY = offsetRotZ = 0;
+            scaleX = scaleY = scaleZ = 1;
+            offsetOriginX = offsetOriginY = offsetOriginZ = 0;
+            hidden = false;
+        }
+
+        public float[] BuildMatrix()
+        {
+            Matrixf mat = new();
+
+            if (hidden)
+            {
+                return mat.Scale(0.01f, 0.01f, 0.01f).Values;
+            }
+
+            mat.Translate(0.5f, 0, 0.5f);
+
+            // Handle block rotation
+            mat.RotateYDeg(preRotate);
+
+            // Handle segment locations
+            mat.Translate(x, y, z);
+            mat.Rotate(rotX * GameMath.DEG2RAD, rotY * GameMath.DEG2RAD, rotZ * GameMath.DEG2RAD);
+
+            // Handle item offsets
+            mat.Translate(offsetX, offsetY, offsetZ);
+            mat.RotateXDeg(offsetRotX);
+            mat.RotateYDeg(offsetRotY);
+            mat.RotateZDeg(offsetRotZ);
+            mat.Translate(offsetOriginX, offsetOriginY, offsetOriginZ);
+            mat.Scale(scaleX, scaleY, scaleZ);
+
+            mat.Translate(-0.5f, 0, -0.5f);
+
+            return mat.Values;
+        }
+    }
+}

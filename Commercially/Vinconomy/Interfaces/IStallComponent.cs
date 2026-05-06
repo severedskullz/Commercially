@@ -1,4 +1,5 @@
-﻿using Commercially.Common;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Vintagestory.API.Common;
 
@@ -6,7 +7,7 @@ namespace Commercially.Vinconomy.Interfaces
 {
     public interface IStallComponent : IComponent
     {
-        public IOwnableLeaf Ownable { get; }
+        public IOwnableChild Ownable { get; }
         public IStallInventoryProvider InventoryProvider { get; }
 
         public int StallCount { get; }

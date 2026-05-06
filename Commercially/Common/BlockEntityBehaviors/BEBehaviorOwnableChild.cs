@@ -1,13 +1,15 @@
 ﻿using Commercially.Common.Interfaces;
-using System.Collections.Generic;
+using System.IO;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
 
 namespace Commercially.Common.BlockEntityBehaviors
 {
-    public class BEBehaviorOwnableNode : BEBehaviorOwnableReferenced, IOwnableNode
+    public class BEBehaviorOwnableChild : BEBehaviorOwnableReferenced, IOwnableChild
     {
-        public BEBehaviorOwnableNode(BlockEntity blockentity) : base(blockentity)
+        public BEBehaviorOwnableChild(BlockEntity blockentity) : base(blockentity)
         {
         }
 
@@ -43,34 +45,51 @@ namespace Commercially.Common.BlockEntityBehaviors
             ParentType = tree.GetString("ParentType");
         }
 
-        public List<IOwnable> GetChildren()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public IOwnable GetParent()
         {
             throw new System.NotImplementedException();
         }
 
-        public void SetOwnableRoot(IOwnableRoot root)
-        {
-            throw new System.NotImplementedException();
-        }
 
         public void SetParent(IOwnableRoot root)
         {
-            this.ParentID = root.ID;
+            SetParent(root.ID);
         }
 
         public void SetParent(long parentId)
         {
             this.ParentID = parentId;
+            this.Entity.MarkDirty();
         }
 
         public string[] GetAllowedParentTypes()
         {
             return AllowedTypes;
+        }
+
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            if (packetid ==  CommerciallyConstants.SET_PARENT_ID)
+            {
+                using (MemoryStream ms = new MemoryStream(data))
+                {
+
+                    if (player.PlayerUID == OwnerUID)
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        int parentId = reader.ReadInt32();
+                        SetParent(parentId);
+                        UpdateOwnership(OwnerUID, OwnerName, Name, IsAdminOwned);
+                    }
+                    else
+                    {
+                        ((IServerPlayer)player).SendMessage(0, Lang.Get("commercially:doesnt-own", []), EnumChatType.OwnMessage);
+                    }
+                }
+            } else
+            {
+                base.OnReceivedClientPacket(player, packetid, data);
+            }
         }
     }
 }

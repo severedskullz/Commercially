@@ -34,7 +34,7 @@ namespace Commercially.Common.GUI.Tabs
             }
         }
 
-        public override void Initialize(GuiDialog gui, BlockEntity entity = null)
+        public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory;

@@ -1,13 +1,16 @@
 ﻿using Commercially.Common;
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Registry;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
+using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.Util;
 
 namespace Commercially.Vinconomy.GUI.Tabs
 {
@@ -20,41 +23,46 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override string TabName => Lang.Get("vinconomy:tabname-generic-owner");
 
         VinconBaseInventory Inventory;
-        IStallInventoryProvider ShopProvider;
-        private IOwnable Ownable;
+        IStallInventoryProvider StallProvider;
+        IOwnableRegistry Registry;
+        private IOwnableChild Ownable;
         int StallSlot;
-
-
-
-        int NumColumns;
+        int SelectedIndex;
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)
         {
-            if (Inventory != null && ShopProvider != null)
+            if (Inventory != null && StallProvider != null && Ownable != null)
             {
                 CairoFont hoverText = CairoFont.WhiteDetailText();
                 CairoFont smallText = CairoFont.WhiteSmallText();
                 CairoFont labelTextFont = CairoFont.WhiteSmallText().WithOrientation(EnumTextOrientation.Center);
-                string labelText = "Page 1 of 4"; //Lang.Get("vinconomy:gui-slot", new object[] { StallSlot + 1, stall.StallSlotCount });
+                string labelText = $"Page {StallSlot + 1} of {StallProvider.StallCount}"; //Lang.Get("vinconomy:gui-slot", new object[] { StallSlot + 1, stall.StallSlotCount });
 
+                OwnableRegistration[] ownables = Registry.GetOwnablesForOwner(Ownable.OwnerUID, Ownable.GetAllowedParentTypes());
+                int shopLength = ownables.Length;
+                string[] shopsNames = new string[shopLength+1];
+                string[] shopsKeys = new string[shopLength+1];
 
-                int shopLength = 10;
-                string[] shopsNames = new string[shopLength];
-                string[] shopsKeys = new string[shopLength];
+                shopsNames[0] = "( None )";
+                shopsKeys[0] = "-1";
 
                 for (int i = 0; i < shopLength; i++)
                 {
-                    shopsNames[i] = "blah";
-                    shopsKeys[i] = "blah";
+                    shopsNames[i+1] = ownables[i].Name ?? "Generic Shop";
+                    shopsKeys[i+1] = ownables[i].ID.ToString();
+                    if (ownables[i].ID == Ownable.ParentID)
+                    {
+                        SelectedIndex = i + 1;
+                    }
                 }
 
                 // Figure out the slot indexes for SlotGrid
-                StallSlotBase stall = ShopProvider.GetStallSlot(StallSlot);
+                StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
                 int[] slotGridIDs = new int[stall.StallSlotCount];
                 int stallSlotOffset = Inventory.InternalSlots.Length;
                 for (int i = 0; i < StallSlot; i++)
                 {
-                    stallSlotOffset += ShopProvider.GetStallSlot(i).TotalSlotCount;
+                    stallSlotOffset += StallProvider.GetStallSlot(i).TotalSlotCount;
                 }
 
 
@@ -76,7 +84,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(shopSelectBounds, shopSelectionLabel);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-shop"), smallText, shopSelectionLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-shop"), hoverText, 500, shopSelectionLabel);
-                composer.AddDropDown(shopsKeys, shopsNames, 0, this.OnShopChanged, shopSelectBounds, "shopSelection");
+                composer.AddDropDown(shopsKeys, shopsNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
 
 
 
@@ -101,9 +109,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 ElementBounds pageLabel = ElementBounds.FixedSize(Math.Max(slotGridWidth, 250), 25).WithFixedAlignmentOffset(0, 5).FixedRightOf(pagePrev, 10);
                 ElementBounds pageNext = ElementBounds.FixedSize(30, 30).FixedRightOf(pageLabel, 10);
                 pageBounds.WithChildren(pagePrev, pageLabel, pageNext);
-                composer.AddButton("<", null, pagePrev, EnumButtonStyle.Small, "prevPage");
+                composer.AddButton("<", PreviousPage, pagePrev, EnumButtonStyle.Small, "prevPage");
                 composer.AddDynamicText(labelText, labelTextFont, pageLabel, "pageLabel");
-                composer.AddButton(">", null, pageNext, EnumButtonStyle.Small, "nextPage");
+                composer.AddButton(">", NextPage, pageNext, EnumButtonStyle.Small, "nextPage");
 
 
                 ElementBounds stallBounds = ElementBounds.FixedSize(250, 200).FixedRightOf(settingBounds, 15).FixedUnder(pageBounds,10);
@@ -151,10 +159,14 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 stallBounds.WithChild(slotGrid);
                 composer.AddItemSlotGrid(Inventory, (Gui as GUIModularBlockEntity).SendPacket, (int)Math.Ceiling(Math.Sqrt(slotGridIDs.Length)), slotGridIDs, slotGrid, "inventory");
 
+                composer.GetButton("prevPage").Enabled = StallSlot != 0;
+                composer.GetButton("nextPage").Enabled = StallSlot != StallProvider.StallCount - 1;
 
+                composer.GetNumberInput("costQuantity").SetValue(Math.Max(1,Inventory.GetStall(StallSlot).Currency.StackSize));
+                composer.GetNumberInput("sellQuantity").SetValue(Math.Max(1, Inventory.GetStall(StallSlot).Product.StackSize));
 
             }
-            else if (ShopProvider == null)
+            else if (StallProvider == null)
             {
                 ElementBounds textBounds = ElementBounds.FixedSize(400, 300).WithFixedOffset(0, GuiStyle.TitleBarHeight);
                 rootBounds.WithChild(textBounds);
@@ -168,42 +180,128 @@ namespace Commercially.Vinconomy.GUI.Tabs
             }
         }
 
-        private void SetProductSlot(object obj)
+        private bool PreviousPage()
         {
-            
+            StallSlot -= 1;
+            StallSlot = Math.Max(0, StallSlot);
+            //Gui.Composer.GetButton("prevPage").Enabled = StallSlot != 0;
+            //Gui.Composer.GetButton("nextPage").Enabled = StallSlot != StallProvider.StallCount - 1;
+            Gui.FullRecompose();
+            return true;
         }
 
-        private void OnToggleAdminShop(bool obj)
+        private bool NextPage()
         {
-            
+            StallSlot += 1;
+            StallSlot = Math.Min(StallProvider.StallCount - 1, StallSlot);
+            //Gui.Composer.GetButton("prevPage").Enabled = StallSlot != 0;
+            //Gui.Composer.GetButton("nextPage").Enabled = StallSlot != StallProvider.StallCount - 1;
+            Gui.FullRecompose();
+            return true;
+        }
+
+        private void OnToggleAdminShop(bool isToggled)
+        {
+            if (!Gui.Composer.Composed)
+                return;
+
+            byte[] data;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                BinaryWriter writer = new BinaryWriter(ms);
+                writer.Write(isToggled);
+                data = ms.ToArray();
+            }
+            API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ADMIN_OWNED, data);
+        }
+
+        private void SetProductSlot(object obj)
+        {
+            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            Gui.Composer.GetTextInput("sellQuantity").SetValue(stall.ProductPerPurchase);
+            Gui.SendPacket(obj);
+            API.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
 
         private void SetCurrencySlot(object obj)
         {
-            
+            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            Gui.Composer.GetTextInput("costQuantity").SetValue(stall.CurrencyPerPurchase);
+            API.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
 
-        private void OnSellQuantityChanged(string obj)
+        private void OnSellQuantityChanged(string amount)
         {
-            
+            if (!Gui.Composer.Composed)
+                return;
+
+            Int32.TryParse(amount, out int val);
+
+            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+
+            if (val > 0 && val <= 1024 && val != stall.ProductPerPurchase)
+            {
+                stall.ProductPerPurchase = val;
+                byte[] data;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    BinaryWriter writer = new BinaryWriter(ms);
+                    writer.Write(StallSlot);
+                    writer.Write(val);
+                    data = ms.ToArray();
+                }
+                API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEMS_PER_PURCHASE, data);
+            }
         }
 
-        private void OnCostQuantityChanged(string obj)
+        private void OnCostQuantityChanged(string amount)
         {
-            
+            if (!Gui.Composer.Composed)
+                return;
+
+            Int32.TryParse(amount, out int val);
+
+            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+
+            if (val > 0 && val <= 1024 && val != stall.CurrencyPerPurchase)
+            {
+                stall.CurrencyPerPurchase = val;
+                byte[] data;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    BinaryWriter writer = new BinaryWriter(ms);
+                    writer.Write(StallSlot);
+                    writer.Write(val);
+                    data = ms.ToArray();
+                }
+                API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEM_PRICE, data);
+            }
         }
 
         private void OnShopChanged(string code, bool selected)
         {
+            if (!Gui.Composer.Composed)
+                return;
+
+            byte[] data;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                BinaryWriter writer = new BinaryWriter(ms);
+                int id = code.ToInt(-1);
+                writer.Write(id);
+                data = ms.ToArray();
+            }
+            API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_PARENT_ID, data);
         }
 
-        public override void Initialize(GuiDialog gui, BlockEntity entity = null)
+        public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
+            Registry = API.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as VinconBaseInventory;
-            ShopProvider = entity?.GetBehavior<IStallInventoryProvider>();
-            Ownable = entity?.GetBehavior<IOwnable>();
-            NumColumns = GetConfiguration()?["NumColumns"].AsInt(10) ?? 10;
+            StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
+            Ownable = entity?.GetBehavior<IOwnableChild>();
+            //NumColumns = GetConfiguration()?["NumColumns"].AsInt(10) ?? 10;
 
         }
 

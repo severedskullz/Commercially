@@ -1,5 +1,7 @@
 ﻿using Commercially.Common;
+using Commercially.Common.Interfaces;
 using Commercially.Common.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
 using Commercially.Vinconomy.GUI.Tabs;
@@ -18,7 +20,8 @@ namespace Commercially.Vinconomy
 {
     public class VinconomyModSystem : ModSystem
     {
-        CommerciallyModSystem core;
+        private ICoreServerAPI _CoreServerAPI;
+        CommerciallyModSystem CommerciallySystem;
 
         private static Dictionary<string, Type> StallTypes;
 
@@ -89,8 +92,9 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Stall", typeof(BEStallBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Register", typeof(BEShopBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
-            api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvaider));
-            
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
+
 
             //api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
 
@@ -98,12 +102,14 @@ namespace Commercially.Vinconomy
 
             ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
+            CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
         }
 
 
 
         public override void StartServerSide(ICoreServerAPI api)
         {
+            _CoreServerAPI = api;
             /*
             _serverChannel = api.Network.GetChannel(CommConstants.COMM_CHANNEL);
             _serverChannel.SetMessageHandler(new NetworkClientMessageHandler<ShopCatalogRequestPacket>(OnRecieveShopCatalogRequest));
@@ -155,14 +161,14 @@ namespace Commercially.Vinconomy
             return StallTypes[className];
         }
 
-        public IShopInventoryProvider GetShop(string ownerUID, long? parentID)
+        public IShopComponent GetShop(string ownerUID, long? parentID)
         {
-            throw new NotImplementedException();
+            return CommerciallySystem.GetOwnable(ownerUID, parentID)?.GetComponent<IShopComponent>(); ;
         }
 
-        internal bool CanPurchaseItem(IPlayer player, IStallInventoryProvider bEShopBehavior, IOwnable register, int stallSlot, int numPurchases)
+        public bool CanPurchaseItem(IPlayer player, IStallComponent bEShopBehavior, IShopComponent register, int stallSlot, int numPurchases)
         {
-            throw new NotImplementedException();
+            return true;
         }
         
 
@@ -171,7 +177,7 @@ namespace Commercially.Vinconomy
         /// </summary>
         /// <param name="request"></param>
         /// <returns> should proceesing continue </returns>
-        public bool PreProcessTrade(TradeRequest request) {
+        private bool PreProcessTrade(TradeRequest request) {
             EnumHandling handled = EnumHandling.PassThrough;
             foreach (var handlers in PreProcessTradeHandlers)
             {
@@ -191,7 +197,7 @@ namespace Commercially.Vinconomy
         /// <returns></returns>
         // TODO: this RunProcessing logic switch might not be very useful... I want to think of a way for PreProcessTrade to potentially do the logic instead, but that doesnt return a TradeResult.
         // On the flip-side, I dont want PreProcessTrade to be required to create a new TradeResult as it should be BEFORE the processing occurs. The seperation of concerns here overlap, which is bad.
-        public TradeResult ProcessTrade(TradeRequest request, bool runProcessing = true) {
+        private static TradeResult ProcessTrade(TradeRequest request, bool runProcessing = true) {
             TradeResult result = new TradeResult(request);
 
             if (!runProcessing)
@@ -209,7 +215,7 @@ namespace Commercially.Vinconomy
             if (request.ProductNeeded == null)
                 return SetErrorAndReturn(result, TradingConstants.NO_PRODUCT);
 
-            if (TradingProcessor.GetNumTradesForStock(request) <= 0)
+            if (!TradingProcessor.HasEnoughStock(request))
                 return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_STOCK);
 
             if (!TradingProcessor.CanPlayerAfford(request))
@@ -229,7 +235,7 @@ namespace Commercially.Vinconomy
 
             return result;
         }
-        public void PostProcessTrade(TradeResult result)
+        private void PostProcessTrade(TradeResult result)
         {
             EnumHandling handled = EnumHandling.PassThrough;
             foreach (var handlers in PostProcessTradeHandlers)
@@ -242,12 +248,7 @@ namespace Commercially.Vinconomy
             return; // Handled / PassThrough
         }
 
-
-
-
-
-
-        public void PreFinalizeTrade(TradeResult result) {
+        private void PreFinalizeTrade(TradeResult result) {
             EnumHandling handled = EnumHandling.PassThrough;
             foreach (var handlers in PreFinalizeTradeHandlers)
             {
@@ -259,11 +260,11 @@ namespace Commercially.Vinconomy
             return; // Handled / PassThrough
         }
 
-
-        public void FinalizeTrade(TradeResult result) {
+        private void FinalizeTrade(TradeResult result) {
             TransferCurrencyToParent(result);
             TransferCouponsToParent(result);
             TransferProductToPlayer(result);
+            result.Request.SellingEntity?.GetBlockEntity().MarkDirty();
         }
 
         private void TransferProductToPlayer(TradeResult result)
@@ -278,6 +279,7 @@ namespace Commercially.Vinconomy
 
                 if (stack != null)
                 {
+                    this.Mod.Logger.Debug($"Adding {stack.StackSize}x {stack} product to Parent");
                     if (stack.Block?.Sounds?.Place.Location != null)
                     {
                         sound = stack.Block?.Sounds?.Place.Location;
@@ -294,7 +296,7 @@ namespace Commercially.Vinconomy
             result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
-        public void TransferCurrencyToParent(TradeResult result)
+        private void TransferCurrencyToParent(TradeResult result)
         {
             if (result.CurrencyStacks.TotalCount == 0) return;
 
@@ -302,15 +304,17 @@ namespace Commercially.Vinconomy
             if (provider != null)
             {
                 ItemSlot[] slots = provider.CurrencySlots;
-                while (result.ProductStacks.CanRemoveStack())
+                while (result.CurrencyStacks.CanRemoveStack())
                 {
-                    AddItemToSlots(result.Request.Api, result.ProductStacks.RemoveStack(), slots);
+                    ItemStack nextStack = result.CurrencyStacks.RemoveStack();
+                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
                 }
-
+                provider.GetBlockEntity().MarkDirty();
             }
         }
 
-        public void TransferCouponsToParent(TradeResult result)
+        private void TransferCouponsToParent(TradeResult result)
         {
             if (result.CouponStacks.TotalCount == 0) return;
 
@@ -320,12 +324,16 @@ namespace Commercially.Vinconomy
                 ItemSlot[] slots = provider.CouponSlots;
                 while (result.CouponStacks.CanRemoveStack())
                 {
-                    AddItemToSlots(result.Request.Api, result.CouponStacks.RemoveStack(), slots);
+                    ItemStack nextStack = result.CouponStacks.RemoveStack();
+                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} coupon to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
+
                 }
+                provider.GetBlockEntity().MarkDirty();
             }
         }
 
-        public bool AddItemToSlots(ICoreAPI api, ItemStack stack, ItemSlot[] slots)
+        private static bool AddItemToSlots(ICoreAPI api, ItemStack stack, ItemSlot[] slots)
         {
             if (stack == null || stack.StackSize == 0) return false;
 
@@ -339,6 +347,7 @@ namespace Commercially.Vinconomy
                 if (slot.CanHold(dslot))
                 {
                     amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
+                    slot.MarkDirty();
                 }
 
                 if (amountLeft <= 0)
@@ -349,7 +358,7 @@ namespace Commercially.Vinconomy
             return false;
         }
 
-        public void PostFinalizeTrade(TradeResult result) {
+        private void PostFinalizeTrade(TradeResult result) {
             EnumHandling handled = EnumHandling.PassThrough;
             foreach (var handlers in PostFinalizeTradeHandlers)
             {
@@ -385,7 +394,7 @@ namespace Commercially.Vinconomy
 
             // Step 1: Validate the trade by checking if we have enough currency, enough stock, permissions to trade, etc.
             bool runProcessing = PreProcessTrade(request);
-            TradeResult result = ProcessTrade(request, runProcessing);
+            TradeResult result = ProcessTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
             if (result.ErrorMsg != null) return result;
             PostProcessTrade(result);
             if (result.ErrorMsg != null) return result;
@@ -394,12 +403,20 @@ namespace Commercially.Vinconomy
             // Extract all the items from the Source Slots into the TradeResult's aggregated item stacks
             ExtractItems(result);
 
-            //Step 3: Now that we have taken the currency from the player, product from the shop, etc. we need to put the items in their proper places
+            //Step 3: Log the sale to the ledger before the items are removed from the aggregates or processed by other mods
+            LogPurchase(result);
+
+            //Step 4: Now that we have taken the currency from the player, product from the shop, etc. we need to put the items in their proper places
             PreFinalizeTrade(result);
             FinalizeTrade(result);
             PostFinalizeTrade(result);
 
             return result;
+        }
+
+        private void LogPurchase(TradeResult result)
+        {
+            DB.SavePurchase(result);
         }
 
         /// <summary>
@@ -418,8 +435,10 @@ namespace Commercially.Vinconomy
                 ItemStack takenStack = slot.TakeOut(totalProductToMove);
                 if (takenStack != null)
                 {
+                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
                     totalProductToMove -= takenStack.StackSize;
                     productStacks.Add(takenStack);
+                    slot.MarkDirty();
                 }
 
                 if (totalProductToMove <= 0)
@@ -436,13 +455,15 @@ namespace Commercially.Vinconomy
             AggregatedSlots currency = result.Request.CurrencySourceSlots;
             int totalCurrencyToMove = result.Request.GetFinalCurrencyNeededPerPurchase() * result.Request.NumPurchases;
             AggregatedStacks currencyStacks = result.CurrencyStacks;
-            foreach (ItemSlot slot in products)
+            foreach (ItemSlot slot in currency)
             {
                 ItemStack takenStack = slot.TakeOut(totalCurrencyToMove);
                 if (takenStack != null)
                 {
+                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Currency Stacks");
                     totalCurrencyToMove -= takenStack.StackSize;
                     currencyStacks.Add(takenStack);
+                    slot.MarkDirty();
                 }
 
                 if (totalCurrencyToMove <= 0)
@@ -457,26 +478,30 @@ namespace Commercially.Vinconomy
             }
 
             AggregatedSlots coupons = result.Request.CouponSourceSlots;
-            int totalCouponsToMove = result.Request.NumPurchases;
-            AggregatedStacks couponStacks = result.CouponStacks;
-            foreach (ItemSlot slot in products)
+            if (coupons != null)
             {
-                ItemStack takenStack = slot.TakeOut(totalCouponsToMove);
-                if (takenStack != null)
+                int totalCouponsToMove = result.Request.NumPurchases;
+                AggregatedStacks couponStacks = result.CouponStacks;
+                foreach (ItemSlot slot in coupons)
                 {
-                    totalCouponsToMove -= takenStack.StackSize;
-                    couponStacks.Add(takenStack);
-                }
-
-                if (totalCouponsToMove <= 0)
-                {
-                    if (totalCouponsToMove < 0)
+                    ItemStack takenStack = slot.TakeOut(totalCouponsToMove);
+                    if (takenStack != null)
                     {
-                        this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCouponsToMove)} extra items from Coupons");
+                        this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Coupon Stacks");
+                        totalCouponsToMove -= takenStack.StackSize;
+                        couponStacks.Add(takenStack);
+                        slot.MarkDirty();
                     }
-                    break;
-                }
 
+                    if (totalCouponsToMove <= 0)
+                    {
+                        if (totalCouponsToMove < 0)
+                        {
+                            this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCouponsToMove)} extra items from Coupons");
+                        }
+                        break;
+                    }
+                }
             }
         }
 
@@ -499,6 +524,8 @@ namespace Commercially.Vinconomy
         }
 
         public SortedList<int, PostFinalizeTrade> PostFinalizeTradeHandlers = new SortedList<int, PostFinalizeTrade>();
+
+
         public void RegisterPostFinalizeTradeHandler(int priority, PostFinalizeTrade hook)
         {
             PostFinalizeTradeHandlers.Add(priority, hook);

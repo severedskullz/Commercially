@@ -7,14 +7,14 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GenericStallInventoryProvaider : BEBehaviorAbstractContainer, IStallInventoryProvider
+    public class GenericStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
     {
         private GenericShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
 
         public int StallCount => _Inventory.StallSlots?.Length ?? 0;
 
-        public GenericStallInventoryProvaider(BlockEntity blockentity) : base(blockentity)
+        public GenericStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {
             _Inventory = new GenericShopInventory(blockentity.Api);
         }

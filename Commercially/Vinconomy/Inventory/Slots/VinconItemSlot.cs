@@ -43,7 +43,7 @@ namespace Vinconomy.Inventory.Slots
                     //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot Item Stack was null, so we called Base");
                     return base.CanHold(sourceSlot);
                 }
-                else if (TradingUtil.isMatchingItem(slot.Itemstack, sourceSlot.Itemstack, inventory.Api.World))
+                else if (TradingUtil.IsMatchingItem(slot.Itemstack, sourceSlot.Itemstack, inventory.Api.World))
                 {
                     //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot satisfied, so we called Base");
                     return base.CanHold(sourceSlot);

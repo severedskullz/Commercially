@@ -98,14 +98,20 @@
                 "stallType": "GenericStallSlot"
             }
         },
+        { "name": "Vinconomy.StallDisplay" },
         { "name": "Vinconomy.Stall",
-            "properties": {
-
-            }
+            "properties": { }
         },
         {
             "name": "Commercially.InteractionManager",
             "properties": {}
+        },
+        {
+            "name": "Commercially.OwnableChild",
+            "properties": {
+                "ownableType": "ShopStall",
+                "allowedTypes": ["ShopRegister"]
+            }
         },
         { "name": "Commercially.TextureSwappable" }
     ],

@@ -1,9 +1,9 @@
-﻿using Commercially.Common.Interfaces;
+﻿using Commercially.Common.Util;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace Commercially.Common
+namespace Commercially.Common.Interfaces
 {
     /// <summary>
     /// Represents an object that can be owned by a player or admin. This is used for shops, stalls, and potentially other objects in the future. It provides a common interface for checking ownership and retrieving owner information.
@@ -13,7 +13,7 @@ namespace Commercially.Common
         /// <summary>
         /// Gets or sets the name associated with this instance.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
         /// The type of Ownable this object is
@@ -36,6 +36,12 @@ namespace Commercially.Common
         public string OwnerName { get; }
 
         void SetOwner(IPlayer byPlayer);
+
+        bool IsOwner(IPlayer byPlayer);
+
+        void SetIsAdminOwned(bool isAdminOwned);
+
+        void SetName(string name);
 
         public void UpdateOwnership(string ownerUID, string ownerName, string name, bool isAdminOwned);
 
@@ -77,7 +83,7 @@ namespace Commercially.Common
         List<IOwnable> GetChildren();
     }
 
-    public interface IOwnableLeaf : IOwnableReference
+    public interface IOwnableChild : IOwnableReference
     {
         /// <summary>
         /// The Owning Ownable's ID
@@ -95,12 +101,19 @@ namespace Commercially.Common
         public IOwnable GetParent();
 
         /// <summary>
+        /// Gets the allowed parent types that can be assigned to the Parent of this ownable.
+        /// </summary>
+        public string[] GetAllowedParentTypes();
+
+
+        /// <summary>
         /// Sets the owning root for this Ownable
         /// </summary>
-        public void SetOwnableRoot(IOwnableRoot root);
+        public void SetParent(IOwnableRoot root);
+        public void SetParent(long parentId);
     }
 
-    public interface IOwnableNode : IOwnableRoot, IOwnableLeaf
+    public interface IOwnableNode : IOwnableRoot, IOwnableChild
     {
         // Nothing to do here. Its a Root and a Leaf, so it has an ID and a ParentID. It can have children, but it also has a parent.
         // This is useful for things that require more than 2 levels of ownership, such as a Nation (root) having multiple Cities (nodes) that then can have multiple Villages (leaves).

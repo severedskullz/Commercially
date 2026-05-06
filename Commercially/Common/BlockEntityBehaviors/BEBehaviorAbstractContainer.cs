@@ -29,6 +29,8 @@ namespace Commercially.Common.BlockEntityBehaviors
 
         public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
         {
+            //TODO: Fix ordering for this. Need to be checking the owner UUID instead of land claim access and do our "kick if not owner and they modified the inventory" logic
+
             if (packetid == (int)EnumBlockEntityPacketId.Close)
             {
                 player.InventoryManager?.CloseInventory(Inventory);
@@ -39,23 +41,6 @@ namespace Commercially.Common.BlockEntityBehaviors
                     data,
                     (IServerPlayer)player
                 );
-            }
-
-
-            if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
-            {
-                Api.World.Logger.Audit("Player {0} sent an inventory packet to openable container at {1} but has no claim access. Rejected.", player.PlayerName, Pos);
-                return;
-            }
-
-            if (packetid < 1000)
-            {
-                Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
-
-                // Tell server to save this chunk to disk again
-                Api.World.BlockAccessor.GetChunkAtBlockPos(Pos).MarkModified();
-
-                return;
             }
 
             if (packetid == (int)EnumBlockEntityPacketId.Open)
@@ -69,6 +54,26 @@ namespace Commercially.Common.BlockEntityBehaviors
                     (IServerPlayer)player
                 );
             }
+
+
+
+            if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
+            {
+                Api.World.Logger.Audit("Player {0} sent an inventory packet to openable container at {1} but has no claim access. Rejected.", player.PlayerName, Pos);
+                return;
+            }
+
+            if (packetid < 1000)
+            {
+                Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
+                this.Blockentity.MarkDirty(true);
+                // Tell server to save this chunk to disk again
+                Api.World.BlockAccessor.GetChunkAtBlockPos(Pos).MarkModified();
+
+                return;
+            }
+
+
 
         }
 

@@ -10,6 +10,10 @@ namespace Commercially.Common.Slots
         private List<ItemStack> Slots { get; set; } = new List<ItemStack>();
         public int TotalCount { get; set; }
 
+        public int StackCount => Slots.Count;
+
+        public ItemStack this[int index] { get {  return Slots[index]; }  }
+
         public virtual void Add(ItemStack item)
         {
             Slots.Add(item);

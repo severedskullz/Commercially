@@ -1,4 +1,24 @@
 {
+    "tabname-generic-customer": "Trade",
+    "tabname-generic-owner": "Management",
+
+    "no-trade-pass": "You do not own the required Trade Pass for this stall",
+    "not-enough-money": "You do not have enough currency to purchase this item.",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     "doesnt-own": "You do not own this.",
     "no-privelege": "You do not have permission to set this to an Admin stall.",
     "purchased-item": "You purchased {0}x {1} for {2}x {3}.",
@@ -8,7 +28,7 @@
     "no-register-space": "There is not enough space in the Shop's Register to recieve payment",
     "no-stall-space": "There is not enough space in the Shop's Stall to recieve goods",
     "purchased-zero-quantity": "You must purchase atleast 1 item at a time.",
-    "not-enough-money": "Not enough items in your hand to purchase this item.",
+
     "not-enough-capacity": "Not enough container capacity to purchase this item.",
     "not-registered-with-shop": "This stall is not registered with a shop yet. Unable to make a purchase.",
     "couldnt-find-register": "Unable to find the register block for shop - is it in an unloaded chunk?",
@@ -18,10 +38,10 @@
     "gacha-possibility": "{0}% chance of obtaining a {1}",
     "not-for-sale": "Slot {0}: Not for Sale",
     "stall-add": "Add item to stall",
-    "stall-add-servings" : "Add Single Serving",
-    "stall-add-bulk-servings" : "Add Bulk Serving",
-    "stall-remove-servings" : "Remove Single Serving",
-    "stall-remove-bulk-servings" : "Remove Bulk Serving",
+    "stall-add-servings": "Add Single Serving",
+    "stall-add-bulk-servings": "Add Bulk Serving",
+    "stall-remove-servings": "Remove Single Serving",
+    "stall-remove-bulk-servings": "Remove Bulk Serving",
     "stall-open-menu": "Open Stall",
     "stall-purchase": "Purchase 1 item",
     "stall-purchase-bulk": "Purchase many items",
@@ -98,7 +118,7 @@
     "gui-purchases-left": "Purchases Left:",
     "gui-quantity": "Quantity",
     "gui-register-fallback": "Register Fallback",
-    "gui-remove" : "Remove",
+    "gui-remove": "Remove",
     "gui-reusable": "reusable",
     "gui-reverse-trade": "Reverese Trade?",
     "gui-sale-entry": "{0}x {1} sold for {2}x {3}",
@@ -140,28 +160,28 @@
     "gui-year": "Year:",
 
 
-    "gui-injection-settings" : "Injection Settings",
-    "gui-interval-duration" : "Interval Duration",
-    "gui-interval-manual" : "Manual",
-    "gui-interval-ingame" : "In-Game",
-    "gui-interval-realtime" : "Realtime",
-    "gui-period-day" : "Day(s)",
-    "gui-period-month" : "Month(s)",
-    "gui-period-year" : "Year(s)",
-    "gui-interval-action" : "Interval Action",
-    "gui-action-set-specific" : "Set To Supply",
-    "gui-action-add-additional" : "Add Additional Supply",
-    "gui-action-meet-minimum" : "Meet Minimum Supply",
-    "gui-supply-settings" : "Supply Settings",
-    "gui-supply-threshold" : "Supply Threshold %",
-    "gui-price-low" : "Low Price",
-    "gui-price-high" : "High Price",
-    "gui-supply-ideal" : "Ideal Supply",
-    "gui-supply-unlimited" : "Unlimited Supply",
-    "gui-demand-max" : "Max Demand",
-    "gui-demand-unlimited" : "Unlimited Demand",
-    "gui-no-results" : "No Results",
-    "gui-create" : "Create",
+    "gui-injection-settings": "Injection Settings",
+    "gui-interval-duration": "Interval Duration",
+    "gui-interval-manual": "Manual",
+    "gui-interval-ingame": "In-Game",
+    "gui-interval-realtime": "Realtime",
+    "gui-period-day": "Day(s)",
+    "gui-period-month": "Month(s)",
+    "gui-period-year": "Year(s)",
+    "gui-interval-action": "Interval Action",
+    "gui-action-set-specific": "Set To Supply",
+    "gui-action-add-additional": "Add Additional Supply",
+    "gui-action-meet-minimum": "Meet Minimum Supply",
+    "gui-supply-settings": "Supply Settings",
+    "gui-supply-threshold": "Supply Threshold %",
+    "gui-price-low": "Low Price",
+    "gui-price-high": "High Price",
+    "gui-supply-ideal": "Ideal Supply",
+    "gui-supply-unlimited": "Unlimited Supply",
+    "gui-demand-max": "Max Demand",
+    "gui-demand-unlimited": "Unlimited Demand",
+    "gui-no-results": "No Results",
+    "gui-create": "Create",
 
     "gui-f-owner": "Owner: {0}",
     "gui-f-server": "Server: {0}",
@@ -253,25 +273,25 @@
     "tooltip-gacha-name": "The item name of the outputted Gacha Ball",
     "tooltip-gacha-input": "Place empty Gacha Balls to be filled by the machine here",
     "tooltip-gacha-output": "Bundled Gacha Balls will be outputted here once filled with items",
-    "tooltip-serving-transfer" : "Transfer meal servings to/from the Meal Container. Supports Cooking Pots and Crocks.",
-    "tooltip-purchases-left" : "If Limited Purchases is enabled, how many more sales can be made before this stall stops trading entirely. For every purchase, this number will be decremented by 1 until it reaches 0, and no more purchase can be made and the number must be set to a number greater than 0 to resume trading",
-    "tooltip-teller-conversion" : "Place two items that would be considered equivalent in terms of currency. This trade is bidirectional - Customers can obtain the right handed item in exchange for the left, or vice versa obtain the left handed item in exchange for the right. E.g. 1 Gold Bar can be traded for 5 Silver Bars, and 5 Silver Bars can be traded for 1 Gold Bar",
+    "tooltip-serving-transfer": "Transfer meal servings to/from the Meal Container. Supports Cooking Pots and Crocks.",
+    "tooltip-purchases-left": "If Limited Purchases is enabled, how many more sales can be made before this stall stops trading entirely. For every purchase, this number will be decremented by 1 until it reaches 0, and no more purchase can be made and the number must be set to a number greater than 0 to resume trading",
+    "tooltip-teller-conversion": "Place two items that would be considered equivalent in terms of currency. This trade is bidirectional - Customers can obtain the right handed item in exchange for the left, or vice versa obtain the left handed item in exchange for the right. E.g. 1 Gold Bar can be traded for 5 Silver Bars, and 5 Silver Bars can be traded for 1 Gold Bar",
 
-    "tooltip-whitelisted-shops" : "Which shops should the coupon be valid for. If no shops are selected, the coupon will be valid for all shops owned by you",
-    "tooltip-coupon" : "Sets the properties of the coupon. You can specify whether the coupon gives a discount or additional product with either a flat rate or a percentage",
-    "tooltip-consume-coupon" : "Whether or not the coupon will be used up in the trade. If unchecked, the coupon can be used repeatedly",
-    "tooltip-item-whitelist" : "Specifies which items a coupon is valid for. Leave blank for all trades",
-    "tooltip-blacklist" : "Specifies whether or not the items above are excluded instead of included",
-    "tooltip-paper" : "Place a piece of Parchment here to cut up into coupons",
-    "tooltip-short-description" : "Provide a short description of the shop that should be displayed to users browsing the catalog",
-    "tooltip-stall-access" : "Whether or not players should also have access to your stalls as well",
-    "tooltip-webhook" : "Specify a web address that should recieve a snapshot of products purchased from your stalls. Typically this would be a Discord Webhook URL",
-    "tooltip-shop-access" : "Which players should have access to your register in order to collect/deposit funds",
-    "tooltip-trade-pass" : "Which item, if any, should be required in order to purchase items from your stalls",
-    "tooltip-description" : "Provide a detailed description of the shop that should be displayed to users when they view your shop directly via the catalog",
-    "tooltip-waypoint-visible" : "If enabled, the waypoint is broadcasted to all other players to let them know where your shop is located. The location is also shown in the shop catalog and customers can use the Location Link to view your shop on the map",
-    "tooltip-currency" : "Any currency collected from your shops will appear here. This is also used by the Teller Machine to exchange currencies. If this section is full then no more trades can be conducted as the payment would be unable to get collected",
-    "tooltip-coupons" : "Any coupons collected from your shops will appear here. If this section is full, no more coupons can be collected",
+    "tooltip-whitelisted-shops": "Which shops should the coupon be valid for. If no shops are selected, the coupon will be valid for all shops owned by you",
+    "tooltip-coupon": "Sets the properties of the coupon. You can specify whether the coupon gives a discount or additional product with either a flat rate or a percentage",
+    "tooltip-consume-coupon": "Whether or not the coupon will be used up in the trade. If unchecked, the coupon can be used repeatedly",
+    "tooltip-item-whitelist": "Specifies which items a coupon is valid for. Leave blank for all trades",
+    "tooltip-blacklist": "Specifies whether or not the items above are excluded instead of included",
+    "tooltip-paper": "Place a piece of Parchment here to cut up into coupons",
+    "tooltip-short-description": "Provide a short description of the shop that should be displayed to users browsing the catalog",
+    "tooltip-stall-access": "Whether or not players should also have access to your stalls as well",
+    "tooltip-webhook": "Specify a web address that should recieve a snapshot of products purchased from your stalls. Typically this would be a Discord Webhook URL",
+    "tooltip-shop-access": "Which players should have access to your register in order to collect/deposit funds",
+    "tooltip-trade-pass": "Which item, if any, should be required in order to purchase items from your stalls",
+    "tooltip-description": "Provide a detailed description of the shop that should be displayed to users when they view your shop directly via the catalog",
+    "tooltip-waypoint-visible": "If enabled, the waypoint is broadcasted to all other players to let them know where your shop is located. The location is also shown in the shop catalog and customers can use the Location Link to view your shop on the map",
+    "tooltip-currency": "Any currency collected from your shops will appear here. This is also used by the Teller Machine to exchange currencies. If this section is full then no more trades can be conducted as the payment would be unable to get collected",
+    "tooltip-coupons": "Any coupons collected from your shops will appear here. If this section is full, no more coupons can be collected",
 
 
     "wp-genericCoins": "Shop",

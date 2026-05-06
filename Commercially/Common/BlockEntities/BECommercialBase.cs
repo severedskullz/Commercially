@@ -1,6 +1,7 @@
 ﻿using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.GUI;
 using Commercially.Common.GUI.Tabs;
+using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.GUI.Tabs;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
@@ -81,6 +82,7 @@ namespace Commercially.Common.BlockEntities
                         new GuiBlockEntityOwnershipTab(),
                         new GuiBlockEntityDebugTab(),
                         new GuiBlockEntityContainerTab(),
+                        new GuiBlockEntityShopOwnerTab(),
                         new GuiBlockEntityShopCustomerTab()
                     });
                     gui.TryOpen();
@@ -111,7 +113,7 @@ namespace Commercially.Common.BlockEntities
 
         public bool IsChild()
         {
-            return Ownable is IOwnableLeaf;
+            return Ownable is IOwnableChild;
         }
 
         public bool IsChildBranch()
@@ -141,7 +143,7 @@ namespace Commercially.Common.BlockEntities
 
         public virtual void UpdateOwnableEntry()
         {
-            modSystem.DB.UpdateOwnableEntry(this.GetBehavior<IOwnableReference>());
+            //modSystem.DB.UpdateOwnable(this.GetBehavior<IOwnableReference>());
         }
 
         public override void OnBlockRemoved()

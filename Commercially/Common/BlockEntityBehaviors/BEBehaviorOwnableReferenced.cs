@@ -1,7 +1,10 @@
 ﻿using Commercially.Common.Interfaces;
+using System.IO;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace Commercially.Common.BlockEntityBehaviors
 {
@@ -37,21 +40,26 @@ namespace Commercially.Common.BlockEntityBehaviors
         public override void OnBlockPlaced(ItemStack byItemStack)
         {
             base.OnBlockPlaced(byItemStack);
-            CommerciallyModSystem modSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
-            // These attributes were set on the itemstack in BehaviorCommercialEvents:DoPlaceBlock
-            OwnerName = byItemStack.Attributes.GetString("OwnerName");
-            OwnerUID = byItemStack.Attributes.GetString("OwnerUID");
-
-            if (byItemStack.Attributes.HasAttribute("ID"))
+            if (Api.Side == EnumAppSide.Server)
             {
-                ID = byItemStack.Attributes.GetLong("ID");
-                modSystem.UpdateOwnable(this);
+                CommerciallyModSystem modSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
-            } else
-            {
-                modSystem.AddOwnable(this);
+                // These attributes were set on the itemstack in BehaviorCommercialEvents:DoPlaceBlock
+                OwnerName = byItemStack.Attributes.GetString("OwnerName");
+                OwnerUID = byItemStack.Attributes.GetString("OwnerUID");
+
+                if (byItemStack.Attributes.HasAttribute("ID"))
+                {
+                    ID = byItemStack.Attributes.GetLong("ID");
+                    modSystem.UpdateOwnable(this);
+
+                }
+                else
+                {
+                    modSystem.AddOwnable(this);
+                }
             }
+            
         }
         
 
@@ -73,6 +81,12 @@ namespace Commercially.Common.BlockEntityBehaviors
             stack.Attributes.SetLong("ID", ID);
             stack.Attributes.SetString("OwnerUID", OwnerUID);
             stack.Attributes.SetString("OwnerName", OwnerName);
+        }
+
+        public override void UpdateOwnership(string ownerUID, string ownerName, string name, bool isAdminOwned)
+        {
+            base.UpdateOwnership(ownerUID, ownerName, name, isAdminOwned);
+            ModSystem.UpdateOwnable(this);
         }
     }
 }

@@ -2,12 +2,14 @@
 using Commercially.Common.Interfaces;
 using Commercially.Common.Renderer;
 using Commercially.Common.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -26,14 +28,17 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         IStallInventoryProvider IStallComponent.InventoryProvider => _InventoryProvider;
         IStallInventoryProvider _InventoryProvider;
 
-        IOwnableLeaf IStallComponent.Ownable => _Ownable;
-        IOwnableLeaf _Ownable;
+        IOwnableChild IStallComponent.Ownable => _Ownable;
+        IOwnableChild _Ownable;
 
         protected bool RequiresParent;
+        protected bool DiscardProduct;
 
         public int StallCount => _InventoryProvider?.StallCount ?? 0;
 
-        
+        public Size2i AtlasSize => throw new NotImplementedException();
+
+        public TextureAtlasPosition this[string textureCode] => throw new NotImplementedException();
 
         public BEStallBehavior(BlockEntity blockentity) : base(blockentity)
         {
@@ -43,7 +48,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         {
             base.Initialize(api, properties);
             _InventoryProvider = this.GetComponent<IStallInventoryProvider>();
-            _Ownable = this.GetComponent<IOwnableLeaf>();
+            _Ownable = this.GetComponent<IOwnableChild>();
+
+            VinconomyCore = api.ModLoader.GetModSystem<VinconomyModSystem>();
+            CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
         }
 
@@ -67,7 +75,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             return _InventoryProvider.GetStallSlot<T>(stallSlot);
         }
 
-        public virtual bool CanPurchaseItem(IPlayer player, int stallSlot, int numPurchases)
+        public virtual bool CanPurchaseItem(IPlayer player, IShopComponent parent, int stallSlot, int numPurchases)
         {
             if (numPurchases <= 0)
             {
@@ -87,7 +95,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             {
                 
                 // Does the shop have a Parent ID set if it needs one?
-                if (_Ownable == null || _Ownable.ParentID != -1)
+                if (parent == null)
                 {
                     CommerciallyModSystem.PrintClientMessage(player, TradingConstants.NOT_REGISTERED);
                     return false;
@@ -95,74 +103,49 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
 
                 // Is there a shop with the given Register ID?
-                IShopInventoryProvider register = VinconomyCore.GetShop(_Ownable.OwnerUID, _Ownable.ParentID);
-                if (register == null && !_Ownable.IsAdminOwned)
+                if (parent == null && !_Ownable.IsAdminOwned)
                 {
                     CommerciallyModSystem.PrintClientMessage(player, TradingConstants.COULDNT_GET_REGISTER);
                     return false;
                 }
+
+                //TODO: Trade Pass? Maybe just handle it in purchase logic
             }
 
 
-
-            ItemSlot[] stockSlots = _InventoryProvider.GetStallSlot(stallSlot).GetStallSlots(); ;
-            ItemSlot purchaseSlot = null;
-
-            //Find the first slot available that we can purchase from
-            foreach (var stockSlot in stockSlots)
-            {
-                if (stockSlot.StackSize >= 0)
-                {
-                    purchaseSlot = stockSlot;
-                    break;
-                }
-            }
-            if (purchaseSlot == null)
+            if (_InventoryProvider.GetStallSlot(stallSlot).GetNumPurchasesRemaining() <= 0)
             {
                 CommerciallyModSystem.PrintClientMessage(player, TradingConstants.NO_PRODUCT);
                 return false;
             }
 
-            return false; //core.CanPurchaseItem(player, this, parent, stallSlot, numPurchases);
+            return VinconomyCore.CanPurchaseItem(player, this, parent, stallSlot, numPurchases);
         }
-
-        //public virtual ItemStack[] TakeProduct
-
 
 
         public virtual bool TryPurchaseItem(IPlayer player, int stallSlot, int numPurchases)
         {
-            // Step 1:   Can they purchase the item through local means - enough stock, enough currency, etc.
-            // Step 2:   Is there a Parent that needs to be loaded? If so, try to load it in the world
-            // Step 2.5: Resume call if we needed to wait for the chunk to load
-            // Step 3:   If there is a parent where the items need to be inserted, check if it can fit
-            // Step 4
+            IShopComponent shop = null;
 
+            if (_Ownable?.ParentID != null && _Ownable?.OwnerUID != null)
+                shop = VinconomyCore.GetShop(_Ownable.OwnerUID, _Ownable.ParentID);
 
-
-
-
-            if (CanPurchaseItem(player, stallSlot, numPurchases))
+            if (CanPurchaseItem(player, shop, stallSlot, numPurchases))
             {
-
+                TradeResult result = PurchaseItem(player, stallSlot, numPurchases, shop);
+                return result.ErrorMsg != null;
             }
-
-            IOwnable parent = this.Blockentity.GetBehavior<IOwnableLeaf>();
-
-
-
-            //if (core.CanPurchaseItem(player, this, ))
 
             return false;
         }
 
-        public virtual void PurchaseItem(IPlayer player, int stallSlot, int numPurchases, IShopComponent shopRegister)
+        public virtual TradeResult PurchaseItem(IPlayer player, int stallSlot, int numPurchases, IShopComponent shopRegister)
         {
             TradeRequest request = new TradeRequest(Api, player);
             IOwnable ownable = this.GetComponent<IOwnable>();
             ItemStack currencyStack = GetCurrencyForStallSlot(stallSlot);
             ItemStack productStack = GetProductForStallSlot(stallSlot);
-            request.WithShop(shopRegister, this, stallSlot, ownable.IsAdminOwned);
+            request.WithShop(shopRegister, this, stallSlot, ownable?.IsAdminOwned ?? false);
             request.WithPurchases(numPurchases);
             request.WithCurrency(currencyStack, TradingUtil.GetAllValidSlotsFor(player, currencyStack), currencyStack.StackSize);
             request.WithProduct(productStack, GetStallSlot(stallSlot).GetProducts(), productStack.StackSize);
@@ -202,6 +185,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 Blockentity.MarkDirty(true, null);
                 //Blockentity.UpdateMeshes();
             }
+
+            return result;
         }
 
         private AggregatedSlots GetRequiredTools(IPlayer player, int stallSlot)
@@ -216,46 +201,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
         {
-            TesselateDisplayedItems(mesher, tessThreadTesselator);
-            TesselateDecoBlock(mesher, tessThreadTesselator);
-            return base.OnTesselation(mesher, tessThreadTesselator);
+            return TesselateDecoBlock(mesher, tessThreadTesselator);
         }
 
-        protected void TesselateDisplayedItems(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-        {
-            if (mesher == null)
-                return;
-            /*
-
-            if (shouldRenderInventory)
-            {
-                MeshData mesh = null;
-                ItemSlot slot = null;
-                for (int i = 0; i < StallSlotCount; i++)
-                {
-                    try
-                    {
-                        slot = inventory.FindFirstNonEmptyStockSlot(i);
-                        if (slot != null && !slot.Empty && tfMatrices != null)
-                        {
-                            mesh = getOrCreateMesh(slot, i);
-                            if (mesh != null)
-                            {
-                                mesher.AddMeshData(mesh, tfMatrices[i]);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        modSystem.Mod.Logger.Error($"Had some trouble rendering mesh in a stall @ {Pos.X} {Pos.Y} {Pos.Z} for slot {i}. Exception was {e.Message}");
-                    }
-
-                }
-            }
-            */
-        }
-
-        protected virtual void TesselateDecoBlock(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
+        protected virtual bool TesselateDecoBlock(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
         {
 
             if (_InventoryProvider.GetDecorationStack() != null)
@@ -265,160 +214,188 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 MeshData mesh = CommerciallyCore.GetRenderer(decoration).CreateMesh(this, decoration, 0);
                 mesh = mesh.Clone().Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0, (float)((Block.Shape.rotateY * Math.PI) / 180), 0);
                 mesher.AddMeshData(mesh);
+                return true;
+            }
+            return false;
+        }
+
+        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
+        {
+            base.FromTreeAttributes(tree, worldAccessForResolve);
+            if (Api != null && Api.Side == EnumAppSide.Client)
+            {
+                this.Blockentity.MarkDirty(true, null);
             }
         }
 
-        protected virtual void UpdateMesh(int index)
+        /*
+        public override void OnReceivedServerPacket(int packetid, byte[] data)
         {
-            if (Api != null && Api.Side != EnumAppSide.Server && !_InventoryProvider.Inventory[index].Empty)
+            //Console.WriteLine(Api.Side + ": OnRecievedServerPacket " + packetid);
+            IClientWorldAccessor clientWorld = (IClientWorldAccessor)this.Api.World;
+            if (packetid == CommerciallyConstants.TOGGLE_GUI)
             {
-                GetOrCreateMesh(_InventoryProvider.Inventory[index], index);
-            }
-        }
-
-        protected virtual string GetMeshCacheKey(ItemSlot slot)
-        {
-            ItemStack stack = slot.Itemstack;
-            if (stack == null)
-                return null;
-
-            if (stack.Collectible is IContainedMeshSource containedMeshSource)
-            {
-                return containedMeshSource.GetMeshCacheKey(slot);
-            }
-
-            return stack.Collectible.Code.ToString();
-        }
-
-        protected MeshData GetMesh(ItemSlot stack)
-        {
-            string meshCacheKey = GetMeshCacheKey(stack);
-            MeshCache.TryGetValue(meshCacheKey, out var value);
-            return value;
-        }
-
-        protected MeshData GetOrCreateMesh(ItemSlot slot, int index)
-        {
-            MeshData modeldata = GetMesh(slot);
-            if (modeldata != null)
-            {
-                return modeldata;
-            }
-
-            IItemRenderer renderer = CommerciallyCore.GetRenderer(slot);
-            if (renderer != null)
-            {
-                ItemStack stack = slot.Itemstack;
-                modeldata = renderer.CreateMesh(this, slot, index);
-                if (modeldata == null)
+                if (invDialog != null)
                 {
-                    //Don't crash if we couldnt get the model for some reason
-                    return null;
+                    Console.WriteLine(Api.Side + ": Toggling GUI OFF");
+                    CloseGui(clientWorld);
+                }
+                else
+                {
+                    Console.WriteLine(Api.Side + ": Toggling GUI ON");
+                    OpenShopGui(data);
                 }
 
-                //Bypass the Display and Shelvable transforms for Armor Stands, where we want the model coordinates to match the character, not the zero'd positions.
-                if (!bypassShelvableAttributes)
-                {
-                    ModelTransform modelTransform = null;
-                    // pick our preselected Attribute Transform Code
-                    if (stack.Collectible.Attributes?[AttributeTransformCode].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?[AttributeTransformCode].AsObject<ModelTransform>();
-                    }
-                    else if (stack.Block is IShelvable)
-                    {
-                        modelTransform = (stack.Block as IShelvable).GetOnShelfTransform(stack);
-                    }
-                    else if (stack.Collectible.Attributes?["onDisplayTransform"].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?["onDisplayTransform"].AsObject<ModelTransform>();
-
-                    }
-                    else if (stack.Collectible.Attributes?["groundStorageTransform"].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?["groundStorageTransform"].AsObject<ModelTransform>();
-
-                    }
-
-                    if (modelTransform != null)
-                    {
-                        modelTransform.EnsureDefaultValues();
-                        modeldata.ModelTransform(modelTransform);
-                    }
-                    // Should be handled by IShelvable, but I still see it in the JSON
-                    else if (stack.Collectible.Attributes?["shelvable"].Exists ?? false)
-                    {
-                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.85f, 0.85f, 0.85f);
-                    }
-                    else
-                    {
-                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.35f, 0.35f, 0.35f);
-                    }
-
-                }
-
-                if (stack.Class == EnumItemClass.Item && (stack.Item.Shape == null || stack.Item.Shape.VoxelizeTexture))
-                {
-                    modeldata.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), MathF.PI / 2f, 0f, 0f);
-                    modeldata.Scale(new Vec3f(0.5f, 0.5f, 0.5f), 0.35f, 0.35f, 0.35f);
-                    modeldata.Translate(0f, -15f / 32f, 0f);
-                }
-
-
-                if (renderer.ShouldCache(stack))
-                {
-                    string meshCacheKey = GetMeshCacheKey(slot);
-                    MeshCache[meshCacheKey] = modeldata;
-                }
             }
-
-
-
-            return modeldata;
-        }
-        
-        public virtual string ClassCode => _InventoryProvider.Inventory.ClassName;
-        protected Dictionary<string, MeshData> MeshCache => ObjectCacheUtil.GetOrCreate(Api, "meshesDisplay-" + ClassCode, () => new Dictionary<string, MeshData>());
-
-        public Size2i AtlasSize => throw new NotImplementedException();
-
-        public TextureAtlasPosition this[string textureCode] => throw new NotImplementedException();
-
-        protected float[][] GenTransformationMatrices()
-        {
-            int stallCount = _InventoryProvider.StallCount;
-            float[][] tfMatrices = new float[stallCount][];
-            for (int index = 0; index < stallCount; index++)
+            if (packetid == CommerciallyConstants.OPEN_GUI)
             {
-                Cuboidf sb = Block.SelectionBoxes[index];
-                float left = -.25f;
-                float right = left + .5f;
-
-                float x = (index % 2 == 0) ? left : right;
-                float y = sb.YSize <= .45f ? sb.MaxY - 0.39f + (.45f - sb.YSize) : sb.MaxY - 0.39f;
-                float z = (index / 2 == 0) ? left : right;
-                Matrixf matrix = new Matrixf().Translate(0.5f, 0f, 0.5f).RotateYDeg(Block.Shape.rotateY).Translate(x, y, z).Translate(-0.5f, 0f, -0.5f);
-                tfMatrices[index] = matrix.Values;
+                OpenShopGui(data);
             }
-            return tfMatrices;
+            if (packetid == CommerciallyConstants.CLOSE_GUI)
+            {
+                CloseGui(clientWorld);
+            }
+        }
+        */
+
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            int stallSlot;
+            int amount;
+            switch (packetid)
+            {
+                case CommerciallyConstants.CLOSE_GUI:
+                    player.InventoryManager?.CloseInventory(_InventoryProvider.Inventory);
+                    break;
+
+                case CommerciallyConstants.PURCHASE_ITEMS:
+
+                    using (MemoryStream memoryStream = new MemoryStream(data))
+                    {
+                        BinaryReader binaryReader = new BinaryReader(memoryStream);
+                        stallSlot = binaryReader.ReadInt32();
+                        amount = binaryReader.ReadInt32();
+                    }
+                    TryPurchaseItem(player, stallSlot, amount);
+                    break;
+
+                case CommerciallyConstants.SET_ITEMS_PER_PURCHASE:
+                    using (MemoryStream ms = new MemoryStream(data))
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        stallSlot = (int)reader.ReadInt32();
+                        amount = (int)reader.ReadInt32();
+                    }
+                    _InventoryProvider.GetStallSlot(stallSlot).CurrencyPerPurchase = amount;
+                    break;
+
+                case CommerciallyConstants.SET_ITEM_PRICE:
+                    using (MemoryStream ms = new MemoryStream(data))
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        stallSlot = reader.ReadInt32();
+                        amount = reader.ReadInt32();
+                    }
+                    _InventoryProvider.GetStallSlot(stallSlot).ProductPerPurchase = amount;
+                    break;
+
+                case CommerciallyConstants.SET_PARENT_ID:
+                    SetStallRegisterID(player, data);
+                    break;
+
+                case CommerciallyConstants.SET_ADMIN_OWNED:
+                    bool isAdmin = false;
+                    using (MemoryStream ms = new MemoryStream(data))
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        isAdmin = reader.ReadBoolean();
+                    }
+                    SetAdminShop(player, isAdmin);
+                    break;
+
+
+
+                case CommerciallyConstants.SET_SHOULD_DISCARD_CURRENCY:
+                    using (MemoryStream ms = new MemoryStream(data))
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        isAdmin = reader.ReadBoolean();
+                    }
+                    SetDiscardProduct(player, isAdmin);
+                    break;
+                default:
+                    break;
+            }
+        }
+        protected void SetStallRegisterID(IPlayer byPlayer, byte[] data)
+        {
+            //Only the owner can change the register! Not any joint ownership players
+            if (_Ownable != null && !_Ownable.IsOwner(byPlayer))
+            {
+                CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.DOESNT_OWN, new object[] { });
+                return;
+            }
+
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                BinaryReader reader = new BinaryReader(ms);
+                _Ownable.SetParent(reader.ReadInt32());
+            }
+
+            //PrintClientMessage(byPlayer, "set ID to " + this.RegisterID);
+            Blockentity.MarkDirty();
         }
 
+        protected virtual void SetAdminShop(IPlayer byPlayer, bool isAdmin)
+        {
+            // No, this shouldnt be CanAccess(byPlayer) because we dont want admins accidentally turning player stalls into admin shops
+            // even if they were given access...
+            if (_Ownable != null && !_Ownable.IsOwner(byPlayer))
+            {
+                
+                CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.DOESNT_OWN, new object[] { });
+                return;
+            }
 
-        CollectibleObject nowTesselatingObj = null;
-        Shape nowTesselatingShape = null;
-        private string AttributeTransformCode;
-        private bool bypassShelvableAttributes;
+            if (!byPlayer.HasPrivilege("gamemode"))
+            {
+                CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.NO_PRIVLEGE, new object[] { });
+                return;
+            }
+
+            _Ownable.SetIsAdminOwned(isAdmin);
+
+            //PrintClientMessage(byPlayer, "set Admin Shop to " + this.isAdminShip);
+            Blockentity.MarkDirty();
+        }
+
+        public virtual void SetDiscardProduct(IPlayer byPlayer, bool discard)
+        {
+            if (_Ownable != null && !_Ownable.IsOwner(byPlayer))
+            {
+                CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.DOESNT_OWN);
+                return;
+            }
+
+            if (!byPlayer.HasPrivilege("gamemode"))
+            {
+                    CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.NO_PRIVLEGE);
+                return;
+            }
+
+            this.DiscardProduct = discard;
+            Blockentity.MarkDirty();
+
+        }
 
         public void SetNowTesselatingObj(CollectibleObject collectible)
         {
-            nowTesselatingObj = collectible;
-            nowTesselatingShape = null;
+            throw new NotImplementedException();
         }
 
         public void SetNowTesselatingShape(Shape shape)
         {
-            nowTesselatingShape = shape;
-            nowTesselatingObj = null;
+            throw new NotImplementedException();
         }
     }
 }

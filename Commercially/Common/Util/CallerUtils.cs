@@ -1,7 +1,7 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
-namespace Commercially.Common
+namespace Commercially.Common.Util
 {
 
     /// <summary>

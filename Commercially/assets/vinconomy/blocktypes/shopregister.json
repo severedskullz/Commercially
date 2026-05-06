@@ -1417,17 +1417,18 @@
 
     "entityBehaviors": [
         { "name": "Vinconomy.RegisterInventory" },
-        { "name": "Vinconomy.Register",
+        {
+            "name": "Vinconomy.Register",
             "properties": {
-
+                "ownableType": "ShopRegister"
             }
         },
-        { "name": "Commercially.InteractionManager",
+        {
+            "name": "Commercially.InteractionManager",
             "properties": {
                 "default": ""
             }
         },
-
         { "name": "Commercially.TextureSwappable" }
     ],
 

@@ -300,8 +300,6 @@ namespace Commercially.Vinconomy.Inventory
 
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
-            string json = tree.ToJsonToken();
-            //Api.Logger.Debug(json);
             int numStalls = tree.GetInt("numStalls");
  
             SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
@@ -325,7 +323,15 @@ namespace Commercially.Vinconomy.Inventory
                 ItemStack stack = internalSlots.GetItemstack("slot" + i);
                 string stackstring = internalSlots.GetString("slot" + i + "-name");
                 InternalSlots[i].Itemstack = stack;
+
+                if (Api?.World == null)
+                {
+                    continue;
+                }
+
+                stack?.ResolveBlockOrItem(Api.World);
             }
+
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -347,8 +353,6 @@ namespace Commercially.Vinconomy.Inventory
                 internalSlots.SetItemstack("slot" + i, InternalSlots[i].Itemstack);
                 internalSlots.SetString("slot" + i + "-name", InternalSlots[i].Itemstack?.ToString());
             }
-            string json = tree.ToJsonToken();
-            Api.Logger.Debug(json);
         }
 
     }

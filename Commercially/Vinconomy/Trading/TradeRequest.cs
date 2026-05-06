@@ -1,5 +1,5 @@
-﻿using Commercially.Common;
-using Commercially.Common.Slots;
+﻿using Commercially.Common.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -219,6 +219,12 @@ namespace Commercially.Vinconomy.Trading
 
         public TradeResult(TradeRequest req)
         {
+            Request = req;
+            ProductStacks = new();
+            CurrencyStacks = new();
+            CouponStacks = new();
+            CustomData = [];
+
         }
     }
 }

@@ -59,6 +59,11 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
             if (TradePass == null) TradePass = new VinconCloningSlot(this);
             TradePass.Itemstack = tree.GetItemstack("tradePass");
+            if (Api?.World != null)
+            {
+                TradePass.Itemstack?.ResolveBlockOrItem(Api.World);
+            }
+
            
         }
 
@@ -128,7 +133,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
         public ItemStack GetTradePass()
         {
-            return TradePass?.Itemstack.Clone();
+            return TradePass?.Itemstack?.Clone();
         }
 
 

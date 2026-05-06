@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using Commercially.Common.Interfaces;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -10,7 +11,7 @@ namespace Commercially.Common.GUI
         public abstract string Code { get; }
         public abstract string TabName { get; }
         public BlockEntity BlockEntity { get; set; }
-        public GuiDialog Gui { get; set; }
+        public IModularGui Gui { get; set; }
 
         /// <summary>
         /// Initializes the tab with the provided GUI and block entity. The block entity may be null if the tab is not associated with a block entity.
@@ -18,7 +19,7 @@ namespace Commercially.Common.GUI
         /// </summary>
         /// <param name="gui"></param>
         /// <param name="entity"></param>
-        public virtual void Initialize(GuiDialog gui, BlockEntity entity = null)
+        public virtual void Initialize(IModularGui gui, BlockEntity entity = null)
         {
                 Gui = gui;
                 BlockEntity = entity;
