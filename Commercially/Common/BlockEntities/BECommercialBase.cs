@@ -38,13 +38,23 @@ namespace Commercially.Common.BlockEntities
                     continue;
                 }
 
-                if (behavior is IInteractionManager manager)
+                if (behavior is IInteractionManager interactionManager)
                 {
                     if (InteractionManager != null)
                     {
                         api.Logger.Warning("Multiple InteractionManager behaviors found on block entity at {0} for block {1}. This may cause unexpected behavior.", Pos, this.Block);
                     }
-                    InteractionManager = manager;
+                    InteractionManager = interactionManager;
+                    continue;
+                }
+
+                if (behavior is IGUIManager guiManager)
+                {
+                    if (GUIManager != null)
+                    {
+                        api.Logger.Warning("Multiple GuiManager behaviors found on block entity at {0} for block {1}. This may cause unexpected behavior.", Pos, this.Block);
+                    }
+                    GUIManager = guiManager;
                     continue;
                 }
 
@@ -65,13 +75,6 @@ namespace Commercially.Common.BlockEntities
 
             if (caller.Player != null && GUIManager != null)
             {
-                IInventoryProvider container = this.GetBehavior<IInventoryProvider>();
-                InventoryBase inv = container?.Inventory;
-                if (inv != null)
-                {
-                    caller.Player.InventoryManager.OpenInventory(inv);
-                }
-
                 return GUIManager.OpenGUI(this, caller, blockSel, key);
             }
 

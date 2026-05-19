@@ -9,9 +9,9 @@ using Vintagestory.API.Config;
 
 namespace Commercially.Vinconomy.GUI.Tabs
 {
-    public class GUIBlockEntityDisplayDebugTab : ModularTab
+    public class GuiBlockEntityDisplayDebugTab : ModularTab
     {
-        public const string CODE = "vinconomy.DisplayDebug";
+        public const string CODE = "Vinconomy.DisplayDebug";
         public override string Code => CODE;
 
         BEDisplayContentsBehavior Display;

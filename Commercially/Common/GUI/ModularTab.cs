@@ -2,6 +2,7 @@
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 
 namespace Commercially.Common.GUI
 {
@@ -12,6 +13,8 @@ namespace Commercially.Common.GUI
         public abstract string TabName { get; }
         public BlockEntity BlockEntity { get; set; }
         public IModularGui Gui { get; set; }
+
+        public BlockPos BlockEntityPosition => BlockEntity?.Pos;
 
         /// <summary>
         /// Initializes the tab with the provided GUI and block entity. The block entity may be null if the tab is not associated with a block entity.

@@ -119,7 +119,8 @@ namespace Commercially.Vinconomy
             ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
             guiSystem.RegisterTabType(GuiBlockEntityShopOwnerTab.CODE, typeof(GuiBlockEntityShopOwnerTab));
-            guiSystem.RegisterTabType(GUIBlockEntityDisplayDebugTab.CODE, typeof(GUIBlockEntityDisplayDebugTab));
+            guiSystem.RegisterTabType(GuiBlockEntityDisplayDebugTab.CODE, typeof(GuiBlockEntityDisplayDebugTab));
+            guiSystem.RegisterTabType(GuiVinconCouponCutter.CODE, typeof(GuiVinconCouponCutter));
 
 
 

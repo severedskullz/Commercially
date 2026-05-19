@@ -15,7 +15,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
     public class GuiBlockEntityShopCustomerTab : ModularTab
     {
 
-        public const string CODE = "vinconomy.ShopCustomer";
+        public const string CODE = "Vinconomy.ShopCustomer";
         public override string Code => CODE;
 
         public override string TabName => Lang.Get("vinconomy:tabname-generic-customer");

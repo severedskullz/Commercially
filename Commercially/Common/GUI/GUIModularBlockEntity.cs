@@ -11,7 +11,7 @@ namespace Commercially.Common.GUI
     {
         public const string CODE = "commercially:ModularBlockEntity";
 
-        List<ModularTab> Tabs = new List<ModularTab>();
+        public List<ModularTab> Tabs = new List<ModularTab>();
 
         //TODO: This does nothing to prevent you from viewing hidden tabs. Need to store a map betwen the GuiTab[] and ModularTab list instead for this to work properly
         ModularTab ActiveTab {
@@ -31,6 +31,7 @@ namespace Commercially.Common.GUI
         public int TabIndex = 0;
 
         BECommercialBase BlockEntity;
+        private ModularGUIModSystem GuiSystem;
         private readonly double TAB_WIDTH=200;
         private readonly double TAB_HEIGHT=300;
 
@@ -42,10 +43,13 @@ namespace Commercially.Common.GUI
         public GUIModularBlockEntity(string dialogTitle, BECommercialBase blockEntity) : base(dialogTitle, blockEntity.Pos, (ICoreClientAPI)blockEntity.Api)
         {
             BlockEntity = blockEntity;
+            GuiSystem = capi.ModLoader.GetModSystem<ModularGUIModSystem>();
         }
 
         public GUIModularBlockEntity(string dialogTitle, BECommercialBase blockEntity, InventoryBase inventory) : base(dialogTitle, inventory, blockEntity.Pos, (ICoreClientAPI)blockEntity.Api)
         {
+            BlockEntity = blockEntity;
+            GuiSystem = capi.ModLoader.GetModSystem<ModularGUIModSystem>();
         }
 
         public void LoadTabs(string[] tabs)
@@ -55,11 +59,17 @@ namespace Commercially.Common.GUI
             List<ModularTab> newTabs = new List<ModularTab>(tabs.Length);
             foreach (var item in tabs)
             {
-                Type type = capi.ModLoader.GetModSystem<ModularGUIModSystem>().GetTabType(item);
+                Type type = GuiSystem.GetTabType(item);
+                if (type == null) { 
+                   capi.Logger.Error("Could not find tab with code {0} for block entity at {1}", item, BlockEntityPosition);
+                    continue;
+                }
+
                 ModularTab instance = (ModularTab)Activator.CreateInstance(type);
                 instance.Initialize(this, BlockEntity);
                 newTabs.Add(instance);
             }
+            Tabs = newTabs;
         }
 
 
@@ -78,7 +88,7 @@ namespace Commercially.Common.GUI
         {
             try
             {
-                GuiTab[] newTabs = GetTabs();
+                GuiTab[] newTabs = GetGUITabs();
                 double tabHeight = GuiElement.scaled(25) * newTabs.Length;
 
                 ElementBounds dialogBounds = ElementStdBounds.AutosizedMainDialog.WithAlignment(EnumDialogArea.CenterMiddle);
@@ -127,7 +137,7 @@ namespace Commercially.Common.GUI
             FullRecompose();
         }
 
-        public GuiTab[] GetTabs()
+        public GuiTab[] GetGUITabs()
         {
             List<GuiTab> guiTabs = new List<GuiTab>(Tabs.Count);
             int i = 0;

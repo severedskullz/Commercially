@@ -16,6 +16,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace Commercially.Common
@@ -95,6 +96,7 @@ namespace Commercially.Common
 
             api.RegisterBlockEntityClass("Commercially.BECommercialBase", typeof(BECommercialBase));
 
+            api.RegisterBlockEntityBehaviorClass("Commercially.GuiManager", typeof(BEBehaviorGUIManager));
             api.RegisterBlockEntityBehaviorClass("Commercially.InteractionManager", typeof(InteractionManager));
             api.RegisterBlockEntityBehaviorClass("Commercially.Ownable", typeof(BEBehaviorOwnable));
             api.RegisterBlockEntityBehaviorClass("Commercially.OwnableReferenced", typeof(BEBehaviorOwnableReferenced));

@@ -13,6 +13,11 @@
         }
     },
     "entityBehaviors": [
+        {
+          "name": "Commercially.GuiManager",
+            "properties": {
+                "tabs": [ "Vinconomy.CouponCutter" ]
+            } },
         { "name": "Vinconomy.CouponCutter" }
     ],
     "behaviors": [

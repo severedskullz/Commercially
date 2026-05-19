@@ -34,6 +34,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             AppliedShops = [];
         }
 
+        public override void Initialize(ICoreAPI api, JsonObject properties)
+        {
+            base.Initialize(api, properties);
+            inventory.LateInitialize($"CouponCutter-{Blockentity.Pos}", api);
+        }
+
         private ItemSlot onNewSlot(int slotId, InventoryGeneric self)
         {
             if (slotId == 0)
