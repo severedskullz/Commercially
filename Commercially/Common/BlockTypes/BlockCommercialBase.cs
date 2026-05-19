@@ -1,6 +1,7 @@
 ﻿using Commercially.Common.BlockEntities;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -97,6 +98,43 @@ namespace Commercially.Common.BlockTypes
         public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
         {
             return base.OnPickBlock(world, pos);
+        }
+
+        public override Vec4f GetSelectionColor(ICoreClientAPI capi, BlockPos pos)
+        {
+            var i = capi.World.Player.CurrentBlockSelection.SelectionBoxIndex;
+            return i switch
+            {
+                0 => new Vec4f(1, 1, 1, 1), // White
+                _ => new Vec4f(1, 0, 0, 1) // Red
+            };
+        }
+
+        public override bool DoPartialSelection(IWorldAccessor world, BlockPos pos)
+        {
+            var i = ((IClientWorldAccessor) world).Player.CurrentBlockSelection.SelectionBoxIndex;
+            return i != 0;
+        }
+
+        public override Cuboidf[] GetSelectionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
+        {
+            return base.GetSelectionBoxes(blockAccessor, pos);
+            /*
+            if (RandomDrawOffset != 0 && SelectionBoxes?.Length >= 1)
+            {
+                float x = (GameMath.oaatHash(pos.X, 0, pos.Z) % 12) / (24f + 12f * RandomDrawOffset);
+                float z = (GameMath.oaatHash(pos.X, 1, pos.Z) % 12) / (24f + 12f * RandomDrawOffset);
+
+                return new Cuboidf[] { SelectionBoxes[0].OffsetCopy(x, 0, z) };
+            }
+
+            if (SelectionBoxes?.Length != 1) return SelectionBoxes;
+
+            var chunk = blockAccessor.GetChunkAtBlockPos(pos);
+            if (chunk == null) return SelectionBoxes;
+
+            return chunk.AdjustSelectionBoxForDecor(blockAccessor, pos, SelectionBoxes);
+            */
         }
     }
 }

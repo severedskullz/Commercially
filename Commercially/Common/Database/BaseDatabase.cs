@@ -4,7 +4,7 @@ using System.IO;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 
-namespace Commercially.Common
+namespace Commercially.Common.Database
 {
     public abstract class BaseDatabase
     {

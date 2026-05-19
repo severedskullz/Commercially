@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 
 namespace Commercially.Common.GUI
 {

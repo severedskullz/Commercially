@@ -6,20 +6,18 @@ using Commercially.Vinconomy.GUI.Tabs;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace Commercially.Common.BlockEntities
 {
-    public class BECommercialBase : BlockEntity
+    public class BECommercialBase : BlockEntity, IInteractableBlockEntity
     {
-
-        CommerciallyModSystem modSystem => Api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
-        public virtual string BlockEntityType => "commercialbase";
-
         public IOwnable Ownable { get; private set; }
 
-        public InteractionManager InteractionManager { get; private set; }
+        public IInteractionManager InteractionManager { get; private set; }
+
+        public IGUIManager GUIManager { get; private set; }
 
 
         public override void Initialize(ICoreAPI api)
@@ -30,24 +28,23 @@ namespace Commercially.Common.BlockEntities
             for (int i = 0; i < Behaviors.Count; i++)
             {
                 var behavior = Behaviors[i];
-                if (behavior is IOwnable)
+                if (behavior is IOwnable ownable)
                 {
                     if (Ownable != null)
                     {
                         api.Logger.Warning("Multiple IOwnable behaviors found on block entity at {0} for block {1}. This may cause unexpected behavior.", Pos, this.Block);
                     }
-                    Ownable = (IOwnable)behavior;
+                    Ownable = ownable;
                     continue;
                 }
 
-                //TODO: Should we have an interface for interaction managers?
-                if (behavior is InteractionManager)
+                if (behavior is IInteractionManager manager)
                 {
                     if (InteractionManager != null)
                     {
                         api.Logger.Warning("Multiple InteractionManager behaviors found on block entity at {0} for block {1}. This may cause unexpected behavior.", Pos, this.Block);
                     }
-                    InteractionManager = (InteractionManager)behavior;
+                    InteractionManager = manager;
                     continue;
                 }
 
@@ -59,41 +56,26 @@ namespace Commercially.Common.BlockEntities
         {
             if (InteractionManager != null)
             {
-                IInteraction interaction = InteractionManager.GetInteraction(key);
+                IInteraction interaction = InteractionManager.GetInteraction(key, caller, blockSel);
                 if (interaction != null)
                 {
                     return interaction.Interact(world, caller, blockSel);
                 }
             }
 
-            if (caller.Player != null)
+            if (caller.Player != null && GUIManager != null)
             {
-                BEBehaviorContainer container = this.GetBehavior<BEBehaviorContainer>();
+                IInventoryProvider container = this.GetBehavior<IInventoryProvider>();
                 InventoryBase inv = container?.Inventory;
                 if (inv != null)
                 {
                     caller.Player.InventoryManager.OpenInventory(inv);
                 }
 
-                if (Api.Side == EnumAppSide.Client)
-                {
-                    GUIModularBlockEntity gui = new GUIModularBlockEntity("Dialogue", this);
-                    gui.LoadTabs(new List<ModularTab>() { 
-                        new GuiBlockEntityOwnershipTab(),
-                        new GuiBlockEntityDebugTab(),
-                        new GuiBlockEntityContainerTab(),
-                        new GuiBlockEntityShopOwnerTab(),
-                        new GuiBlockEntityShopCustomerTab()
-                    });
-                    gui.TryOpen();
-                }
-
-
+                return GUIManager.OpenGUI(this, caller, blockSel, key);
             }
 
-
-            return true;
-            //return false; // Interaction was not handled
+            return false; // Interaction was not handled
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -141,15 +123,8 @@ namespace Commercially.Common.BlockEntities
             return Ownable != null ? Ownable.OwnerUID : null;
         }
 
-        public virtual void UpdateOwnableEntry()
-        {
-            //modSystem.DB.UpdateOwnable(this.GetBehavior<IOwnableReference>());
-        }
-
         public override void OnBlockRemoved()
         {
-
-
             base.OnBlockRemoved();
         }
     }

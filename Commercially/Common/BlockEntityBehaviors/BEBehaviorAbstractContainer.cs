@@ -66,15 +66,13 @@ namespace Commercially.Common.BlockEntityBehaviors
             if (packetid < 1000)
             {
                 Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
+
+                // Tell server to save this chunk to disk, and tell client that there was a change in the inventory and they should update the meshes
                 this.Blockentity.MarkDirty(true);
-                // Tell server to save this chunk to disk again
                 Api.World.BlockAccessor.GetChunkAtBlockPos(Pos).MarkModified();
 
                 return;
             }
-
-
-
         }
 
         public override void OnReceivedServerPacket(int packetid, byte[] data)
@@ -97,6 +95,7 @@ namespace Commercially.Common.BlockEntityBehaviors
 
         public override void OnBlockBroken(IPlayer byPlayer = null)
         {
+            base.OnBlockBroken(byPlayer);
             this.Inventory.DropAll(this.Pos.ToVec3d());
         }
 

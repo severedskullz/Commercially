@@ -1,4 +1,4 @@
-﻿using Commercially.Common;
+﻿using Commercially.Common.Database;
 using Commercially.Vinconomy.Trading;
 using Microsoft.Data.Sqlite;
 using System;

@@ -1,11 +1,9 @@
 ﻿using Commercially.Common.BlockEntities;
-using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 
 namespace Commercially.Common.GUI
 {
@@ -37,7 +35,7 @@ namespace Commercially.Common.GUI
         private readonly double TAB_HEIGHT=300;
 
         public IOwnable Ownable => this.BlockEntity.Ownable;
-        public InteractionManager InteractionManager => this.BlockEntity.InteractionManager;
+        public IInteractionManager InteractionManager => this.BlockEntity.InteractionManager;
         public GuiComposer Composer => this.SingleComposer;
 
 
@@ -50,14 +48,17 @@ namespace Commercially.Common.GUI
         {
         }
 
-        public void LoadTabs(List<ModularTab> tabs)
+        public void LoadTabs(string[] tabs)
         {
-            Tabs = tabs;
-            TabIndex = 0;
 
+            TabIndex = 0;
+            List<ModularTab> newTabs = new List<ModularTab>(tabs.Length);
             foreach (var item in tabs)
             {
-                item.Initialize(this, BlockEntity);
+                Type type = capi.ModLoader.GetModSystem<ModularGUIModSystem>().GetTabType(item);
+                ModularTab instance = (ModularTab)Activator.CreateInstance(type);
+                instance.Initialize(this, BlockEntity);
+                newTabs.Add(instance);
             }
         }
 
@@ -128,7 +129,7 @@ namespace Commercially.Common.GUI
 
         public GuiTab[] GetTabs()
         {
-            List<GuiTab> guiTabs = new List<GuiTab>();
+            List<GuiTab> guiTabs = new List<GuiTab>(Tabs.Count);
             int i = 0;
             foreach (var tab in Tabs)
             {
@@ -160,7 +161,5 @@ namespace Commercially.Common.GUI
         {
             capi.Network.SendBlockEntityPacket(BlockEntityPosition, packetId, p);
         }
-
-
     }
 }

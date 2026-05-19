@@ -2,7 +2,6 @@
 using Commercially.Common.GUI.Tabs;
 using System;
 using System.Collections.Generic;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace Commercially.Common
@@ -12,27 +11,19 @@ namespace Commercially.Common
         public const string AttributeKey = "GUIConfig";
 
         Dictionary<string, Type> tabTypes = new Dictionary<string, Type>();
-
-        //TODO: Not sure if I can even use this tbh. They dont have no-arg constructors so id have to make some sort of "init" method for all possible dialog types
-        // Dont know enough about Reflection in C# to find the constructor from the assembly like we can do in Java
         Dictionary<string, Type> guiTypes = new Dictionary<string, Type>();
 
-        private ICoreClientAPI Api;
+        private ICoreAPI Api;
 
-        public override bool ShouldLoad(EnumAppSide forSide)
+        public override void Start(ICoreAPI api)
         {
-            return forSide == EnumAppSide.Client;
-        }
-
-        public override void StartClientSide(ICoreClientAPI api)
-        {
-            base.StartClientSide(api);
             Api = api;
 
             RegisterGUIType(GUIModularBlockEntity.CODE, typeof(GUIModularBlockEntity));
             RegisterGUIType(GUIModularDialog.CODE, typeof(GUIModularDialog));
 
             RegisterTabType(GuiBlockEntityContainerTab.CODE, typeof(GuiBlockEntityContainerTab));
+            RegisterTabType(GuiBlockEntityOwnershipTab.CODE, typeof(GuiBlockEntityOwnershipTab));
             RegisterTabType(GuiBlockEntityDebugTab.CODE, typeof(GuiBlockEntityDebugTab));
         }
 

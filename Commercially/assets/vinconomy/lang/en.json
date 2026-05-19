@@ -1,6 +1,7 @@
 {
     "tabname-generic-customer": "Trade",
     "tabname-generic-owner": "Management",
+    "tabname-displaydebug": "Display Debug",
 
     "no-trade-pass": "You do not own the required Trade Pass for this stall",
     "not-enough-money": "You do not have enough currency to purchase this item.",

@@ -57,18 +57,34 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             base.FromTreeAttributes(tree);
 
             int numSlots = tree.GetInt("numSlots");
-            Products = new ItemSlot[numSlots];
-            for (int i = 0; i < numSlots; i++)
+
+            if (!IsInitialized)
             {
-                Products[i] = new VinconItemSlot(Inventory, StallSlot, i);
-                new VinconItemSlot(Inventory, this.StallSlotCount, i);
-                ItemStack itemStack = tree.GetItemstack("slot" + i);
-                Products[i].Itemstack = itemStack;
-                if (Inventory.Api?.World != null)
+                Products = new ItemSlot[numSlots];
+                for (int i = 0; i < numSlots; i++)
                 {
-                    itemStack?.ResolveBlockOrItem(Inventory.Api.World);
+                    Products[i] = new VinconItemSlot(Inventory, StallSlot, i);
+                    new VinconItemSlot(Inventory, this.StallSlotCount, i);
+                    ItemStack itemStack = tree.GetItemstack("slot" + i);
+                    Products[i].Itemstack = itemStack;
+                    if (Inventory.Api?.World != null)
+                    {
+                        itemStack?.ResolveBlockOrItem(Inventory.Api.World);
+                    }
+                }
+            } else
+            {
+                for (int i = 0; i < numSlots; i++)
+                {
+                    ItemStack itemStack = tree.GetItemstack("slot" + i);
+                    Products[i].Itemstack = itemStack;
+                    if (Inventory.Api?.World != null)
+                    {
+                        itemStack?.ResolveBlockOrItem(Inventory.Api.World);
+                    }
                 }
             }
+            
         }
 
         public override ItemSlot GetStallSlot(int itemSlot)

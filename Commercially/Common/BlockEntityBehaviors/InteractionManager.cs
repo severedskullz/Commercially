@@ -5,7 +5,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Common.BlockEntityBehaviors
 {
-    public class InteractionManager : BlockEntityBehavior
+    public class InteractionManager : BlockEntityBehavior, IInteractionManager
     {
         //string ProviderType { get; }
 
@@ -14,7 +14,16 @@ namespace Commercially.Common.BlockEntityBehaviors
 
         }
 
-        public IInteraction? GetInteraction(string key) {
+        public override void Initialize(ICoreAPI api, JsonObject properties)
+        {
+            base.Initialize(api, properties);
+        }
+
+        public IInteraction? GetInteraction(string key, Caller caller, BlockSelection blockSel) {
+
+            if (blockSel == null)
+            {
+            }
             return null;
         }
 
@@ -31,6 +40,11 @@ namespace Commercially.Common.BlockEntityBehaviors
             var OwnerName = tree.GetString("OwnerName");
 
         }
+
+    }
+
+    public class InteractionConfig
+    {
 
     }
 }

@@ -70,12 +70,12 @@ namespace Commercially.Common.GUI.Tabs
                    .EndIf();
 
             GuiElementTextInput textComponent = composer.GetTextInput("shopName");
-            textComponent.SetValue(Ownable.Name);
+            textComponent.SetValue(Ownable?.Name);
             textComponent.OnTextChanged = OnTextChanged; // Fuck you Tyron, Give me a way to set the text WITHOUT firing the delegate.
 
             //GuiElementDropDown parentComponent = composer.GetDropDown("parentSelection");
             GuiElementSwitch isAdminComponent = composer.GetSwitch("adminOwned");
-            isAdminComponent.SetValue(Ownable.IsAdminOwned);
+            isAdminComponent.SetValue(Ownable?.IsAdminOwned ?? false);
 
         }
 
@@ -177,6 +177,15 @@ namespace Commercially.Common.GUI.Tabs
         public override void OnGuiOpened()
         {
             
+        }
+
+        public override void OnRecievedData(byte[] data)
+        {
+        }
+
+        public override byte[] OnSendData(BlockEntity entity)
+        {
+            return null;
         }
     }
 }

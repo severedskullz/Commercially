@@ -1,5 +1,5 @@
-﻿
-using Commercially.Common;
+﻿using Commercially.Common;
+using Commercially.Common.Interfaces;
 using Commercially.Common.Renderer;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
@@ -18,11 +18,15 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
     {
         protected CommerciallyModSystem CommerciallyCore;
         IStallInventoryProvider _InventoryProvider;
-
+        private string AttributeTransformCode;
+        private bool BypassShelvableAttributes;
+        private bool ShouldRenderInventory = true;
+        public TransformationData[] TfData { get; private set; }
 
         public BEDisplayContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
+
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
@@ -30,11 +34,25 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
             TfData = new TransformationData[_InventoryProvider.StallCount];
+            JsonObject[] displayTransforms = properties["displayTransforms"]?.AsArray();
             for (int i = 0; i < _InventoryProvider.StallCount; i++)
             {
-                TransformationData tdata = new();
-                tdata.Reset();
+                TransformationData tdata;
+                if (displayTransforms != null && i < displayTransforms.Length)
+                {
+                    JsonObject prop = displayTransforms[i];
+                    tdata = prop.AsObject(new TransformationData());
+                } else
+                {
+                    tdata = new TransformationData();
+                    tdata.Reset();
+                }
+
+                tdata.preRotate += (float)((Block.Shape.rotateY));
                 TfData[i] = tdata;
+
+
+
             }
             //api.Event.RegisterEventBusListener()
         }
@@ -148,8 +166,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
             ApplyDefaultTranforms(stack, mesh);
 
-            string key = GetMeshCacheKey(slot);
-            MeshCache[key] = mesh;
+            //string key = GetMeshCacheKey(slot);
+            //MeshCache[key] = mesh;
 
             return mesh;
         }
@@ -171,8 +189,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             if (stack.Class == EnumItemClass.Item && (stack.Item.Shape == null || stack.Item.Shape.VoxelizeTexture))
             {
                 mesh.Rotate(GameMath.PIHALF, 0, 0);
-                mesh.Scale(0.33f, 0.33f, 0.33f);
-                mesh.Translate(0, -7.5f / 16f, 0f);
+                mesh.Scale(new Vec3f(0.5f, 0, 0.5f), 0.33f, 0.33f, 0.33f);
+                //mesh.Translate(0, -7.5f / 16f, 0f);
+            }
+            else if (stack.Class == EnumItemClass.Block)
+            {
+                mesh.Scale(new Vec3f(0.5f, 0, 0.5f), 0.375f, 0.375f, 0.375f);
             }
         }
 
@@ -275,10 +297,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         CollectibleObject nowTesselatingObj = null;
         Shape nowTesselatingShape = null;
-        private string AttributeTransformCode;
-        private bool BypassShelvableAttributes;
-        private bool ShouldRenderInventory = true;
-        private TransformationData[] TfData;
+
 
         public void SetNowTesselatingObj(CollectibleObject collectible)
         {
@@ -303,17 +322,19 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
                 //tfMatrices = GenTransformationMatrices();
             }
+            this.GetBlockEntity().MarkDirty(true);
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
         {
-            UpdateMeshes();
-            this.GetBlockEntity().MarkDirty(true);
             base.FromTreeAttributes(tree, worldAccessForResolve);
+            UpdateMeshes();
         }
 
         public Size2i AtlasSize => ((ICoreClientAPI)Api)?.BlockTextureAtlas.Size;
 
+
+        //Copy/Pasted from Tyron, so hopefully this wont break with every goddamn update like it has in the past.
         public virtual TextureAtlasPosition this[string textureCode]
         {
             get
@@ -389,69 +410,5 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             return texPos;
         }
     }
-
-
-
-    public class TransformationData()
-    {
-        public int index;
-        public int shelf;
-        public int segment;
-        public int item;
-
-        public float preRotate = 0;
-        public float x, y, z;
-        public float offsetX, offsetY, offsetZ;
-        public float rotX, rotY, rotZ;
-        public float offsetRotX, offsetRotY, offsetRotZ;
-        public float scaleX, scaleY, scaleZ;
-        public float offsetOriginX, offsetOriginY, offsetOriginZ;
-
-        public bool hidden;
-
-        /// <summary>
-        /// Resets all properties to 0, except preRotate.
-        /// </summary>
-        public void Reset()
-        {
-            x = y = z = 0;
-            offsetX = offsetY = offsetZ = 0;
-            rotX = rotY = rotZ = 0;
-            offsetRotX = offsetRotY = offsetRotZ = 0;
-            scaleX = scaleY = scaleZ = 1;
-            offsetOriginX = offsetOriginY = offsetOriginZ = 0;
-            hidden = false;
-        }
-
-        public float[] BuildMatrix()
-        {
-            Matrixf mat = new();
-
-            if (hidden)
-            {
-                return mat.Scale(0.01f, 0.01f, 0.01f).Values;
-            }
-
-            mat.Translate(0.5f, 0, 0.5f);
-
-            // Handle block rotation
-            mat.RotateYDeg(preRotate);
-
-            // Handle segment locations
-            mat.Translate(x, y, z);
-            mat.Rotate(rotX * GameMath.DEG2RAD, rotY * GameMath.DEG2RAD, rotZ * GameMath.DEG2RAD);
-
-            // Handle item offsets
-            mat.Translate(offsetX, offsetY, offsetZ);
-            mat.RotateXDeg(offsetRotX);
-            mat.RotateYDeg(offsetRotY);
-            mat.RotateZDeg(offsetRotZ);
-            mat.Translate(offsetOriginX, offsetOriginY, offsetOriginZ);
-            mat.Scale(scaleX, scaleY, scaleZ);
-
-            mat.Translate(-0.5f, 0, -0.5f);
-
-            return mat.Values;
-        }
-    }
+    
 }

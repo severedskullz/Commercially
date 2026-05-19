@@ -80,5 +80,38 @@ namespace Commercially.Common.Util
             catch (Exception ex) { }
             return productStack;
         }
+
+        public static bool ReadStreamBool(byte[] data)
+        {
+            bool value;
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                BinaryReader reader = new BinaryReader(ms);
+                value = reader.ReadBoolean();
+            }
+            return value;
+        }
+
+        public static string ReadStreamString(byte[] data)
+        {
+            string value;
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                BinaryReader reader = new BinaryReader(ms);
+                value = reader.ReadString();
+            }
+            return value;
+        }
+
+        public static int ReadStreamInt(byte[] data)
+        {
+            int value;
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                BinaryReader reader = new BinaryReader(ms);
+                value = reader.ReadInt32();
+            }
+            return value;
+        }
     }
 }

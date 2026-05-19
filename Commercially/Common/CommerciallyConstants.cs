@@ -2,6 +2,8 @@
 {
     public static class CommerciallyConstants
     {
+        public const string COMM_CHANNEL = "Commercially";
+
         public const int TOGGLE_GUI = 4000;
         public const int OPEN_GUI=4001;
         public const int CLOSE_GUI=4002;

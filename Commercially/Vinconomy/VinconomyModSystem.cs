@@ -1,4 +1,5 @@
 ﻿using Commercially.Common;
+using Commercially.Common.GUI.Tabs;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Slots;
 using Commercially.Common.Util;
@@ -11,6 +12,7 @@ using Commercially.Vinconomy.Trading;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
+using Vinconomy.ItemTypes;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -70,11 +72,18 @@ namespace Commercially.Vinconomy
         }
 
 
+
+
         // Called on server and client
         // Useful for registering block/entity classes on both sides
         public override void Start(ICoreAPI api)
         {
-
+            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
+            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
+            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
+            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
+            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
+            api.RegisterItemClass("VinconCoupon", typeof(ItemCoupon));
             /*
             api.Network.RegisterChannel(CommConstants.COMM_CHANNEL)
                 .RegisterMessageType(typeof(RegistryUpdatePacket))
@@ -94,6 +103,13 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
+
+            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
+            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
+            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
+            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
+            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
 
 
             //api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
@@ -102,6 +118,12 @@ namespace Commercially.Vinconomy
 
             ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
+            guiSystem.RegisterTabType(GuiBlockEntityShopOwnerTab.CODE, typeof(GuiBlockEntityShopOwnerTab));
+            guiSystem.RegisterTabType(GUIBlockEntityDisplayDebugTab.CODE, typeof(GUIBlockEntityDisplayDebugTab));
+
+
+
+
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
         }
 

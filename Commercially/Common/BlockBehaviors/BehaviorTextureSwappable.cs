@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Commercially.Common.BlockEntityBehaviors;
+using HarmonyLib;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -7,12 +11,24 @@ using Vintagestory.API.Util;
 
 namespace Commercially.Common.BlockBehaviors
 {
+
+    public class GenerateCreativeStacksConfig
+    {
+        public bool Enabled { get; set; } = true;
+        public string BaseBlock { get; set; }
+        public List<string> PrimaryMaterials { get; set; } = [];
+        public List<string> SecondaryMaterials { get; set; } = [];
+        public List<string> DecoMaterials { get; set; } = [];
+        public string[] CreativeTabs { get; set; } = [];
+    }
+
     public class BehaviorTextureSwappable : BlockBehavior, ITexPositionSource
     {
         private const string GUI_MESHES = "commercialGuiMeshRefs";
 
         private ITexPositionSource tmpTextureSource;
         private ICoreAPI Api;
+        private GenerateCreativeStacksConfig _config;
 
         public string PrimaryMaterial { get; set; }
         public string SecondaryMaterial { get; set; }
@@ -23,19 +39,6 @@ namespace Commercially.Common.BlockBehaviors
 
         public BehaviorTextureSwappable(Block block) : base(block)
         {
-        }
-
-        public override void OnLoaded(ICoreAPI api)
-        {
-            this.Api = api;
-            base.OnLoaded(api);
-        }
-
-        public override void Initialize(JsonObject properties)
-        {
-            base.Initialize(properties);
-            // TODO: Generate creative inventory stacks based on properites
-            // Shamelessly reference https://github.com/maltiez2/vsmod_backpacks/blob/master/source/GenerateCreativeStacks.cs
         }
 
         public override void OnBeforeRender(ICoreClientAPI capi, ItemStack itemstack, EnumItemRenderTarget target, ref ItemRenderInfo renderinfo)
@@ -126,6 +129,119 @@ namespace Commercially.Common.BlockBehaviors
                     return tmpTextureSource["default"];
                 }
             }
+        }
+
+
+        public override void OnLoaded(ICoreAPI api)
+        {
+            this.Api = api;
+            base.OnLoaded(api);
+
+            // Learned the hard way, Vintage Story sends CreativeTabAndStackList to clients when they connect, so calling this on both results in duplicated creative stacks.
+            // Let the server generate them, then send them to the client.
+            if (api.Side == EnumAppSide.Server) { 
+                if (_config != null)
+                {
+                    AddAllTypesToCreativeInventory(api, _config);
+                    _config = null;
+                }
+                else
+                {
+                    Api.ModLoader.GetModSystem<CommerciallyModSystem>().Mod.Logger.Error($"Failed to generate creative stacks for '{collObj?.Code}': missing config");
+                }
+            }
+
+            bool found = false;
+            foreach (var item in (collObj as Block).BlockEntityBehaviors)
+            {
+                if (item.Name == "Commercially.TextureSwappable")
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                Api.ModLoader.GetModSystem<CommerciallyModSystem>().Mod.Logger.Error($"Failed to find BEBehaviorTextureSwappable for '{collObj?.Code}' - Adding one automatically. Please add \"Commercially.BehaviorTextureSwappable\" manually in the block's definition JSON.");
+                (collObj as Block).BlockEntityBehaviors.AddItem(new BlockEntityBehaviorType() { Name = "Commercially.BehaviorTextureSwappable" });
+            }
+
+        }
+
+        public override void Initialize(JsonObject properties)
+        {
+            base.Initialize(properties);
+
+            _config = properties.AsObject<GenerateCreativeStacksConfig>();
+        }
+
+        private void AddAllTypesToCreativeInventory(ICoreAPI api, GenerateCreativeStacksConfig config)
+        {
+            if (!config.Enabled || config.BaseBlock == null || collObj.Code.Path != config.BaseBlock)
+            {
+                return;
+            }
+
+            LinkedList<JsonItemStack> stacks = [];
+
+            List<string> attributesCombinations = [];
+            foreach (string primary in config.PrimaryMaterials)
+            {
+                JToken token = new JObject();
+                token["Code"] = config.BaseBlock;
+                token["PrimaryMaterial"] = primary;
+                if (config.SecondaryMaterials?.Count > 0)
+                {
+                    foreach (string secondary in config.SecondaryMaterials)
+                    {
+                        JToken withSecondary = token.DeepClone();
+                        withSecondary["SecondaryMaterial"] = secondary;
+                        if (config.DecoMaterials?.Count > 0)
+                        {
+
+                            foreach (string decoration in config.DecoMaterials)
+                            {
+                                JToken withDecoration = withSecondary.DeepClone();
+                                withDecoration["DecoMaterial"] = decoration;
+                                stacks.AddLast(GenStackJson(api, withDecoration.ToString()));
+                            }
+                        }
+                        else
+                        {
+                            stacks.AddLast(GenStackJson(api, withSecondary.ToString()));
+                        }
+                    }
+                }
+                else
+                {
+                    stacks.AddLast(GenStackJson(api, token.ToString()));
+                }
+            }
+
+
+            if (collObj.CreativeInventoryStacks == null)
+            {
+                collObj.CreativeInventoryStacks = [new() { Stacks = [.. stacks], Tabs = config.CreativeTabs }];
+                collObj.CreativeInventoryTabs = null;
+            }
+            else
+            {
+                collObj.CreativeInventoryStacks = collObj.CreativeInventoryStacks.Append(new CreativeTabAndStackList() { Stacks = stacks.ToArray(), Tabs = config.CreativeTabs });
+            }
+        }
+        private JsonItemStack GenStackJson(ICoreAPI api, string json)
+        {
+            JsonItemStack stackJson = new()
+            {
+                Code = collObj.Code,
+                Type = collObj.ItemClass,
+                Attributes = new JsonObject(JToken.Parse(json))
+            };
+
+            stackJson.Resolve(api.World, "GenerateCreativeStacks");
+
+            return stackJson;
         }
     }
 }

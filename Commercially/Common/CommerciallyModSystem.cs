@@ -3,8 +3,10 @@ using Commercially.Common.BlockBehaviors;
 using Commercially.Common.BlockEntities;
 using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.BlockTypes;
+using Commercially.Common.Database;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
+using Commercially.Common.Registry.Packets;
 using Commercially.Common.Renderer;
 using System;
 using System.Collections.Generic;
@@ -79,7 +81,7 @@ namespace Commercially.Common
         public override void Start(ICoreAPI api)
         {
             
-            api.Network.RegisterChannel(CommConstants.COMM_CHANNEL)
+            api.Network.RegisterChannel(CommerciallyConstants.COMM_CHANNEL)
                 .RegisterMessageType(typeof(RegistryUpdatePacket))
                 .RegisterMessageType(typeof(OwnableUpdatePacket))
                 //.RegisterMessageType(typeof(ShopCatalogRequestPacket))
@@ -140,7 +142,7 @@ namespace Commercially.Common
             
             */
             _CoreServerApi = api;
-            _serverChannel = api.Network.GetChannel(CommConstants.COMM_CHANNEL);
+            _serverChannel = api.Network.GetChannel(CommerciallyConstants.COMM_CHANNEL);
 
 
             OwnableRegistry = new OwnableServerRegistry(this, DB);
@@ -178,7 +180,7 @@ namespace Commercially.Common
             _CoreClientApi = api;
             OwnableRegistry = new OwnableClientRegistry(this);
 
-            _clientChannel = api.Network.GetChannel(CommConstants.COMM_CHANNEL);
+            _clientChannel = api.Network.GetChannel(CommerciallyConstants.COMM_CHANNEL);
             _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<RegistryUpdatePacket>(this.OnRecieveRegistry));
             _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<OwnableUpdatePacket>(this.OnRecieveRegistryUpdate));
             //_clientChannel.SetMessageHandler(new NetworkServerMessageHandler<ShopCatalogResponsePacket>(OnRecieveShopCatalogResponse));

@@ -1,5 +1,4 @@
-﻿using Commercially.Common.GUI;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Vintagestory.API.Client;
 
 namespace Commercially.Common.Interfaces
@@ -7,7 +6,7 @@ namespace Commercially.Common.Interfaces
     public interface IModularGui
     {
         public GuiComposer Composer { get; }
-        public void LoadTabs(List<ModularTab> tabs);
+        public void LoadTabs(string[] tabs);
         public GuiTab[] GetTabs();
         public void FullRecompose();
         public void SendPacket(int packetId, byte[] packet);

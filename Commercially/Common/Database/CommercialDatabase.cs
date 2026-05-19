@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Vintagestory.API.Server;
 
-namespace Commercially.Common
+namespace Commercially.Common.Database
 {
     public class CommercialDatabase : BaseDatabase
     {

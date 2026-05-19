@@ -56,5 +56,14 @@ namespace Commercially.Common.GUI.Tabs
         {
             
         }
+
+        public override void OnRecievedData(byte[] data)
+        {
+        }
+
+        public override byte[] OnSendData(BlockEntity entity)
+        {
+            return null;
+        }
     }
 }

@@ -3,81 +3,6 @@
     "class": "Commercially.BlockCommercial",
     "entityClass": "Commercially.BECommercialBase",
     "priorityInteract": true,
-    "creativeinventory": {},
-    "creativeinventoryStacksByType": {
-        "*-north": [
-            {
-                "tabs": [ "vinconomy", "general" ],
-                "stacks": [
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "black" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "blue" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "brown" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "gray" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "green" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "mordant" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "orange" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "pink" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "plain" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "purple" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "red" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "white" }
-                    },
-                    {
-                        "type": "block",
-                        "code": "mat-north",
-                        "attributes": { "PrimaryMaterial": "yellow" }
-                    }
-                ]
-            }
-        ]
-    },
     "attributes": {
         "handbook": {
             "groupBy": [ "mat-north" ],
@@ -98,9 +23,19 @@
                 "stallType": "GenericStallSlot"
             }
         },
-        { "name": "Vinconomy.StallDisplay" },
+        {
+            "name": "Vinconomy.StallDisplay",
+            "properties": {
+                "displayTransforms": [
+                    { "x": -0.25, "y": 0.05, "z": -0.25 },
+                    { "x": 0.25, "y": 0.05, "z": -0.25 },
+                    { "x": -0.25, "y": 0.05, "z": 0.25 },
+                    { "x": 0.25, "y": 0.05, "z": 0.25 }
+                ]
+            }
+        },
         { "name": "Vinconomy.Stall",
-            "properties": { }
+            "properties": {            }
         },
         {
             "name": "Commercially.InteractionManager",
@@ -118,7 +53,14 @@
 
     "behaviors": [
         { "name": "Commercially.CommercialEvents" },
-        { "name": "Commercially.TextureSwappable" },
+        {
+            "name": "Commercially.TextureSwappable",
+            "properties": {
+                "BaseBlock": "mat-north",
+                "CreativeTabs": [ "vinconomy", "general" ],
+                "PrimaryMaterials": [ "black", "blue", "brown", "gray", "green", "mordant", "orange", "pink", "plain", "purple", "red", "white", "yellow" ]
+            }
+        },
         { "name": "HorizontalOrientable" }
     ],
     "heldTpIdleAnimation": "holdbothhandslarge",
@@ -152,17 +94,17 @@
             "base": "block/trademat",
             "rotateY": 0
         },
-        "*-east": {
+        "*-west": {
             "base": "block/trademat",
-            "rotateY": 270
+            "rotateY": 90
         },
         "*-south": {
             "base": "block/trademat",
             "rotateY": 180
         },
-        "*-west": {
+        "*-east": {
             "base": "block/trademat",
-            "rotateY": 90
+            "rotateY": 270
         }
     },
 
@@ -177,64 +119,72 @@
         }
     ],
 
-    "selectionBoxes": [
+    "selectionBoxes": [           
         {
             "x1": 0,
             "y1": 0,
             "z1": 0,
-            "x2": 0.5,
-            "y2": 0.45,
-            "z2": 0.5,
-            "rotateYByType": {
-                "*-north": 0,
-                "*-east": 270,
-                "*-west": 90,
-                "*-south": 180
-            }
-        },
-        {
-            "x1": 0.5,
-            "y1": 0,
-            "z1": 0,
             "x2": 1,
-            "y2": 0.45,
-            "z2": 0.5,
+            "y2": 0.06,
+            "z2": 1
+        },
+        {
+            "x1": 0.05,
+            "y1": 0.06,
+            "z1": 0.05,
+            "x2": 0.45,
+            "y2": 0.435,
+            "z2": 0.45,
             "rotateYByType": {
                 "*-north": 0,
-                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180
+                "*-south": 180,
+                "*-east": 270
             }
         },
         {
-            "x1": 0,
-            "y1": 0,
-            "z1": 0.5,
-            "x2": 0.5,
-            "y2": 0.45,
-            "z2": 1,
+            "x1": 0.55,
+            "y1": 0.06,
+            "z1": 0.05,
+            "x2": 0.95,
+            "y2": 0.435,
+            "z2": 0.45,
             "rotateYByType": {
                 "*-north": 0,
-                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180
+                "*-south": 180,
+                "*-east": 270
             }
         },
         {
-            "x1": 0.5,
-            "y1": 0,
-            "z1": 0.5,
-            "x2": 1,
-            "y2": 0.45,
-            "z2": 1,
+            "x1": 0.05,
+            "y1": 0.06,
+            "z1": 0.55,
+            "x2": 0.45,
+            "y2": 0.435,
+            "z2": 0.95,
             "rotateYByType": {
                 "*-north": 0,
-                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180
+                "*-south": 180,
+                "*-east": 270
+            }
+        },
+        {
+            "x1": 0.55,
+            "y1": 0.06,
+            "z1": 0.55,
+            "x2": 0.95,
+            "y2": 0.45,
+            "z2": 0.95,
+            "rotateYByType": {
+                "*-north": 0,
+                "*-west": 90,
+                "*-south": 180,
+                "*-east": 270
             }
         }
-
+        
     ],
     "lightAbsorption": 0,
     "sidesolid": {

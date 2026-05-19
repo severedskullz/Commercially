@@ -1,4 +1,4 @@
-﻿using Commercially.Common;
+﻿using Commercially.Common.Interfaces;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 

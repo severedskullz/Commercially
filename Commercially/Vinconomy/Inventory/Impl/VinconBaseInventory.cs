@@ -301,35 +301,60 @@ namespace Commercially.Vinconomy.Inventory
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
             int numStalls = tree.GetInt("numStalls");
- 
-            SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
-            StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
-
-            StallSlots = new StallSlotBase[numStalls];
-            for (int i = 0; i < numStalls; i++)
+            if (!IsSlotsInitialized)
             {
-                StallSlotBase stall = InstantiateStallType(StallType);
-                ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
-                stall.PreInitialize(this, i);
-                stall.FromTreeAttributes(stallTree);
-                StallSlots[i] = stall;
-            }
 
-            //TODO: How to handle resizing of internal slots? Is this even supported?
-            ITreeAttribute internalSlots = tree.GetOrAddTreeAttribute("internalSlots");
-            //int numInternalSlots = internalSlots.GetInt("numSlots",0);
-            for (int i = 0; i < InternalSlots.Length; i++)
-            {
-                ItemStack stack = internalSlots.GetItemstack("slot" + i);
-                string stackstring = internalSlots.GetString("slot" + i + "-name");
-                InternalSlots[i].Itemstack = stack;
 
-                if (Api?.World == null)
+                SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
+                StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
+
+                StallSlots = new StallSlotBase[numStalls];
+                for (int i = 0; i < numStalls; i++)
                 {
-                    continue;
+                    StallSlotBase stall = InstantiateStallType(StallType);
+                    ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
+                    stall.PreInitialize(this, i);
+                    stall.FromTreeAttributes(stallTree);
+                    StallSlots[i] = stall;
                 }
 
-                stack?.ResolveBlockOrItem(Api.World);
+                //TODO: How to handle resizing of internal slots? Is this even supported?
+                ITreeAttribute internalSlots = tree.GetOrAddTreeAttribute("internalSlots");
+                //int numInternalSlots = internalSlots.GetInt("numSlots",0);
+                for (int i = 0; i < InternalSlots.Length; i++)
+                {
+                    ItemStack stack = internalSlots.GetItemstack("slot" + i);
+                    InternalSlots[i].Itemstack = stack;
+
+                    if (Api?.World == null)
+                    {
+                        continue;
+                    }
+
+                    stack?.ResolveBlockOrItem(Api.World);
+                }
+            } else
+            {
+                for (int i = 0; i < numStalls; i++)
+                {
+                    StallSlotBase stall = GetStall(i);
+                    ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
+                    stall.FromTreeAttributes(stallTree);
+                }
+
+                ITreeAttribute internalSlots = tree.GetOrAddTreeAttribute("internalSlots");
+                for (int i = 0; i < InternalSlots.Length; i++)
+                {
+                    ItemStack stack = internalSlots.GetItemstack("slot" + i);
+                    InternalSlots[i].Itemstack = stack;
+
+                    if (Api?.World == null)
+                    {
+                        continue;
+                    }
+
+                    stack?.ResolveBlockOrItem(Api.World);
+                }
             }
 
         }

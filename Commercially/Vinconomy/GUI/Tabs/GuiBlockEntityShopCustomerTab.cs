@@ -47,7 +47,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 CairoFont hoverText = CairoFont.WhiteDetailText();
                 CairoFont smallText = CairoFont.WhiteSmallText();
                 CairoFont labelTextFont = CairoFont.WhiteSmallText().WithOrientation(EnumTextOrientation.Center);
-                string labelText = "Page 1 of 4"; //Lang.Get("vinconomy:gui-slot", new object[] { StallSlot + 1, stall.StallSlotCount });
+                string labelText = Lang.Get("vinconomy:gui-slot", [StallSlot + 1, StallProvider.StallCount]);
 
                 ElementBounds settingBounds = ElementBounds.FixedSize(250, 200).WithFixedOffset(0, GuiStyle.TitleBarHeight);
 
@@ -196,6 +196,15 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
             return true;
+        }
+
+        public override void OnRecievedData(byte[] data)
+        {
+        }
+
+        public override byte[] OnSendData(BlockEntity entity)
+        {
+            return null;
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using Commercially.Common.Registry;
-using ProtoBuf;
+﻿using ProtoBuf;
 using System.Collections.Generic;
 
-namespace Commercially.Common
+namespace Commercially.Common.Registry.Packets
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class RegistryUpdatePacket

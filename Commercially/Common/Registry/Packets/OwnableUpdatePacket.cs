@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace Commercially.Common.Registry
+namespace Commercially.Common.Registry.Packets
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class OwnableUpdatePacket

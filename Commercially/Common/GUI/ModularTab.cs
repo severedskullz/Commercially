@@ -36,6 +36,10 @@ namespace Commercially.Common.GUI
         public abstract void OnGuiOpened();
         public abstract bool IsVisible(GuiDialog gui);
 
+        public abstract void OnRecievedData(byte[] data);
+
+        public abstract byte[] OnSendData(BlockEntity entity);
+
         public virtual JsonObject GetConfiguration(string baseKey = ModularGUIModSystem.AttributeKey) 
         {
             return BlockEntity?.Block?.Attributes?[baseKey]?[Code];
