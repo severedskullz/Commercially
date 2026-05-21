@@ -27,15 +27,38 @@
             "name": "Vinconomy.StallDisplay",
             "properties": {
                 "displayTransforms": [
-                    { "x": -0.25, "y": 0.05, "z": -0.25 },
-                    { "x": 0.25, "y": 0.05, "z": -0.25 },
-                    { "x": -0.25, "y": 0.05, "z": 0.25 },
-                    { "x": 0.25, "y": 0.05, "z": 0.25 }
+                    {
+                        "x": -0.25,
+                        "y": 0.05,
+                        "z": -0.25
+                    },
+                    {
+                        "x": 0.25,
+                        "y": 0.05,
+                        "z": -0.25
+                    },
+                    {
+                        "x": -0.25,
+                        "y": 0.05,
+                        "z": 0.25
+                    },
+                    {
+                        "x": 0.25,
+                        "y": 0.05,
+                        "z": 0.25
+                    }
                 ]
             }
         },
-        { "name": "Vinconomy.Stall",
-            "properties": {            }
+        {
+            "name": "Vinconomy.Stall",
+            "properties": {}
+        },
+        {
+            "name": "Commercially.GuiManager",
+            "properties": {
+                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+            }
         },
         {
             "name": "Commercially.InteractionManager",
@@ -45,7 +68,7 @@
             "name": "Commercially.OwnableChild",
             "properties": {
                 "ownableType": "ShopStall",
-                "allowedTypes": ["ShopRegister"]
+                "allowedTypes": [ "ShopRegister" ]
             }
         },
         { "name": "Commercially.TextureSwappable" }

@@ -8,7 +8,7 @@ namespace Commercially.Common.GUI.Tabs
 {
     public class GuiBlockEntityContainerTab : ModularTab
     {
-        public const string CODE = "commercially.Container";
+        public const string CODE = "Commercially.Container";
         public override string Code => CODE;
         public override string TabName => Lang.Get("commercially:tabname-container");
 

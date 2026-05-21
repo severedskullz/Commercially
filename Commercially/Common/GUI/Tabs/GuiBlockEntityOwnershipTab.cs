@@ -12,7 +12,7 @@ namespace Commercially.Common.GUI.Tabs
 {
     public class GuiBlockEntityOwnershipTab : ModularTab
     {
-        public const string CODE = "commercially.Ownership";
+        public const string CODE = "Commercially.Ownership";
         public override string Code => CODE;
         public override string TabName => Lang.Get("commercially:tabname-ownership");
 
@@ -63,7 +63,7 @@ namespace Commercially.Common.GUI.Tabs
             }
 
 
-            composer.AddIf((Ownable != null && Ownable.IsAdminOwned) || IOwnable.IsCreativePlayer(API.World.Player))
+            composer.AddIf((Ownable != null && Ownable.IsAdminOwned) || IOwnable.IsCreativePlayer(Api.World.Player))
                        .AddStaticText(Lang.Get("commercially:label-admin-owned"), smallText, adminShopLabel)
                        .AddHoverText(Lang.Get("commercially:tooltip-admin-owned"), hoverText, 500, adminShopLabel)
                        .AddSwitch(OnToggleAdminShop, adminShopBounds, "adminOwned")
@@ -120,7 +120,7 @@ namespace Commercially.Common.GUI.Tabs
         {
             base.Initialize(gui, entity);
             Ownable = entity?.GetBehavior<IOwnable>();
-            ModSystem = API.ModLoader.GetModSystem<CommerciallyModSystem>();
+            ModSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
 
             JsonObject config = GetConfiguration("OwnableConfig");

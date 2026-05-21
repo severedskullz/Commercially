@@ -10,7 +10,7 @@ namespace Commercially.Common.GUI.Tabs
 {
     public class GuiBlockEntityDebugTab : ModularTab
     {
-        public const string CODE = "commercially.BlockEntityDebug";
+        public const string CODE = "Commercially.BlockEntityDebug";
         public override string Code => CODE;
         public override string TabName => Lang.Get("commercially:tabname-debug");
 

@@ -16,7 +16,6 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
 namespace Commercially.Common
@@ -295,6 +294,27 @@ namespace Commercially.Common
             if (entity is IOwnableChild)
             {
                 reg.ParentId = ((IOwnableChild)entity).ParentID;
+            }
+
+            OwnableRegistry.UpdateOwnable(reg);
+            BroadcastOwnableUpdate(reg);
+        }
+
+        public void UpdateOwnableWaypoint(IOwnableReference entity, bool broadcast,string icon = null, int? color = null)
+        {
+            OwnableRegistration reg = OwnableRegistry.GetOwnable(entity.ID);
+
+            if (broadcast)
+            {
+                reg.BroadcastWaypoint = true;
+                reg.WaypointIcon = icon ?? CommerciallyConstants.DEFAULT_WAYPOINT_ICON;
+                reg.WaypointColor = color ?? CommerciallyConstants.DEFAULT_WAYPOINT_COLOR;
+            }
+            else
+            {
+                reg.BroadcastWaypoint = false;
+                reg.WaypointIcon = null;
+                reg.WaypointColor = 0;
             }
 
             OwnableRegistry.UpdateOwnable(reg);

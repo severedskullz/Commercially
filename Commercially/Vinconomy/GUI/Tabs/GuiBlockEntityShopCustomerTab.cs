@@ -17,7 +17,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         public const string CODE = "Vinconomy.ShopCustomer";
         public override string Code => CODE;
-
         public override string TabName => Lang.Get("vinconomy:tabname-generic-customer");
 
         DummyInventory DInv;
@@ -32,7 +31,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             base.Initialize(gui, entity);
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as VinconBaseInventory;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
-            DInv = new DummyInventory(API, 2);
+            DInv = new DummyInventory(Api, 2);
             DInv.PutLocked = true;
             DInv.TakeLocked = true;
             DInv[0] = new ItemLockedSlot(DInv);
@@ -193,7 +192,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(true);
                 data = ms.ToArray();
 
-                API.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
+                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
             return true;
         }

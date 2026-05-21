@@ -16,5 +16,10 @@
         public const int SET_ITEM_PRICE = 4008;
         public const int SET_SHOULD_DISCARD_CURRENCY = 4009;
         public const int SET_NAME = 4010;
+        public const int SET_WAYPOINT = 4011;
+
+
+        public const int DEFAULT_WAYPOINT_COLOR = 256;
+        public const string DEFAULT_WAYPOINT_ICON = "genericOwnable";
     }
 }

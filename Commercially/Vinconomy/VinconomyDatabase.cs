@@ -2,6 +2,8 @@
 using Commercially.Vinconomy.Trading;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
+using Vinconomy.Network.Packets;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
@@ -99,6 +101,11 @@ namespace Commercially.Vinconomy
 
                 connection.Close();
             }
+        }
+
+        internal Dictionary<string, List<LedgerEntry>> LoadSales(int shopId, int month, int year)
+        {
+            throw new NotImplementedException();
         }
     }
 }

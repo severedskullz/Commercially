@@ -15,6 +15,7 @@
         }
     },
     "entityBehaviors": [
+
         {
             "name": "Vinconomy.StallInventory",
             "properties": {
@@ -63,9 +64,10 @@
                 ]
             }
         },
-        { "name": "Vinconomy.Stall",
+        {
+            "name": "Vinconomy.Stall",
             "properties": {
-                
+
 
             }
         },
@@ -74,10 +76,16 @@
             "properties": {}
         },
         {
+            "name": "Commercially.GuiManager",
+            "properties": {
+                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
+            }
+        },
+        {
             "name": "Commercially.OwnableChild",
             "properties": {
                 "ownableType": "ShopStall",
-                "allowedTypes": ["ShopRegister"]
+                "allowedTypes": [ "ShopRegister" ]
             }
         },
         { "name": "Commercially.TextureSwappable" }

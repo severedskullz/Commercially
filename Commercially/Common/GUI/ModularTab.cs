@@ -8,7 +8,7 @@ namespace Commercially.Common.GUI
 {
     public abstract class ModularTab
     {
-        public ICoreClientAPI API { get; set; }
+        public ICoreClientAPI Api { get; set; }
         public abstract string Code { get; }
         public abstract string TabName { get; }
         public BlockEntity BlockEntity { get; set; }
@@ -26,7 +26,7 @@ namespace Commercially.Common.GUI
         {
                 Gui = gui;
                 BlockEntity = entity;
-                API = (entity?.Api as ICoreClientAPI);
+                Api = (entity?.Api as ICoreClientAPI);
         }
 
         /// <summary>

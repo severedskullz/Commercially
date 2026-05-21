@@ -1,6 +1,7 @@
 ﻿using Commercially.Common;
 using Commercially.Common.GUI.Tabs;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Registry.Packets;
 using Commercially.Common.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
 using Vinconomy.ItemTypes;
+using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -84,15 +86,15 @@ namespace Commercially.Vinconomy
             api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
             api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
             api.RegisterItemClass("VinconCoupon", typeof(ItemCoupon));
-            /*
-            api.Network.RegisterChannel(CommConstants.COMM_CHANNEL)
-                .RegisterMessageType(typeof(RegistryUpdatePacket))
-                .RegisterMessageType(typeof(ShopUpdatePacket))
-                .RegisterMessageType(typeof(ShopCatalogRequestPacket))
-                .RegisterMessageType(typeof(ShopCatalogResponsePacket));
 
-            api.Event.OnTestBlockAccess += TestAccess;
-            */
+            api.Network.RegisterChannel(VinConstants.VINCONOMY_CHANNEL);
+                //.RegisterMessageType(typeof(RegistryUpdatePacket))
+                //.RegisterMessageType(typeof(ShopUpdatePacket))
+                //.RegisterMessageType(typeof(ShopCatalogRequestPacket))
+                //.RegisterMessageType(typeof(ShopCatalogResponsePacket));
+
+           // api.Event.OnTestBlockAccess += TestAccess;
+            
 
             //api.RegisterBlockClass("Commercially.BlockCommercial", typeof(BlockCommercialBase));
 
@@ -120,6 +122,7 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
             guiSystem.RegisterTabType(GuiBlockEntityShopOwnerTab.CODE, typeof(GuiBlockEntityShopOwnerTab));
             guiSystem.RegisterTabType(GuiBlockEntityDisplayDebugTab.CODE, typeof(GuiBlockEntityDisplayDebugTab));
+            guiSystem.RegisterTabType(GuiBlockEntityRegisterConfigTab.CODE, typeof(GuiBlockEntityRegisterConfigTab));
             guiSystem.RegisterTabType(GuiVinconCouponCutter.CODE, typeof(GuiVinconCouponCutter));
 
 
@@ -552,6 +555,11 @@ namespace Commercially.Vinconomy
         public void RegisterPostFinalizeTradeHandler(int priority, PostFinalizeTrade hook)
         {
             PostFinalizeTradeHandlers.Add(priority, hook);
+        }
+
+        internal OwnableShopInformation GetShopInformation(int shopId)
+        {
+            throw new NotImplementedException();
         }
     }
 
