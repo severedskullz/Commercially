@@ -1,10 +1,13 @@
 ﻿using Commercially.Common.Database;
+using Commercially.Common.Util;
+using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Trading;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Network.Packets;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
 namespace Commercially.Vinconomy
@@ -103,9 +106,148 @@ namespace Commercially.Vinconomy
             }
         }
 
-        internal Dictionary<string, List<LedgerEntry>> LoadSales(int shopId, int month, int year)
+        public Dictionary<string, List<LedgerEntry>> LoadSales(int shopId, int month, int year)
         {
-            throw new NotImplementedException();
+            return null;
+        }
+
+        public void SaveProductListing(IStallComponent shop, int stallSlot, ItemStack product, int productCount, ItemStack currency)
+        {
+            if (product == null || currency == null)
+            {
+                ClearStockForSlot(shop, stallSlot);
+                return;
+            }
+
+            UpdateOrInsertStock(shop, stallSlot, product, productCount, currency);
+        }
+
+
+        public void ClearAllStock(IStallComponent shop)
+        {
+            if (shop != null)
+            {
+                using (SqliteConnection connection = GetConnection())
+                {
+                    BlockPos pos = shop.GetBlockEntity().Pos;
+
+                    connection.Open();
+                    SqliteCommand cmd = connection.CreateCommand();
+                    cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = shop.Ownable.ID;
+                    cmd.Parameters.Add("@X", SqliteType.Integer).Value = pos.X;
+                    cmd.Parameters.Add("@Y", SqliteType.Integer).Value = pos.Y;
+                    cmd.Parameters.Add("@Z", SqliteType.Integer).Value = pos.Z;
+
+                    cmd.CommandText = @"DELETE FROM Products 
+                                    WHERE ShopId = @ShopId 
+                                        AND X = @X
+                                        AND Y = @Y
+                                        AND Z = @Z";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void ClearStockForSlot(IStallComponent shop, int stallSlot)
+        {
+            if (shop != null)
+            {
+                using (SqliteConnection connection = GetConnection())
+                {
+                    BlockPos pos = shop.GetBlockEntity().Pos;
+
+                    connection.Open();
+                    SqliteCommand cmd = connection.CreateCommand();
+                    cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = shop.Ownable.ID;
+                    cmd.Parameters.Add("@StallSlot", SqliteType.Integer).Value = stallSlot;
+                    cmd.Parameters.Add("@X", SqliteType.Integer).Value = pos.X;
+                    cmd.Parameters.Add("@Y", SqliteType.Integer).Value = pos.Y;
+                    cmd.Parameters.Add("@Z", SqliteType.Integer).Value = pos.Z;
+
+                    cmd.CommandText = @"DELETE FROM Products 
+                                    WHERE ShopId = @ShopId 
+                                        AND X = @X
+                                        AND Y = @Y
+                                        AND Z = @Z
+                                        AND StallSlot = @StallSlot";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void UpdateOrInsertStock(IStallComponent shop, int stallSlot, ItemStack product, int productCount, ItemStack currency)
+        {
+            using (SqliteConnection connection = GetConnection())
+            {
+
+                connection.Open();
+                SqliteCommand cmd = connection.CreateCommand();
+
+                BlockPos pos = shop.GetBlockEntity().Pos;
+
+
+                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = shop.Ownable.ID;
+                cmd.Parameters.Add("@StallSlot", SqliteType.Integer).Value = stallSlot;
+                cmd.Parameters.Add("@X", SqliteType.Integer).Value = pos.X;
+                cmd.Parameters.Add("@Y", SqliteType.Integer).Value = pos.Y;
+                cmd.Parameters.Add("@Z", SqliteType.Integer).Value = pos.Z;
+                cmd.Parameters.Add("@TotalStock", SqliteType.Integer).Value = productCount;
+
+                cmd.Parameters.Add("@ProductName", SqliteType.Text).Value = product.GetName();
+                cmd.Parameters.Add("@ProductCode", SqliteType.Text).Value = product.Collectible.Code.ToString();
+                cmd.Parameters.Add("@ProductQuantity", SqliteType.Integer).Value = product.StackSize;
+                cmd.Parameters.Add("@ProductAttributes", SqliteType.Text).Value = product.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+
+                cmd.Parameters.Add("@CurrencyName", SqliteType.Text).Value = currency.GetName();
+                cmd.Parameters.Add("@CurrencyCode", SqliteType.Text).Value = currency.Collectible.Code.ToString();
+                cmd.Parameters.Add("@CurrencyQuantity", SqliteType.Integer).Value = currency.StackSize;
+                cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Text).Value = currency.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+
+
+
+                cmd.CommandText = @"SELECT Count(*) FROM Products 
+                                    WHERE ShopId = @ShopId 
+                                        AND X = @X
+                                        AND Y = @Y
+                                        AND Z = @Z
+                                        AND StallSlot = @StallSlot";
+
+                int numRows = Convert.ToInt32(cmd.ExecuteScalar());
+                if (numRows == 1)
+                {
+                    cmd.CommandText = @"UPDATE Products 
+                                    SET 
+                                        ProductName = @ProductName,
+                                        ProductCode = @ProductCode, 
+                                        ProductAttributes = @ProductAttributes,
+                                        ProductQuantity = @ProductQuantity,
+                                        TotalStock = @TotalStock,
+                                        CurrencyName = @CurrencyName,
+                                        CurrencyCode = @CurrencyCode,
+                                        CurrencyAttributes = @CurrencyAttributes,
+                                        CurrencyQuantity = @CurrencyQuantity 
+                                    WHERE ShopId = @ShopId 
+                                        AND X = @X
+                                        AND Y = @Y
+                                        AND Z = @Z
+                                        AND StallSlot = @StallSlot";
+                    cmd.ExecuteNonQuery();
+                }
+                else if (numRows == 0)
+                {
+                    //X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER,
+                    //ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER,
+                    //CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB
+                    cmd.CommandText = "INSERT INTO Products VALUES (@X, @Y, @Z, @StallSlot, @ShopId, @ProductName, @ProductCode, @ProductQuantity, @ProductAttributes, @TotalStock, @CurrencyName, @CurrencyCode, @CurrencyQuantity, @CurrencyAttributes);";
+                    cmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("Somehow have more than 1 product record for stall");
+                }
+
+                connection.Close();
+            }
         }
     }
 }

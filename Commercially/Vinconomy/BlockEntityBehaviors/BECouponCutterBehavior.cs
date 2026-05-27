@@ -16,8 +16,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
     public class BECouponCutterBehavior : BlockEntityBehavior, IComponent, IInventoryProvider
     {
         private VinconGenericInventory inventory;
-        public string BonusType { get; private set; }
-        public string DiscountType { get; private set; }
+        public string BonusType { get; private set; } = ItemCoupon.BONUS_TYPE_DISCOUNT;
+        public string DiscountType { get; private set; } = ItemCoupon.DISCOUNT_TYPE_UNIT;
         public string CouponName { get; private set; }
         public int CouponValue { get; private set; }
         public bool ConsumeCoupon { get; private set; }
@@ -143,6 +143,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             }
 
             Inventory[0].TakeOut(1);
+            Inventory[0].MarkDirty();
 
             Api.World.SpawnItemEntity(coupon, Pos.AddCopy(0.5f, 0.5f, 0.5f), null);
             Api.World.PlaySoundAt(new AssetLocation("sounds/tool/scythe2"), Pos, 0.5f, null, true, 16, 1);

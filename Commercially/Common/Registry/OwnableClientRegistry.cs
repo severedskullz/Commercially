@@ -218,6 +218,7 @@ namespace Commercially.Common.Registry
             //reg.StallPermissions = packet.StallPermissions;
             reg.Name = packet.Name;
             reg.OwnerUID = packet.OwnerUID;
+            reg.Type = packet.Type;
             reg.X = packet.X;
             reg.Y = packet.Y;
             reg.Z = packet.Z;

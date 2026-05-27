@@ -1,6 +1,5 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Renderer;
 using Commercially.Common.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
@@ -8,14 +7,11 @@ using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Util;
-using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
@@ -52,6 +48,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
             VinconomyCore = api.ModLoader.GetModSystem<VinconomyModSystem>();
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
+
+            if (_InventoryProvider.Inventory is IStallStockUpdater shopInv)
+            {
+                shopInv.OnStockUpdated += OnStockUpdated;
+            }
 
         }
 
@@ -396,6 +397,17 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         public void SetNowTesselatingShape(Shape shape)
         {
             throw new NotImplementedException();
+        }
+
+        private void OnStockUpdated(int stallSlot, ItemStack product, int stockCount, ItemStack currency)
+        {
+            //We need to get the block entity into scope. This was the simplest way I could think of without having to pass in a reference for each Inventory
+            (_InventoryProvider.Inventory as IStallStockUpdater).UpdateStockForSlot(this, stallSlot, product, stockCount, currency);
+        }
+
+        public override void OnBlockBroken(IPlayer byPlayer = null)
+        {
+            base.OnBlockBroken(byPlayer);
         }
     }
 }

@@ -6,6 +6,7 @@ using Vintagestory.API.Config;
 using Vinconomy.Util;
 using Vinconomy.Network.Packets;
 using Vinconomy.GUI;
+using Commercially.Vinconomy.Trading;
 
 namespace Commercially.Vinconomy
 {
@@ -38,7 +39,6 @@ namespace Commercially.Vinconomy
             _serverChannel = api.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL);
             _serverChannel.SetMessageHandler(new NetworkClientMessageHandler<LedgerEntryRequestPacket>(this.OnRecieveLedgerRequestPacket));
             _serverChannel.SetMessageHandler(new NetworkClientMessageHandler<LedgerReadRequestPacket>(this.OnRecieveRequestToReadLedgerData));
-
         }
 
 

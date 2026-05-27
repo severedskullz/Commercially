@@ -34,10 +34,5 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             _ShopInventoryProvider = this.GetComponent<IShopInventoryProvider>();
             _Ownable = this.GetComponent<IOwnableRoot>();
         }
-
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            base.OnBlockBroken(byPlayer);
-        }
     }
 }

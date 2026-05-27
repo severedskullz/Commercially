@@ -173,7 +173,7 @@ namespace Commercially.Vinconomy.Trading
                         bool isValid = false;
                         for (int i = 0; i < length; i++)
                         {
-                            int shopId = shopList.GetInt("ID-" + i);
+                            long shopId = shopList.GetLong("ID-" + i);
                             if (register.ID == shopId)
                             {
                                 isValid = true;

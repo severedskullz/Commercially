@@ -135,20 +135,20 @@ namespace Commercially.Common.Registry
             return AddOwnable(register);
         }
 
-        public OwnableRegistration AddOwnable(OwnableRegistration register)
+        public OwnableRegistration AddOwnable(OwnableRegistration ownable)
         {
-            DB.AddOwnable(register);
-            if (register.ID > 0)
+            DB.AddOwnable(ownable);
+            if (ownable.ID > 0)
             {
-                if (!OwnablesByOwner.TryGetValue(register.OwnerUID, out Dictionary<long, OwnableRegistration> value))
+                if (!OwnablesByOwner.TryGetValue(ownable.OwnerUID, out Dictionary<long, OwnableRegistration> value))
                 {
                     value = [];
-                    OwnablesByOwner[register.OwnerUID] = value;
+                    OwnablesByOwner[ownable.OwnerUID] = value;
                 }
 
-                value[register.ID] = register;
-                Ownables[register.ID] = register;
-                Logger.Audit("Added Register with ID " + register.ID + " and owner " + register.OwnerUID);
+                value[ownable.ID] = ownable;
+                Ownables[ownable.ID] = ownable;
+                Logger.Audit($"Added Ownable {ownable.Type} with ID {ownable.ID} and owner {ownable.OwnerUID}");
             }
             else
             {
@@ -156,7 +156,7 @@ namespace Commercially.Common.Registry
             }
 
 
-            return register;
+            return ownable;
         }
 
         public int GetCount()

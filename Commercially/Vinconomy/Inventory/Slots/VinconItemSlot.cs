@@ -1,10 +1,11 @@
-﻿using Commercially.Vinconomy.Inventory;
+﻿using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Trading;
 using Vintagestory.API.Common;
 
 namespace Vinconomy.Inventory.Slots
 {
-    public class VinconItemSlot : ItemSlot
+    public class VinconItemSlot : ItemSlot, IStallProductSlot
     {
         public int stallSlot { get; private set; } = 0;
         public int itemSlot { get; private set; } = 0;
@@ -74,6 +75,15 @@ namespace Vinconomy.Inventory.Slots
             slotFilter = filter;
         }
 
+        public int GetStall()
+        {
+            return stallSlot;
+        }
+
+        public int GetProductSlot()
+        {
+            return itemSlot;
+        }
     }
 
 }

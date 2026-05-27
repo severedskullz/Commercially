@@ -87,7 +87,7 @@
         {
             "name": "Commercially.TextureSwappable",
             "properties": {
-                "BaseBlock": "shopregister-north5",
+                "BaseBlock": "shopregister-north",
                 "CreativeTabs": [ "vinconomy", "general" ],
                 "PrimaryMaterials": [ "bismuth", "bismuthbronze", "blackbronze", "brass", "copper", "silver", "gold", "iron", "lead", "meteoriciron", "tinbronze", "steel", "tin", "uranium", "zinc" ],
                 "SecondaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ]

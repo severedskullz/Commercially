@@ -1,4 +1,5 @@
 ﻿using Commercially.Common.Inventory;
+using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using Vintagestory.API.Util;
 
 namespace Commercially.Vinconomy.Inventory
 {
-    public abstract class VinconBaseInventory : InventoryBase, ILateInitInventory
+    public abstract class VinconBaseInventory : InventoryBase, ILateInitInventory, IStallStockUpdater
     {
         public ItemSlot[] InternalSlots { get; protected set; }
         public StallSlotBase[] StallSlots { get; protected set; }
@@ -19,6 +20,7 @@ namespace Commercially.Vinconomy.Inventory
         public bool IsSlotsInitialized => StallSlots != null;
 
         protected VinconomyModSystem modSystem;
+        public event OnStockUpdatedDelegate OnStockUpdated;
 
         public override int Count
         {
@@ -156,6 +158,15 @@ namespace Commercially.Vinconomy.Inventory
             //Lastly, be sure to resolve the collectible IDs into actual blocks/items 
             AfterBlocksLoaded(api.World);
         }
+
+        
+        public override void OnItemSlotModified(ItemSlot slot)
+        {
+            base.OnItemSlotModified(slot);
+            this.OnStockModified(slot);
+        }
+        
+
         public void Initialize(JsonObject properties, string className, string instanceID, ICoreAPI api)
         {
             Api = api;
@@ -270,7 +281,6 @@ namespace Commercially.Vinconomy.Inventory
         }
         public override ItemSlot this[int slotId] {
             get { return GetItemSlotFromID(slotId); }
-
             set {
                 int i = slotId;
                 if (i < InternalSlots.Length)
@@ -303,7 +313,6 @@ namespace Commercially.Vinconomy.Inventory
             int numStalls = tree.GetInt("numStalls");
             if (!IsSlotsInitialized)
             {
-
 
                 SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
                 StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
@@ -380,5 +389,26 @@ namespace Commercially.Vinconomy.Inventory
             }
         }
 
+        public void OnStockModified(ItemSlot slot)
+        {
+            if (Api.Side == EnumAppSide.Client) return;
+
+            if (slot is IStallProductSlot stallProductSlot)
+            {
+                int stallSlot = stallProductSlot.GetStall();
+                StallSlotBase stall = this.GetStall(stallSlot);
+                ItemStack product = stall.Product?.Itemstack?.Clone();
+                ItemStack currency = stall.Currency?.Itemstack?.Clone();
+                int stockCount = stall.GetProducts().TotalCount;
+                OnStockUpdated?.Invoke(stallSlot, product, stockCount, currency);
+            }
+        }
+
+        public void UpdateStockForSlot(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
+        {
+            // Really strange way of doing this, I know. I wanted to keep the inventory decoupled from the block entity as much as possible
+            // This was the simplest way I could think of without having to pass a reference to the BE into each inventory instance.
+            modSystem.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
+        }
     }
 }

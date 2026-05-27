@@ -531,25 +531,25 @@ namespace Commercially.Vinconomy
             }
         }
 
-        public SortedList<int, PreProcessTrade> PreProcessTradeHandlers = new SortedList<int, PreProcessTrade>();
+        private SortedList<int, PreProcessTrade> PreProcessTradeHandlers = new SortedList<int, PreProcessTrade>();
         public void RegisterPreProcessTradeHandler(int priority, PreProcessTrade hook)
         {
             PreProcessTradeHandlers.Add(priority, hook);
         }
 
-        public SortedList<int, PostProcessTrade> PostProcessTradeHandlers = new SortedList<int, PostProcessTrade>();
+        private SortedList<int, PostProcessTrade> PostProcessTradeHandlers = new SortedList<int, PostProcessTrade>();
         public void RegisterPostProcessTradeHandlers(int priority, PostProcessTrade hook)
         {
             PostProcessTradeHandlers.Add(priority, hook);
         }
 
-        public SortedList<int, PreFinalizeTrade> PreFinalizeTradeHandlers = new SortedList<int, PreFinalizeTrade>();
+        private SortedList<int, PreFinalizeTrade> PreFinalizeTradeHandlers = new SortedList<int, PreFinalizeTrade>();
         public void RegisterPreFinalizeTradeHandler(int priority, PreFinalizeTrade hook)
         {
             PreFinalizeTradeHandlers.Add(priority, hook);
         }
 
-        public SortedList<int, PostFinalizeTrade> PostFinalizeTradeHandlers = new SortedList<int, PostFinalizeTrade>();
+        private SortedList<int, PostFinalizeTrade> PostFinalizeTradeHandlers = new SortedList<int, PostFinalizeTrade>();
 
 
         public void RegisterPostFinalizeTradeHandler(int priority, PostFinalizeTrade hook)
@@ -557,9 +557,16 @@ namespace Commercially.Vinconomy
             PostFinalizeTradeHandlers.Add(priority, hook);
         }
 
-        internal OwnableShopInformation GetShopInformation(int shopId)
+        public OwnableShopInformation GetShopInformation(int shopId)
         {
-            throw new NotImplementedException();
+            return null;
+        }
+
+        public void UpdateStockForSlot(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
+        {
+            if (shop == null) return; //Unregistered Ownable. Shouldn't be possible to get here, but just in case
+
+            DB.SaveProductListing(shop, stallSlot, product, stockCount, currency);
         }
     }
 

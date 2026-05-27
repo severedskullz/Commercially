@@ -7,7 +7,6 @@ using Vintagestory.API.MathTools;
 namespace Vinconomy.Delegates
 {
 
-
     /*
      *  Called whenever an item is purchased from a stall, regardless if it is assoicated with a Register (Nullable)
      */
