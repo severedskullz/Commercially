@@ -1,13 +1,6 @@
-﻿using Commercially.Common.BlockEntityBehaviors;
-using Commercially.Common.GUI;
-using Commercially.Common.GUI.Tabs;
-using Commercially.Common.Interfaces;
-using Commercially.Vinconomy.GUI.Tabs;
-using System.Collections.Generic;
+﻿using Commercially.Common.Interfaces;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.Client.NoObf;
-using Vintagestory.GameContent;
 
 namespace Commercially.Common.BlockEntities
 {
@@ -69,7 +62,7 @@ namespace Commercially.Common.BlockEntities
                 IInteraction interaction = InteractionManager.GetInteraction(key, caller, blockSel);
                 if (interaction != null)
                 {
-                    return interaction.Interact(world, caller, blockSel);
+                    return interaction.Interact(world, caller, this, blockSel);
                 }
             }
 
@@ -130,5 +123,6 @@ namespace Commercially.Common.BlockEntities
         {
             base.OnBlockRemoved();
         }
+
     }
 }

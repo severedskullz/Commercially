@@ -4,6 +4,7 @@ using Commercially.Common.BlockEntities;
 using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.BlockTypes;
 using Commercially.Common.Database;
+using Commercially.Common.Interactions;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
 using Commercially.Common.Registry.Packets;
@@ -28,6 +29,7 @@ namespace Commercially.Common
         private ICoreClientAPI _CoreClientApi;
         public IOwnableRegistry OwnableRegistry;
         private Dictionary<EnumItemClass, List<IItemRenderer>> Renderers = new Dictionary<EnumItemClass, List<IItemRenderer>>();
+        private Dictionary<string, IInteraction> Interactions = new Dictionary<string, IInteraction>();
         private bool isRegisteringRenderers;
         public OwnableMapLayer OwnableMapLayer;
 
@@ -108,6 +110,8 @@ namespace Commercially.Common
 
             api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
             api.RegisterBlockBehaviorClass("Commercially.CommercialEvents", typeof(BehaviorCommercialEvents));
+
+            RegisterInteraction(OpenGuiInteraction.Key, new OpenGuiInteraction());
         }
 
         public EnumWorldAccessResponse TestAccess(IPlayer player, BlockSelection blockSelection, EnumBlockAccessFlags accessType, ref string claimant, EnumWorldAccessResponse response)
@@ -516,6 +520,25 @@ namespace Commercially.Common
 
             BlockEntity entity = _CoreServerApi.World.BlockAccessor.GetBlockEntity(ownableReg.Position);
             return entity?.GetBehavior<IOwnableReference>();
+        }
+
+        public void RegisterInteraction(string key, IInteraction interaction)
+        {
+            if (Interactions.ContainsKey(key))
+            {
+                this.Mod.Logger.Warning("Interaction {0} is already registered. Overwriting with new interaction.", key);
+            }
+            Interactions[key] = interaction;
+        }
+
+        public IInteraction? GetInteraction(string key)
+        {
+            if (Interactions.TryGetValue(key, out var interaction))
+            {
+                return interaction;
+            }
+            this.Mod.Logger.Warning("Interaction {0} not found. Returning null.", key);
+            return null;
         }
     }
 }

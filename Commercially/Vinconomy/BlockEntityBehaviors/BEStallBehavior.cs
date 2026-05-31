@@ -313,9 +313,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                     }
                     SetAdminShop(player, isAdmin);
                     break;
-
-
-
                 case CommerciallyConstants.SET_SHOULD_DISCARD_CURRENCY:
                     using (MemoryStream ms = new MemoryStream(data))
                     {

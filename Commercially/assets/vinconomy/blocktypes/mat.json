@@ -62,7 +62,19 @@
         },
         {
             "name": "Commercially.InteractionManager",
-            "properties": {}
+            "properties": {
+                "interactions": [
+                    {"code": "Vinconomy.AddStock","priority": 10},
+                    {
+                        "code": "Vinconomy.PurchaseItem",
+                        "priority": 10
+                    },
+                    {
+                        "code": "Commercially.OpenGui",
+                        "priority": 0
+                    }
+                ]
+            }
         },
         {
             "name": "Commercially.OwnableChild",

@@ -1,6 +1,8 @@
 ﻿using Commercially.Common.BlockEntities;
+using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -223,6 +225,30 @@ namespace Commercially.Common.BlockBehaviors
             }
 
             return applied;
+        }
+
+        public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer, ref EnumHandling handling)
+        {
+            BlockEntity commercialEntity = world.BlockAccessor.GetBlockEntity(selection.Position);
+            IInteractionManager manager = commercialEntity?.GetBehavior<IInteractionManager>();
+            if (manager != null)
+            {
+                handling = EnumHandling.Handled;
+                return manager.GetInteractions(world, CallerUtils.ToCaller(forPlayer), commercialEntity, selection);
+            }
+            return base.GetPlacedBlockInteractionHelp(world, selection, forPlayer, ref handling);
+        }
+
+        public override int GetPlacedBlockInteractionHelpCount(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer, ref EnumHandling handling)
+        {
+            BlockEntity commercialEntity = world.BlockAccessor.GetBlockEntity(selection.Position);
+            IInteractionManager manager = commercialEntity?.GetBehavior<IInteractionManager>();
+            if (manager != null)
+            {
+                handling = EnumHandling.Handled;
+                return manager.GetInteractionCount(world, CallerUtils.ToCaller(forPlayer), commercialEntity, selection);
+            }
+            return base.GetPlacedBlockInteractionHelpCount(world, selection, forPlayer, ref handling);
         }
     }
 }

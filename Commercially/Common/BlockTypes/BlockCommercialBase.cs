@@ -82,23 +82,26 @@ namespace Commercially.Common.BlockTypes
             return result;
         }
 
-        
-
+        /*
         public override ItemStack[] GetDrops(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)
         {
             ItemStack stack = new ItemStack(this);
             return base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
         }
 
+        public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
+        {
+            return base.OnPickBlock(world, pos);
+        }
+
+        */
+
         public override bool CanCreatureSpawnOn(IBlockAccessor blockAccessor, BlockPos pos, EntityProperties type, BaseSpawnConditions sc)
         {
             return false;
         }
 
-        public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
-        {
-            return base.OnPickBlock(world, pos);
-        }
+       
 
         public override Vec4f GetSelectionColor(ICoreClientAPI capi, BlockPos pos)
         {

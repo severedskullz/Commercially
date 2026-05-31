@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace Commercially.Common.BlockTypes
@@ -16,5 +17,15 @@ namespace Commercially.Common.BlockTypes
             return true;
         }
 
+        public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer)
+        {
+            BlockEntity commercialEntity = world.BlockAccessor.GetBlockEntity(selection.Position);
+            IInteractionManager manager = commercialEntity?.GetBehavior<IInteractionManager>();
+            if (manager != null)
+            {
+                return manager.GetInteractions(world, CallerUtils.ToCaller(forPlayer), commercialEntity, selection);
+            }
+            return base.GetPlacedBlockInteractionHelp(world, selection, forPlayer);
+        }
     }
 }

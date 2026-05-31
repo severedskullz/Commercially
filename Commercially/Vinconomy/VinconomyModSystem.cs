@@ -7,6 +7,7 @@ using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
 using Commercially.Vinconomy.GUI.Tabs;
+using Commercially.Vinconomy.Interactions;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
@@ -125,10 +126,11 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(GuiBlockEntityRegisterConfigTab.CODE, typeof(GuiBlockEntityRegisterConfigTab));
             guiSystem.RegisterTabType(GuiVinconCouponCutter.CODE, typeof(GuiVinconCouponCutter));
 
-
-
-
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
+
+            CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
+            CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
+
         }
 
 
