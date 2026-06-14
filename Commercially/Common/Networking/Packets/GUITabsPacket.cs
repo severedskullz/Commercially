@@ -7,6 +7,10 @@ namespace Commercially.Common.Networking.Packets
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class GUITabsPacket
     {
+        public string DialogueLangCode { get; set; } = string.Empty;
+        public string DialogueName { get; set; } = string.Empty;
+        public string? DefaultTab { get; set; }
+        public int SelectedIndex { get; set; }
         public Dictionary<string, GUITabPacket> Tabs = new Dictionary<string, GUITabPacket>();
 
         public void AddTab(string tab, byte[] data)

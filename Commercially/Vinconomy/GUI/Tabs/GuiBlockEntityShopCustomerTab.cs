@@ -29,13 +29,20 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as VinconBaseInventory;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
+            Inventory = StallProvider?.Inventory as VinconBaseInventory;
             DInv = new DummyInventory(Api, 2);
             DInv.PutLocked = true;
             DInv.TakeLocked = true;
             DInv[0] = new ItemLockedSlot(DInv);
             DInv[1] = new ItemLockedSlot(DInv);
+
+            //TODO: Figure out a better way to pass this in - will need it for all of the tabbed GUIs for shops
+            GUIModularBlockEntity guiBE = gui as GUIModularBlockEntity;
+            if (guiBE != null)
+            {
+                StallSlot = entity?.GetBehavior<IStallComponent>()?.GetStallIndexFromSelection(guiBE.BlockSelectionIndex) ?? 0;
+            }
 
         }
 
@@ -201,7 +208,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         {
         }
 
-        public override byte[] OnSendData(BlockEntity entity)
+        public override byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key)
         {
             return null;
         }

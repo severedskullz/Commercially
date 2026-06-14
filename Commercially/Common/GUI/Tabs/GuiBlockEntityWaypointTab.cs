@@ -137,7 +137,7 @@ namespace Commercially.Common.GUI.Tabs
 
         }
 
-        public override byte[] OnSendData(BlockEntity entity)
+        public override byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key)
         {
             return null;
         }

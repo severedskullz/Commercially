@@ -23,6 +23,7 @@ namespace Commercially.Common.BlockBehaviors
         public override void OnLoaded(ICoreAPI api)
         {
             modSystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
+            this.block.PlacedPriorityInteract = true;
         }
 
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier, ref EnumHandling handling)

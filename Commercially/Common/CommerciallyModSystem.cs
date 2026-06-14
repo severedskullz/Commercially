@@ -327,6 +327,7 @@ namespace Commercially.Common
 
         public void BroadcastOwnableUpdate(OwnableRegistration ownable, bool isRemoval = false)
         {
+            if (_CoreServerApi == null) return; // Serverside only!
 
             if (ownable != null)
             {

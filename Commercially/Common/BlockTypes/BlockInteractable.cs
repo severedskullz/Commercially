@@ -7,6 +7,12 @@ namespace Commercially.Common.BlockTypes
 {
     public class BlockInteractable : Block
     {
+        public override void OnLoaded(ICoreAPI api)
+        {
+            base.OnLoaded(api);
+            this.PlacedPriorityInteract = true;
+        }
+
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             IInteractableBlockEntity be = world.BlockAccessor.GetBlockEntity(blockSel.Position) as IInteractableBlockEntity;

@@ -17,5 +17,7 @@ namespace Commercially.Vinconomy.Interfaces
         public StallSlotBase GetStallSlot(int stallSlot);
         public T GetStallSlot<T>(int stallSlot) where T : StallSlotBase;
         public bool TryPurchaseItem(IPlayer player, int stallSlot, int numPurchases);
+
+        public int GetStallIndexFromSelection(int selectionIndex);
     }
 }

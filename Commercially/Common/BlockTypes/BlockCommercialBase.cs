@@ -13,6 +13,12 @@ namespace Commercially.Common.BlockTypes
     public class BlockCommercialBase : Block
     {
 
+        public override void OnLoaded(ICoreAPI api)
+        {
+            base.OnLoaded(api);
+            this.PlacedPriorityInteract = true;
+        }
+
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)
         {
             if (byPlayer == null)

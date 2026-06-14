@@ -4,6 +4,7 @@ using Commercially.Common.Interfaces;
 using Commercially.Common.Networking.Packets;
 using System;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
@@ -13,6 +14,8 @@ namespace Commercially.Common.BlockEntityBehaviors
     public class BEBehaviorGUIManager : BlockEntityBehavior, IGUIManager
     {
         string[] Tabs;
+        string DialogueLangCode;
+        string DialogueName;
 
         public BEBehaviorGUIManager(BlockEntity blockentity) : base(blockentity)
         {
@@ -22,15 +25,21 @@ namespace Commercially.Common.BlockEntityBehaviors
         {
             base.Initialize(api, properties);
             Tabs = properties["tabs"]?.AsArray<string>();
+            DialogueLangCode = properties["langCode"]?.AsString();
+            DialogueName = properties["name"]?.AsString();
         }
 
-        public bool OpenGUI(BECommercialBase bECommercialBase, Caller caller, BlockSelection blockSel, string key)
+        public bool OpenGUI(BECommercialBase bECommercialBase, Caller caller, BlockSelection blockSel, string key, string defaultTab = null)
         {
             if (Api.Side == EnumAppSide.Server)
             {
                 GUITabsPacket packet = new GUITabsPacket();
                 ModularGUIModSystem modSystem = Api.ModLoader.GetModSystem<ModularGUIModSystem>();
                
+                packet.SelectedIndex = blockSel?.SelectionBoxIndex ?? 0;
+                packet.DefaultTab = defaultTab;
+                packet.DialogueName = DialogueName;
+                packet.DialogueLangCode = DialogueLangCode;
 
                 foreach (var item in Tabs)
                 {
@@ -44,7 +53,7 @@ namespace Commercially.Common.BlockEntityBehaviors
                         
 
                     ModularTab instance = (ModularTab)Activator.CreateInstance(type);
-                    byte[] data = instance.OnSendData(bECommercialBase);
+                    byte[] data = instance.OnSendData(bECommercialBase, caller, blockSel, key);
                     if (data?.Length > 0) {
                         packet.AddTab(item, data);
                     }
@@ -67,15 +76,34 @@ namespace Commercially.Common.BlockEntityBehaviors
                 InventoryBase inventory = Blockentity.GetBehavior<IInventoryProvider>()?.Inventory;
                 GUIModularBlockEntity gui = null;
 
+                BECommercialBase commercialBase = this.Blockentity as BECommercialBase;
+                string dialogueName;
+                if (string.IsNullOrEmpty(packet?.DialogueLangCode))
+                {
+                    dialogueName = packet?.DialogueName ?? "Dialogue";
+                }
+                else
+                {
+                    dialogueName = Lang.Get(packet.DialogueLangCode);
+                }
+
                 if (inventory != null)
                 {
-                    gui = new GUIModularBlockEntity("Dialogue", this.Blockentity as BECommercialBase, inventory);
+                    gui = new GUIModularBlockEntity(dialogueName, commercialBase, inventory);
                 } else { 
-                    gui = new GUIModularBlockEntity("Dialogue", this.Blockentity as BECommercialBase);
+                    gui = new GUIModularBlockEntity(dialogueName, commercialBase);
                 }
+                gui.BlockSelectionIndex = packet?.SelectedIndex ?? 0;
                 gui.LoadTabs(Tabs);
+
+
                 if (packet != null)
                 {
+                    if (packet.DefaultTab != null)
+                    {
+                        gui.SetActiveTab(packet.DefaultTab);
+                    }
+
                     foreach (var tab in gui.Tabs)
                     {
                         tab.OnRecievedData(packet.GetData(tab.TabName));

@@ -1,14 +1,14 @@
 {
-    "code": "mat",
+    "code": "clothingstall",
     "class": "Commercially.BlockCommercial",
     "entityClass": "Commercially.BECommercialBase",
     "attributes": {
         "handbook": {
-            "groupBy": [ "mat-north" ],
+            "groupBy": [ "clothingstand-north" ],
             "extraSections": [
                 {
                     "title": "",
-                    "text": "vinconomy:handbooktext-stall"
+                    "text": "vinconomy:handbooktext-clothingstand"
                 }
             ]
         }
@@ -100,9 +100,8 @@
         {
             "name": "Commercially.TextureSwappable",
             "properties": {
-                "BaseBlock": "mat-north",
-                "CreativeTabs": [ "vinconomy", "general" ],
-                "PrimaryMaterials": [ "black", "blue", "brown", "gray", "green", "mordant", "orange", "pink", "plain", "purple", "red", "white", "yellow" ]
+                "BaseBlock": "clothingstall-north",
+                "CreativeTabs": [ "vinconomy", "general" ]
             }
         },
         { "name": "HorizontalOrientable" }
@@ -135,19 +134,19 @@
     },
     "shapebytype": {
         "*-north": {
-            "base": "block/trademat",
+            "base": "block/armorstand",
             "rotateY": 0
         },
         "*-west": {
-            "base": "block/trademat",
+            "base": "block/armorstand",
             "rotateY": 90
         },
         "*-south": {
-            "base": "block/trademat",
+            "base": "block/armorstand",
             "rotateY": 180
         },
         "*-east": {
-            "base": "block/trademat",
+            "base": "block/armorstand",
             "rotateY": 270
         }
     },

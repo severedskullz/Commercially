@@ -29,6 +29,7 @@ namespace Commercially.Common.GUI
             } 
         }
         public int TabIndex = 0;
+        public int BlockSelectionIndex = 0;
 
         BECommercialBase BlockEntity;
         private ModularGUIModSystem GuiSystem;
@@ -170,6 +171,24 @@ namespace Commercially.Common.GUI
         public void SendPacket(int packetId, object p)
         {
             capi.Network.SendBlockEntityPacket(BlockEntityPosition, packetId, p);
+        }
+
+        public void SetActiveTab(string activeTab)
+        {
+            if (string.IsNullOrEmpty(activeTab)) return;
+
+            int i = 0;
+            foreach (var tab in Tabs)
+            {
+                if (tab.Code == activeTab)
+                {
+                    TabIndex = i;
+                    return;
+                }
+                i++;
+            }
+            capi.Logger.Error("Couldn't find tab {0} while trying to set Active Tab for block entity at {1}. Defaulting to first tab.", activeTab, BlockEntityPosition);
+            TabIndex = 0;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Commercially.Common;
+using Commercially.Common.BlockEntities;
+using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
@@ -303,6 +305,12 @@ namespace Commercially.Vinconomy.GUI.Tabs
             Ownable = entity?.GetBehavior<IOwnableChild>();
             //NumColumns = GetConfiguration()?["NumColumns"].AsInt(10) ?? 10;
 
+            //TODO: Figure out a better way to pass this in - will need it for all of the tabbed GUIs for shops
+            GUIModularBlockEntity guiBE = gui as GUIModularBlockEntity;
+            if (guiBE != null)
+            {
+                StallSlot = entity?.GetBehavior<IStallComponent>()?.GetStallIndexFromSelection(guiBE.BlockSelectionIndex) ?? 0;
+            }
         }
 
         public override bool IsVisible(GuiDialog gui)
@@ -324,7 +332,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         {
         }
 
-        public override byte[] OnSendData(BlockEntity entity)
+        public override byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key)
         {
             return null;
         }

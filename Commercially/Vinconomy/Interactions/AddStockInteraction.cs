@@ -19,7 +19,8 @@ namespace Commercially.Vinconomy.Interactions
                 IPlayer byPlayer = caller.Player;
                 ItemStack itemStack = byPlayer.InventoryManager.ActiveHotbarSlot.Itemstack;
                 IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
-                return stallComponent?.GetStallSlot(blockSel.SelectionBoxIndex)?.Product.Itemstack != null;
+                int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
+                return stallComponent?.GetStallSlot(index)?.Product.Itemstack != null;
             }
             return false;
         }
@@ -35,21 +36,24 @@ namespace Commercially.Vinconomy.Interactions
 
             ItemStack itemStack = byPlayer.InventoryManager.ActiveHotbarSlot.Itemstack;
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
-            return stallComponent?.GetStallSlot(blockSel.SelectionBoxIndex)?.Product.Itemstack?.Satisfies(itemStack) ?? false;
+            int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
+            return stallComponent?.GetStallSlot(index)?.Product.Itemstack?.Satisfies(itemStack) ?? false;
 
         }
 
         public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
         {
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
-            ItemStack currency = stallComponent?.GetStallSlot(blockSel.SelectionBoxIndex)?.Product.Itemstack;
+            int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
+            ItemStack currency = stallComponent?.GetStallSlot(index)?.Product.Itemstack;
             return currency == null ? 0 : 2;
         }
 
         public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
         {
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
-            ItemStack product = stallComponent?.GetStallSlot(blockSel.SelectionBoxIndex)?.Product.Itemstack;
+            int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
+            ItemStack product = stallComponent?.GetStallSlot(index)?.Product.Itemstack;
             if (product == null) return Array.Empty<WorldInteraction>();
 
             ItemStack singleStack = product?.Clone();

@@ -7,6 +7,7 @@ using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -20,6 +21,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         protected VinconomyModSystem VinconomyCore;
         protected CommerciallyModSystem CommerciallyCore;
 
+        protected Dictionary<int, int> _StallIndices = [];
 
         IStallInventoryProvider IStallComponent.InventoryProvider => _InventoryProvider;
         IStallInventoryProvider _InventoryProvider;
@@ -52,6 +54,19 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             if (_InventoryProvider.Inventory is IStallStockUpdater shopInv)
             {
                 shopInv.OnStockUpdated += OnStockUpdated;
+            }
+
+            if (properties["stallSelectionIndexes"] != null)
+            {
+                Dictionary<int, int> stallIndexObj = properties["stallSelectionIndexes"].AsObject<Dictionary<int, int>>();
+                _StallIndices = stallIndexObj;
+                /*
+                foreach (var slot in stallIndexObj)
+                {
+                    int index = stallIndexObj[slot].AsInt();
+                    _StallIndices[slot] = index;
+                }
+                */
             }
 
         }
@@ -405,6 +420,15 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         public override void OnBlockBroken(IPlayer byPlayer = null)
         {
             base.OnBlockBroken(byPlayer);
+        }
+
+        public int GetStallIndexFromSelection(int selectionIndex)
+        {
+            if (_StallIndices != null && _StallIndices.TryGetValue(selectionIndex, out int stallIndex))
+            {
+                return stallIndex;
+            }
+            return 0;
         }
     }
 }

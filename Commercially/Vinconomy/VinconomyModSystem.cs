@@ -1,5 +1,6 @@
 ﻿using Commercially.Common;
 using Commercially.Common.GUI.Tabs;
+using Commercially.Common.Interactions;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry.Packets;
 using Commercially.Common.Slots;
@@ -130,7 +131,7 @@ namespace Commercially.Vinconomy
 
             CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
             CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
-
+            CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
         }
 
 

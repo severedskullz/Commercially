@@ -1,4 +1,6 @@
-﻿using Commercially.Common.Interfaces;
+﻿using Commercially.Common.BlockEntities;
+using Commercially.Common.Interfaces;
+using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -41,7 +43,7 @@ namespace Commercially.Common.GUI
 
         public abstract void OnRecievedData(byte[] data);
 
-        public abstract byte[] OnSendData(BlockEntity entity);
+        public abstract byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key);
 
         public virtual JsonObject GetConfiguration(string baseKey = ModularGUIModSystem.AttributeKey) 
         {

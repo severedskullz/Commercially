@@ -54,6 +54,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
 
             }
+            AttributeTransformCode = properties["displayTransformType"]?.AsString();
             //api.Event.RegisterEventBusListener()
         }
 
@@ -194,88 +195,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             }
             else if (stack.Class == EnumItemClass.Block)
             {
-                mesh.Scale(new Vec3f(0.5f, 0, 0.5f), 0.375f, 0.375f, 0.375f);
+                mesh.Scale(new Vec3f(0.5f, 0, 0.5f), 0.33f, 0.33f, 0.33f);
             }
-        }
-
-        protected MeshData GetOrCreateMesh_Old(ItemSlot slot, int index)
-        {
-            MeshData modeldata = GetMesh(slot);
-            if (modeldata != null)
-            {
-                return modeldata;
-            }
-
-            IItemRenderer renderer = CommerciallyCore.GetRenderer(slot);
-            if (renderer != null)
-            {
-                ItemStack stack = slot.Itemstack;
-                modeldata = renderer.CreateMesh(this, slot, index);
-                if (modeldata == null)
-                {
-                    //Don't crash if we couldnt get the model for some reason
-                    return null;
-                }
-
-                //Bypass the Display and Shelvable transforms for Armor Stands, where we want the model coordinates to match the character, not the zero'd positions.
-                if (!BypassShelvableAttributes || true) //TODO: Temporarily bypass this while im working on it. Dont forget to remove!
-                {
-                    ModelTransform modelTransform = null;
-                    // pick our preselected Attribute Transform Code
-                    if (stack.Collectible.Attributes?[AttributeTransformCode].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?[AttributeTransformCode].AsObject<ModelTransform>();
-                    }
-                    else if (stack.Block is IShelvable)
-                    {
-                        modelTransform = (stack.Block as IShelvable).GetOnShelfTransform(stack);
-                    }
-                    else if (stack.Collectible.Attributes?["onDisplayTransform"].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?["onDisplayTransform"].AsObject<ModelTransform>();
-
-                    }
-                    else if (stack.Collectible.Attributes?["groundStorageTransform"].Exists ?? false)
-                    {
-                        modelTransform = stack.Collectible.Attributes?["groundStorageTransform"].AsObject<ModelTransform>();
-
-                    }
-
-                    if (modelTransform != null)
-                    {
-                        modelTransform.EnsureDefaultValues();
-                        modeldata.ModelTransform(modelTransform);
-                    }
-                    // Should be handled by IShelvable, but I still see it in the JSON
-                    else if (stack.Collectible.Attributes?["shelvable"].Exists ?? false)
-                    {
-                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.85f, 0.85f, 0.85f);
-                    }
-                    else
-                    {
-                        modeldata.Scale(new Vec3f(0.5f, 0.0f, 0.5f), 0.35f, 0.35f, 0.35f);
-                    }
-
-                }
-
-                if (stack.Class == EnumItemClass.Item && (stack.Item.Shape == null || stack.Item.Shape.VoxelizeTexture))
-                {
-                    modeldata.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), MathF.PI / 2f, 0f, 0f);
-                    modeldata.Scale(new Vec3f(0.5f, 0.5f, 0.5f), 0.35f, 0.35f, 0.35f);
-                    modeldata.Translate(0f, -15f / 32f, 0f);
-                }
-
-
-                if (renderer.ShouldCache(stack))
-                {
-                    string meshCacheKey = GetMeshCacheKey(slot);
-                    MeshCache[meshCacheKey] = modeldata;
-                }
-            }
-
-
-
-            return modeldata;
         }
 
         public virtual string ClassCode => _InventoryProvider.Inventory.ClassName;
