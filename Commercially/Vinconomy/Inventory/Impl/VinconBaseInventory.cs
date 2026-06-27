@@ -1,4 +1,5 @@
-﻿using Commercially.Common.Inventory;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
@@ -11,6 +12,7 @@ namespace Commercially.Vinconomy.Inventory
 {
     public abstract class VinconBaseInventory : InventoryBase, ILateInitInventory, IStallStockUpdater
     {
+        public BlockEntity BlockEntity { get; protected set; }
         public ItemSlot[] InternalSlots { get; protected set; }
         public StallSlotBase[] StallSlots { get; protected set; }
         public Type StallType { get; protected set; }
@@ -21,6 +23,9 @@ namespace Commercially.Vinconomy.Inventory
 
         protected VinconomyModSystem modSystem;
         public event OnStockUpdatedDelegate OnStockUpdated;
+
+        public IStallComponent StallComponent;
+
 
         public override int Count
         {
@@ -40,7 +45,7 @@ namespace Commercially.Vinconomy.Inventory
             }
         }
 
-        public VinconBaseInventory(ICoreAPI api) : base("-", api)
+        public VinconBaseInventory(BlockEntity entity,ICoreAPI api) : base("-", api)
         {
             //modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
@@ -400,7 +405,8 @@ namespace Commercially.Vinconomy.Inventory
                 ItemStack product = stall.Product?.Itemstack?.Clone();
                 ItemStack currency = stall.Currency?.Itemstack?.Clone();
                 int stockCount = stall.GetProducts().TotalCount;
-                OnStockUpdated?.Invoke(stallSlot, product, stockCount, currency);
+
+                OnStockUpdated?.Invoke(StallComponent, stallSlot, product, stockCount, currency);
             }
         }
 
@@ -408,7 +414,33 @@ namespace Commercially.Vinconomy.Inventory
         {
             // Really strange way of doing this, I know. I wanted to keep the inventory decoupled from the block entity as much as possible
             // This was the simplest way I could think of without having to pass a reference to the BE into each inventory instance.
+
+            // TODO: This is now redundant, as the BE is now passed into the inventory on to check if the stall is an admin shop or not... Whoops! Remove this and just call modSystem.UpdateStockForSlot directly from the BE
+            // Do I even need that event anymore? would it be useful to have a generic event for when stock is updated? Could be useful for other mods to hook into
             modSystem.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
+        }
+
+        public override float GetTransitionSpeedMul(EnumTransitionType transType, ItemStack stack)
+        {
+            // Clones should never transition.
+            // Tyron, it would be fucking GREAT if you gave us the ItemSlot instead!!! That way I can check the class, damnit!
+            foreach (StallSlotBase stall in StallSlots)
+            {
+                if (stall.Currency.Itemstack == stack || stall.Product.Itemstack == stack) return 0;
+            }
+
+            VinconomyConfig config = modSystem.Config;
+            bool fooldDecaysInShops = config?.FoodDecaysInShops ?? false;
+            bool isAdminOwned = StallComponent?.Ownable?.IsAdminOwned ?? false;
+            if (fooldDecaysInShops && !isAdminOwned)
+            {
+                return base.GetDefaultTransitionSpeedMul(transType) * modSystem.Config.StallPerishRate;
+            }
+            else
+            {
+                return 0;
+            }
+
         }
     }
 }

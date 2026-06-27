@@ -69,7 +69,7 @@
             "properties": {
                 "interactions": [
                     {
-                        "code": "Vinconomy.AddMeal",
+                        "code": "Vinconomy.AddStock",
                         "priority": 10
                     },
                     {

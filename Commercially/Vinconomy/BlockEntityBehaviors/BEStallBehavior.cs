@@ -24,10 +24,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         protected Dictionary<int, int> _StallIndices = [];
 
         IStallInventoryProvider IStallComponent.InventoryProvider => _InventoryProvider;
-        IStallInventoryProvider _InventoryProvider;
+        protected IStallInventoryProvider _InventoryProvider;
 
         IOwnableChild IStallComponent.Ownable => _Ownable;
-        IOwnableChild _Ownable;
+        protected IOwnableChild _Ownable;
 
         protected bool RequiresParent;
         protected bool DiscardProduct;
@@ -172,9 +172,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 request.WithCoupons(coupons.Slots[0]);
             }
 
-            request.WithTools(GetRequiredTools(player, stallSlot), 1);
-
-
             if (shopRegister != null)
             {
                 RegisterInventory inv = shopRegister.GetComponent<IInventoryProvider>()?.Inventory as RegisterInventory;
@@ -203,11 +200,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             }
 
             return result;
-        }
-
-        private AggregatedSlots GetRequiredTools(IPlayer player, int stallSlot)
-        {
-            return null;
         }
 
         public int GetRemainingProductForStallSlot(int stallSlot)
@@ -411,10 +403,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             throw new NotImplementedException();
         }
 
-        private void OnStockUpdated(int stallSlot, ItemStack product, int stockCount, ItemStack currency)
+        private void OnStockUpdated(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
         {
+            VinconomyCore.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
             //We need to get the block entity into scope. This was the simplest way I could think of without having to pass in a reference for each Inventory
-            (_InventoryProvider.Inventory as IStallStockUpdater).UpdateStockForSlot(this, stallSlot, product, stockCount, currency);
+            //(_InventoryProvider.Inventory as IStallStockUpdater).UpdateStockForSlot(this, stallSlot, product, stockCount, currency);
         }
 
         public override void OnBlockBroken(IPlayer byPlayer = null)

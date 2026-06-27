@@ -2,7 +2,7 @@
 
 namespace Commercially.Vinconomy.Interfaces
 {
-    public delegate void OnStockUpdatedDelegate(int stallSlot, ItemStack product, int stockCount, ItemStack currency);
+    public delegate void OnStockUpdatedDelegate(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency);
 
     public interface IStallStockUpdater
     {

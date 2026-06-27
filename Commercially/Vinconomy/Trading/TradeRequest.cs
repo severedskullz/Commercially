@@ -6,9 +6,17 @@ using System.Collections.Generic;
 using Vinconomy.ItemTypes;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Trading
 {
+
+    public enum TradeType
+    {
+        Generic,
+        Liquid,
+        Meal
+    }
 
     public class TradeInfo
     {
@@ -61,17 +69,20 @@ namespace Commercially.Vinconomy.Trading
 
     public class TradeRequest : TradeInfo
     {
+        public TradeType TradeType = TradeType.Generic;
         public AggregatedSlots ProductSourceSlots;
         public AggregatedSlots CurrencySourceSlots;
         public AggregatedSlots TradePassSourceSlots;
         public AggregatedSlots CouponSourceSlots;
-        public AggregatedSlots ToolSourceSlots;
+        public DurabilityAggregatedSlots ToolSourceSlots;
+        public CapacityAggregatedSlots ContainerSourceSlots;
         public int ToolUsesNeededPerTrade;
 
-        public TradeRequest(ICoreAPI api, IPlayer player)
+        public TradeRequest(ICoreAPI api, IPlayer player, TradeType tradeType = TradeType.Generic)
         {
             Api = api;
             Customer = player;
+            TradeType = tradeType;
         }
 
         public TradeRequest WithShop(IShopComponent parentShop, IStallComponent sellingEntity, int stallSlot, bool adminShop)
@@ -100,12 +111,19 @@ namespace Commercially.Vinconomy.Trading
             return this;
         }
 
-        public TradeRequest WithTools(AggregatedSlots slots, int usesPerTrade)
+        public TradeRequest WithTools(DurabilityAggregatedSlots slots, int usesPerTrade)
         {
             ToolSourceSlots = slots;
             ToolUsesNeededPerTrade = usesPerTrade;
             return this;
         }
+
+        public TradeRequest WithContainers(CapacityAggregatedSlots slots)
+        {
+            ContainerSourceSlots = slots;
+            return this;
+        }
+
         public TradeRequest WithCoupons(ItemSlot couponSlot)
         {
             if (couponSlot.Itemstack != null && couponSlot.Itemstack.Class == EnumItemClass.Item)

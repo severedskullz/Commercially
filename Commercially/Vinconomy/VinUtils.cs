@@ -207,14 +207,14 @@ namespace Vinconomy.Util
             return null;
         }
 
-        public static bool IsMergableContents(ItemStack[] source, ItemStack[] compareTo)
+        public static bool IsMergableContents(IWorldAccessor world, ItemStack[] source, ItemStack[] compareTo)
         {
             if (source == null || compareTo == null ||  source.Length == 0 || compareTo.Length == 0) return true;
 
-            return IsMatchingContents(source, compareTo);
+            return IsMatchingContents(world, source, compareTo);
         }
 
-        public static bool IsMatchingContents(ItemStack[] source, ItemStack[] compareTo)
+        public static bool IsMatchingContents(IWorldAccessor world, ItemStack[] source, ItemStack[] compareTo)
         {
             if (source.Length != compareTo.Length)
             {
@@ -226,7 +226,8 @@ namespace Vinconomy.Util
                 ItemStack bowlStack = compareTo[i];
                 ItemStack containerStack = source[i];
 
-                if (bowlStack.Id != containerStack.Id)
+                //if (bowlStack.Id != containerStack.Id)
+                if(!source[i].Equals(world, compareTo[i], GlobalConstants.IgnoredStackAttributes))
                 {
                     return false;
                 }

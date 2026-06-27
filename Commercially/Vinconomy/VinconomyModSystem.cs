@@ -1,8 +1,5 @@
 ﻿using Commercially.Common;
-using Commercially.Common.GUI.Tabs;
 using Commercially.Common.Interactions;
-using Commercially.Common.Interfaces;
-using Commercially.Common.Registry.Packets;
 using Commercially.Common.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
@@ -12,6 +9,7 @@ using Commercially.Vinconomy.Interactions;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
+using Commercially.Vinconomy.Trading.Processor;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
@@ -32,7 +30,7 @@ namespace Commercially.Vinconomy
         private static Dictionary<string, Type> StallTypes;
 
         private readonly string CONFIG_NAME = "vinconomy-core.json";
-        private VinconomyConfig Config;
+        public VinconomyConfig Config;
         public VinconomyDatabase DB { get; private set; }
 
         public override double ExecuteOrder() => 1.1;
@@ -209,9 +207,9 @@ namespace Commercially.Vinconomy
         /// </summary>
         /// <param name="request"></param>
         /// <returns> should proceesing continue </returns>
-        private bool PreProcessTrade(TradeRequest request) {
+        private bool PreValidateTrade(TradeRequest request) {
             EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PreProcessTradeHandlers)
+            foreach (var handlers in PreValidateTradeHandlers)
             {
                 handlers.Value.Invoke(request, ref handled);
 
@@ -229,7 +227,7 @@ namespace Commercially.Vinconomy
         /// <returns></returns>
         // TODO: this RunProcessing logic switch might not be very useful... I want to think of a way for PreProcessTrade to potentially do the logic instead, but that doesnt return a TradeResult.
         // On the flip-side, I dont want PreProcessTrade to be required to create a new TradeResult as it should be BEFORE the processing occurs. The seperation of concerns here overlap, which is bad.
-        private static TradeResult ProcessTrade(TradeRequest request, bool runProcessing = true) {
+        private static TradeResult ValidateTrade(TradeRequest request, bool runProcessing = true) {
             TradeResult result = new TradeResult(request);
 
             if (!runProcessing)
@@ -247,30 +245,30 @@ namespace Commercially.Vinconomy
             if (request.ProductNeeded == null)
                 return SetErrorAndReturn(result, TradingConstants.NO_PRODUCT);
 
-            if (!TradingProcessor.HasEnoughStock(request))
+            if (!GenericTradingProcessor.HasEnoughStock(request))
                 return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_STOCK);
 
-            if (!TradingProcessor.CanPlayerAfford(request))
+            if (!GenericTradingProcessor.CanPlayerAfford(request))
                 return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_MONEY);
 
             if (request.NumPurchases <= 0)
                 return SetErrorAndReturn(result, TradingConstants.PURCHASED_ZERO);
 
-            if (!TradingProcessor.HasEnoughDurability(request))
+            if (!GenericTradingProcessor.HasEnoughDurability(request))
                 return SetErrorAndReturn(result, TradingConstants.NO_TOOL);
 
-            if (!TradingProcessor.HasRequiredTradePass(request))
+            if (!GenericTradingProcessor.HasRequiredTradePass(request))
                 return SetErrorAndReturn(result, TradingConstants.NO_PASS);
 
-            if (!TradingProcessor.CanFitPaymentIntoParent(request))
+            if (!GenericTradingProcessor.CanFitPaymentIntoParent(request))
                 return SetErrorAndReturn(result, TradingConstants.NO_REGISTER_SPACE);
 
             return result;
         }
-        private void PostProcessTrade(TradeResult result)
+        private void PostValidateTrade(TradeResult result)
         {
             EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PostProcessTradeHandlers)
+            foreach (var handlers in PostValidateTradeHandlers)
             {
                 handlers.Value.Invoke(result, ref handled);
 
@@ -301,31 +299,19 @@ namespace Commercially.Vinconomy
 
         private void TransferProductToPlayer(TradeResult result)
         {
-            if (result.ProductStacks.TotalCount == 0) return;
-
-            IPlayer player = result.Request.Customer;
-            AssetLocation sound = null;
-            while(result.ProductStacks.CanRemoveStack())
-            {
-                ItemStack stack = result.ProductStacks.RemoveStack();
-
-                if (stack != null)
-                {
-                    this.Mod.Logger.Debug($"Adding {stack.StackSize}x {stack} product to Parent");
-                    if (stack.Block?.Sounds?.Place.Location != null)
-                    {
-                        sound = stack.Block?.Sounds?.Place.Location;
-                    }
-
-                    player.InventoryManager.TryGiveItemstack(stack, true);
-                    if (stack.StackSize > 0)
-                    {
-                        result.Request.Api.World.SpawnItemEntity(stack, player.Entity.Pos.XYZ.Add(0.5), null);
-                    }
-                }
+            // TODO: I dont wanna go crazy with all the hashmaps needing everything to be "registered" and I dont think there are any more possible types of trades we can even do
+            // If we need to add more in the future, this should be easy enough to harmony patch, or worst case I just come back in here and pull from a hashmap of registered trade types and call its respective method from a container-class for the logic
+            switch(result.Request.TradeType) {
+                case TradeType.Meal:
+                    MealTradingProcessor.TransferProductToPlayer(result);
+                    break;
+                case TradeType.Liquid:
+                    LiquidTradingProcessor.TransferProductToPlayer(result);
+                    break;
+                default:
+                    GenericTradingProcessor.TransferProductToPlayer(result);
+                    break;
             }
-
-            result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
         private void TransferCurrencyToParent(TradeResult result)
@@ -425,10 +411,10 @@ namespace Commercially.Vinconomy
             if (request == null) return new TradeResult(null) { ErrorMsg = TradingConstants.PURCHASED_ZERO }; 
 
             // Step 1: Validate the trade by checking if we have enough currency, enough stock, permissions to trade, etc.
-            bool runProcessing = PreProcessTrade(request);
-            TradeResult result = ProcessTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
+            bool runProcessing = PreValidateTrade(request);
+            TradeResult result = ValidateTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
             if (result.ErrorMsg != null) return result;
-            PostProcessTrade(result);
+            PostValidateTrade(result);
             if (result.ErrorMsg != null) return result;
 
             // Step 2: At this point the trade is "Valid" and we can commit to the trade.
@@ -537,16 +523,16 @@ namespace Commercially.Vinconomy
             }
         }
 
-        private SortedList<int, PreProcessTrade> PreProcessTradeHandlers = new SortedList<int, PreProcessTrade>();
+        private SortedList<int, PreProcessTrade> PreValidateTradeHandlers = new SortedList<int, PreProcessTrade>();
         public void RegisterPreProcessTradeHandler(int priority, PreProcessTrade hook)
         {
-            PreProcessTradeHandlers.Add(priority, hook);
+            PreValidateTradeHandlers.Add(priority, hook);
         }
 
-        private SortedList<int, PostProcessTrade> PostProcessTradeHandlers = new SortedList<int, PostProcessTrade>();
+        private SortedList<int, PostProcessTrade> PostValidateTradeHandlers = new SortedList<int, PostProcessTrade>();
         public void RegisterPostProcessTradeHandlers(int priority, PostProcessTrade hook)
         {
-            PostProcessTradeHandlers.Add(priority, hook);
+            PostValidateTradeHandlers.Add(priority, hook);
         }
 
         private SortedList<int, PreFinalizeTrade> PreFinalizeTradeHandlers = new SortedList<int, PreFinalizeTrade>();
@@ -574,8 +560,7 @@ namespace Commercially.Vinconomy
 
             DB.SaveProductListing(shop, stallSlot, product, stockCount, currency);
         }
-    }
 
-    
+        
+    }    
 }
-

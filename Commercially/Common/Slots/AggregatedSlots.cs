@@ -58,7 +58,18 @@ namespace Commercially.Common.Slots
         }
     }
 
-    public class ServingCapacityAggregatedSlots : AggregatedSlots
+    public class CapacityAggregatedSlots : AggregatedSlots
+    {
+        public float TotalCapacity { get; set; }
+
+        public CapacityAggregatedSlots(ICoreAPI api) : base(api)
+        {
+        }
+
+
+    }
+
+    public class ServingCapacityAggregatedSlots : CapacityAggregatedSlots
     {
 
         public ServingCapacityAggregatedSlots(ICoreAPI api) : base(api)
@@ -66,7 +77,7 @@ namespace Commercially.Common.Slots
 
         }
 
-        public int TotalCapacity { get; set; }
+        
         public override void Add(ItemSlot item)
         {
             int curServings = 0;
@@ -89,14 +100,13 @@ namespace Commercially.Common.Slots
         }
     }
 
-    public class LiquidCapacityAggregatedSlots : AggregatedSlots
+    public class LiquidCapacityAggregatedSlots : CapacityAggregatedSlots
     {
         public LiquidCapacityAggregatedSlots(ICoreAPI api) : base(api)
         {
 
         }
 
-        public float TotalCapacity { get; set; }
         public override void Add(ItemSlot item)
         {
             Slots.Add(item);

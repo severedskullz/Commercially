@@ -16,7 +16,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
         public GenericStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {
-            _Inventory = new GenericShopInventory(blockentity.Api);
+            _Inventory = new GenericShopInventory(blockentity, blockentity.Api);
         }
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
