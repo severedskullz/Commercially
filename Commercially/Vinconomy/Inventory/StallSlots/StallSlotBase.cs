@@ -3,6 +3,7 @@ using Commercially.Vinconomy.Trading;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
@@ -144,5 +145,99 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public abstract ItemSlot[] GetStallSlots();
 
         public abstract AggregatedSlots GetProducts();
+
+        public virtual bool MatchesProduct(ItemStack itemStack)
+        {
+            return TradingUtil.IsMatchingItem(Product?.Itemstack, itemStack, this.Inventory.Api.World, IsFuzzyMatching);
+        }
+
+        /// <summary>
+        /// Takes the product from the stall slot and places it into the destination slot if it is provided.
+        /// If the destination slot is not provided or it could not fit the product, returnedItems will be populated instead.
+        /// <br/>
+        /// This gives us the flexibility to either place the product directly into a slot (such as when the product is a meal, then outputSlot should have a bowl, crock, or pot and then we should be incrementing the serving counts)
+        /// or return it to the caller for further processing.
+        /// <br/>
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <param name="returnedItems"></param>
+        /// <param name="outputSlot"></param>
+        /// <param name="allowExcess">Whether or not to continue taking items if the destination slot is full. This value is ignored if outputSlot is null</param>
+        /// <returns>True if any product was successfully taken from the stall slot, false otherwise</returns>        
+        public virtual int TakeProductFromSlot(int amount, out AggregatedStacks returnedItems, ItemSlot? outputSlot, bool allowExcess = false)
+        {
+            returnedItems = null;
+            ItemSlot[] slots = GetStallSlots();
+
+            int amountItem = amount;
+            int movedItems = 0;
+
+            foreach (var slot in slots)
+            {
+                int moved = 0;
+                if (outputSlot != null)
+                {
+                    moved = slot.TryPutInto(Inventory.Api.World, outputSlot, amountItem);
+                    if (moved == 0 && allowExcess)
+                    {
+                        ItemStack takenStack = slot.TakeOut(amountItem);
+                        moved = takenStack.StackSize;
+                        returnedItems ??= new AggregatedStacks(); 
+                        returnedItems.Add(takenStack);
+                    }
+                }
+
+                movedItems += moved;
+                amountItem -= moved;
+                
+                if (amountItem <= 0) break;
+            }
+
+
+            return movedItems;
+        }
+
+        public virtual int AddProductToSlot(ItemSlot sourceSlot, bool bulk)
+        { 
+            return AddProductToSlot(sourceSlot, bulk ? sourceSlot.StackSize : 1);
+        }
+
+
+        /// <summary>
+        /// Adds the product from the specified stall slot and places it into the destination slot if it is provided.
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <param name="sourceSlot"></param>
+        /// <returns>True if any product was successfully added to the stall slot, false otherwise</returns>        
+        public virtual int AddProductToSlot(ItemSlot sourceSlot, int amount)
+        {
+            if (!MatchesProduct(sourceSlot.Itemstack)) return 0;
+
+            ItemSlot[] slots = GetStallSlots();
+
+            int amountItem = amount;
+            int movedItems = 0;
+
+            foreach (var slot in slots)
+            {
+                if (sourceSlot.Itemstack != null)
+                {
+                    int moved = sourceSlot.TryPutInto(Inventory.Api.World, slot, amountItem);
+                    amountItem -= moved;
+                    if (moved > 0)
+                    {
+                        movedItems += moved;
+                        sourceSlot.MarkDirty();
+                        slot.MarkDirty();
+                    }
+
+                    if (amountItem <= 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            return movedItems;
+        }
     }
 }

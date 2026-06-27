@@ -107,6 +107,7 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(BEDisplayMealContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
 
             api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
@@ -119,6 +120,7 @@ namespace Commercially.Vinconomy
             //api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
 
             RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
+            RegisterStallType("MealStallSlot", typeof(MealStallSlot));
 
             ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
@@ -130,6 +132,7 @@ namespace Commercially.Vinconomy
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
             CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
+            CommerciallySystem.RegisterInteraction(AddMealInteraction.Key, new AddMealInteraction());
             CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
             CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
         }

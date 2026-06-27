@@ -64,7 +64,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 for (int i = 0; i < numSlots; i++)
                 {
                     Products[i] = new VinconItemSlot(Inventory, StallSlot, i);
-                    new VinconItemSlot(Inventory, this.StallSlotCount, i);
                     ItemStack itemStack = tree.GetItemstack("slot" + i);
                     Products[i].Itemstack = itemStack;
                     if (Inventory.Api?.World != null)

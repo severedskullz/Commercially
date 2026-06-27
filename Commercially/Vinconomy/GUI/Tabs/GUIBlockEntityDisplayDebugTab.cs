@@ -13,7 +13,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public const string CODE = "Vinconomy.DisplayDebug";
         public override string Code => CODE;
 
-        BEDisplayContentsBehavior Display;
+        BEBaseDisplayContentsBehavior Display;
         private int StallSlot;
         private bool isUpdating;
 
@@ -22,7 +22,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Display = entity?.GetBehavior<BEDisplayContentsBehavior>();
+            Display = entity?.GetBehavior<BEBaseDisplayContentsBehavior>();
         }
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)
@@ -121,6 +121,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
         {
             GuiComposer composer = Gui.Composer;
             isUpdating = true;
+
+            composer.GetDynamicText("pageLabel").SetNewText(Lang.Get("vinconomy:gui-slot", [StallSlot + 1, Display.TfData.Length]));
             composer.GetNumberInput("inputX").SetValue(Display.TfData[StallSlot].X);
             composer.GetNumberInput("inputY").SetValue(Display.TfData[StallSlot].Y);
             composer.GetNumberInput("inputZ").SetValue(Display.TfData[StallSlot].Z);

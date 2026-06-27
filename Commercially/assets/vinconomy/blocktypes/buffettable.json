@@ -1,10 +1,11 @@
 {
-    "code": "mat",
+    "code": "buffettable",
     "class": "Commercially.BlockCommercial",
     "entityClass": "Commercially.BECommercialBase",
+    "priorityInteract": true,
     "attributes": {
         "handbook": {
-            "groupBy": [ "mat-north" ],
+            "groupBy": [ "buffettable-north" ],
             "extraSections": [
                 {
                     "title": "",
@@ -14,36 +15,38 @@
         }
     },
     "entityBehaviors": [
+
         {
             "name": "Vinconomy.StallInventory",
             "properties": {
                 "numStalls": 4,
-                "numSlotsPerStall": 16,
-                "stallType": "GenericStallSlot"
+                "numSlotsPerStall": 1,
+                "stallType": "MealStallSlot"
             }
         },
         {
-            "name": "Vinconomy.StallDisplay",
+            "name": "Vinconomy.MealDisplay",
             "properties": {
                 "displayTransforms": [
+
                     {
                         "x": -0.25,
-                        "y": 0.05,
+                        "y": 0.85,
                         "z": -0.25
                     },
                     {
                         "x": 0.25,
-                        "y": 0.05,
+                        "y": 0.85,
                         "z": -0.25
                     },
                     {
                         "x": -0.25,
-                        "y": 0.05,
+                        "y": 0.85,
                         "z": 0.25
                     },
                     {
                         "x": 0.25,
-                        "y": 0.05,
+                        "y": 0.85,
                         "z": 0.25
                     }
                 ]
@@ -58,12 +61,7 @@
                     "3": 2,
                     "4": 3
                 }
-            }
-        },
-        {
-            "name": "Commercially.GuiManager",
-            "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+
             }
         },
         {
@@ -71,7 +69,7 @@
             "properties": {
                 "interactions": [
                     {
-                        "code": "Vinconomy.AddStock",
+                        "code": "Vinconomy.AddMeal",
                         "priority": 10
                     },
                     {
@@ -83,6 +81,12 @@
                         "priority": 0
                     }
                 ]
+            }
+        },
+        {
+            "name": "Commercially.GuiManager",
+            "properties": {
+                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
             }
         },
         {
@@ -100,16 +104,16 @@
         {
             "name": "Commercially.TextureSwappable",
             "properties": {
-                "BaseBlock": "mat-north",
+                "BaseBlock": "buffettable-north",
                 "CreativeTabs": [ "vinconomy", "general" ],
-                "PrimaryMaterials": [ "black", "blue", "brown", "gray", "green", "mordant", "orange", "pink", "plain", "purple", "red", "white", "yellow" ]
+                "PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ]
             }
         },
         { "name": "HorizontalOrientable" }
     ],
     "heldTpIdleAnimation": "holdbothhandslarge",
     "heldTpUseAnimation": "twohandplaceblock",
-    "blockmaterial": "Cloth",
+    "blockmaterial": "Wood",
     "variantgroups": [
         {
             "code": "side",
@@ -117,51 +121,64 @@
         }
     ],
     "textures": {
-        "default": { "base": "game:block/cloth/linen/plain" },
+        "default": { "base": "game:block/clay/ceramic" },
 
-        "black": { "base": "game:block/cloth/linen/black" },
-        "blue": { "base": "game:block/cloth/linen/blue" },
-        "brown": { "base": "game:block/cloth/linen/brown" },
-        "gray": { "base": "game:block/cloth/linen/gray" },
-        "green": { "base": "game:block/cloth/linen/green" },
-        "mordant": { "base": "game:block/cloth/linen/mordant" },
-        "orange": { "base": "game:block/cloth/linen/orange" },
-        "pink": { "base": "game:block/cloth/linen/pink" },
-        "plain": { "base": "game:block/cloth/linen/plain" },
-        "purple": { "base": "game:block/cloth/linen/purple" },
-        "red": { "base": "game:block/cloth/linen/red" },
-        "white": { "base": "game:block/cloth/linen/white" },
-        "yellow": { "base": "game:block/cloth/linen/yellow" }
+        "ceramic": { "base": "game:block/clay/ceramic" },
+
+        "acacia": { "base": "game:block/wood/planks/acacia1" },
+        "baldcypress": { "base": "game:block/wood/planks/baldcypress1" },
+        "birch": { "base": "game:block/wood/planks/birch1" },
+        "ebony": { "base": "game:block/wood/planks/ebony1" },
+        "kapok": { "base": "game:block/wood/planks/kapok1" },
+        "larch": { "base": "game:block/wood/planks/larch1" },
+        "maple": { "base": "game:block/wood/planks/maple1" },
+        "oak": { "base": "game:block/wood/planks/oak1" },
+        "pine": { "base": "game:block/wood/planks/pine1" },
+        "purpleheart": { "base": "game:block/wood/planks/purpleheart1" },
+        "redwood": { "base": "game:block/wood/planks/redwood1" },
+        "walnut": { "base": "game:block/wood/planks/walnut1" }
     },
-    "shapebytype": {
+    "shapeByType": {
         "*-north": {
-            "base": "block/trademat",
+            "base": "block/mealtable",
             "rotateY": 0
         },
-        "*-west": {
-            "base": "block/trademat",
-            "rotateY": 90
+        "*-east": {
+            "base": "block/mealtable",
+            "rotateY": 270
         },
         "*-south": {
-            "base": "block/trademat",
+            "base": "block/mealtable",
             "rotateY": 180
         },
-        "*-east": {
-            "base": "block/trademat",
-            "rotateY": 270
+        "*-west": {
+            "base": "block/mealtable",
+            "rotateY": 90
         }
     },
-
-    "collisionboxes": [
+    "collisionBoxes": [
         {
             "x1": 0,
             "y1": 0,
             "z1": 0,
             "x2": 1,
-            "y2": 0.06,
+            "y2": 1,
             "z2": 1
         }
     ],
+
+    "tpHandTransform": {
+        "translation": {
+            "x": -2.1,
+            "y": -1.8,
+            "z": -1.25
+        },
+        "rotation": {
+            "x": -99,
+            "y": 4,
+            "z": -99
+        }
+    },
 
     "selectionBoxes": [
         {
@@ -169,65 +186,66 @@
             "y1": 0,
             "z1": 0,
             "x2": 1,
-            "y2": 0.06,
+            "y2": 1,
             "z2": 1
         },
         {
             "x1": 0.05,
-            "y1": 0.06,
+            "y1": 0.5,
             "z1": 0.05,
             "x2": 0.45,
-            "y2": 0.435,
+            "y2": 1.05,
             "z2": 0.45,
             "rotateYByType": {
                 "*-north": 0,
+                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180,
-                "*-east": 270
+                "*-south": 180
             }
         },
         {
             "x1": 0.55,
-            "y1": 0.06,
+            "y1": 0.5,
             "z1": 0.05,
             "x2": 0.95,
-            "y2": 0.435,
+            "y2": 1.05,
             "z2": 0.45,
             "rotateYByType": {
                 "*-north": 0,
+                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180,
-                "*-east": 270
+                "*-south": 180
             }
         },
         {
             "x1": 0.05,
-            "y1": 0.06,
+            "y1": 0.5,
             "z1": 0.55,
             "x2": 0.45,
-            "y2": 0.435,
+            "y2": 1.05,
             "z2": 0.95,
             "rotateYByType": {
                 "*-north": 0,
+                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180,
-                "*-east": 270
+                "*-south": 180
             }
         },
         {
             "x1": 0.55,
-            "y1": 0.06,
+            "y1": 0.5,
             "z1": 0.55,
             "x2": 0.95,
-            "y2": 0.45,
+            "y2": 1.05,
             "z2": 0.95,
             "rotateYByType": {
                 "*-north": 0,
+                "*-east": 270,
                 "*-west": 90,
-                "*-south": 180,
-                "*-east": 270
+                "*-south": 180
             }
         }
+
 
     ],
     "lightAbsorption": 0,
