@@ -31,7 +31,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             MealMeshCache mesher = (this.Api as ICoreClientAPI).ModLoader.GetModSystem<MealMeshCache>(true);
             Block block = stack.Itemstack?.Block;
             MealStallSlot mealStall = _InventoryProvider.GetStallSlot<MealStallSlot>(stallSlot);
-            string recipe = mealStall.RecipeCode;
+            string recipe = mealStall.GetRecipeCode();
             ItemStack[] contents = mealStall.GetProductContents();
 
             CookingRecipe fromRecipe = Api.GetCookingRecipe(recipe);

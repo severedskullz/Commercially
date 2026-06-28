@@ -1,5 +1,4 @@
-﻿using Commercially.Common.Interfaces;
-using Commercially.Common.Inventory;
+﻿using Commercially.Common.Inventory;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
@@ -97,9 +96,9 @@ namespace Commercially.Vinconomy.Inventory
             return VinconomyModSystem.GetStallType(className);
         }
 
-        protected StallSlotBase InstantiateStallType(Type type)
+        protected StallSlotBase InstantiateStallType(Type type, int stallSlot)
         {
-            StallSlotBase instance = (StallSlotBase)Activator.CreateInstance(type);
+            StallSlotBase instance = (StallSlotBase)Activator.CreateInstance(type, [this, stallSlot]);
             return instance;
         }
 
@@ -214,7 +213,7 @@ namespace Commercially.Vinconomy.Inventory
                 StallSlots = new StallSlotBase[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase instance =  InstantiateStallType(stallType);
+                    StallSlotBase instance =  InstantiateStallType(stallType, i);
                     instance.Initialize(this, i, numSlotsPerStall);
                     StallSlots[i] = instance;
                 }
@@ -238,7 +237,7 @@ namespace Commercially.Vinconomy.Inventory
         {
             while (amount-- > 0)
             {
-                StallSlotBase instance = InstantiateStallType(type);
+                StallSlotBase instance = InstantiateStallType(type, StallSlots.Length);
                 instance.Initialize(this, StallSlots.Length, numSlotsPerStall);
 
                 //TODO: Inneffecient - Store to list and add the whole thing in one pass instead of allocating new array and copying over each time
@@ -325,7 +324,7 @@ namespace Commercially.Vinconomy.Inventory
                 StallSlots = new StallSlotBase[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase stall = InstantiateStallType(StallType);
+                    StallSlotBase stall = InstantiateStallType(StallType, i);
                     ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
                     stall.PreInitialize(this, i);
                     stall.FromTreeAttributes(stallTree);

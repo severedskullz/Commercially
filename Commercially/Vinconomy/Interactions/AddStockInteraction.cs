@@ -98,7 +98,9 @@ namespace Commercially.Vinconomy.Interactions
             StallSlotBase stallSlot = stallComponent?.GetStallSlot(index);
 
 
-            return stallSlot.AddProductToSlot(byPlayer.InventoryManager.ActiveHotbarSlot, ctrlMod) > 0;
+            bool didAdd = stallSlot.AddProductToSlot(byPlayer, byPlayer.InventoryManager.ActiveHotbarSlot, ctrlMod) > 0;
+            if (didAdd) blockEntity.MarkDirty(true);
+            return didAdd;
         }
     }
 }

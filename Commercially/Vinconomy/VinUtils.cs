@@ -207,6 +207,17 @@ namespace Vinconomy.Util
             return null;
         }
 
+        public static string GetRecipeCode(ItemStack stack, ICoreAPI api)
+        {
+            if (stack == null)
+                return null;
+
+            if (stack.Block is IBlockMealContainer meal)
+                return meal.GetRecipeCode(api.World, stack);
+
+            return null;
+        }
+
         public static bool IsMergableContents(IWorldAccessor world, ItemStack[] source, ItemStack[] compareTo)
         {
             if (source == null || compareTo == null ||  source.Length == 0 || compareTo.Length == 0) return true;

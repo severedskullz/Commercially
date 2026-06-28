@@ -1,5 +1,11 @@
-﻿using Commercially.Common.Slots;
+﻿using Commercially.Common;
+using Commercially.Common.Interfaces;
+using Commercially.Common.Slots;
+using Commercially.Common.Util;
+using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Trading;
+using System;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -30,7 +36,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <summary>
         /// How many slots are considered "Product" that the player can fill in to sell items from.
         /// </summary>
-        public virtual int StallSlotCount => GetStallSlots().Length;
+        public virtual int StallSlotCount => GetProductSlots().Length;
 
         /// <summary>
         /// How many slots are considered "Internal" and not a part of the Product slots. At the very least each stall should have 2 slots: Currency and Product.
@@ -59,7 +65,12 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <returns></returns>
         public abstract ItemSlot this[int slotId] { get; set; }
 
-        public StallSlotBase() { }
+        public StallSlotBase(InventoryBase inventory, int stallSlot) {
+            this.Inventory = inventory;
+            this.StallSlot = stallSlot;
+            Currency = new VinconCloningSlot(inventory);
+            Product = new VinconCloningSlot(inventory);
+        }
 
         public virtual ItemSlot GetInternalSlot(int slotId)
         {
@@ -76,18 +87,16 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         }
         public virtual void FromTreeAttributes(ITreeAttribute tree)
         {
+
+            //This technically gets called BEFORE Initialize() does, so Currency and Product might be null
             ItemStack currencyStack = tree.GetItemstack(CURRENCY);
-            Currency = new VinconCloningSlot(this.Inventory)
-            {
-                Itemstack = currencyStack
-            };
+            
+            Currency.Itemstack = currencyStack;
 
 
             ItemStack productStack = tree.GetItemstack(PRODUCT);
-            Product = new VinconCloningSlot(this.Inventory)
-            {
-                Itemstack = productStack
-            };
+            
+            Product.Itemstack = productStack;
 
             if (Inventory.Api?.World != null)
             {
@@ -107,7 +116,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         {
             if (Product?.Itemstack == null) return 0;
 
-            ItemSlot[] items = GetStallSlots();
+            ItemSlot[] items = GetProductSlots();
             int amount = 0;
             foreach (ItemSlot item in items)
             {
@@ -123,7 +132,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public virtual ItemSlot FindFirstNonEmptyStockSlot()
         {
-            ItemSlot[] slots = GetStallSlots();
+            ItemSlot[] slots = GetProductSlots();
             foreach (var item in slots)
             {
                 if (TradingUtil.IsMatchingItem(Product?.Itemstack, item?.Itemstack, this.Inventory.Api.World, IsFuzzyMatching))
@@ -141,8 +150,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <param name="stallSlot"></param>
         public abstract void PreInitialize(VinconBaseInventory inventory, int stallSlot);
         public abstract void Initialize(VinconBaseInventory vinconBaseInventory, int stallSlot, int numSlotsPerStall);
-        public abstract ItemSlot GetStallSlot(int itemSlot);
-        public abstract ItemSlot[] GetStallSlots();
+        public abstract ItemSlot GetProductSlot(int itemSlot);
+        public abstract ItemSlot[] GetProductSlots();
 
         public abstract AggregatedSlots GetProducts();
 
@@ -167,7 +176,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public virtual int TakeProductFromSlot(int amount, out AggregatedStacks returnedItems, ItemSlot? outputSlot, bool allowExcess = false)
         {
             returnedItems = null;
-            ItemSlot[] slots = GetStallSlots();
+            ItemSlot[] slots = GetProductSlots();
 
             int amountItem = amount;
             int movedItems = 0;
@@ -197,9 +206,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return movedItems;
         }
 
-        public virtual int AddProductToSlot(ItemSlot sourceSlot, bool bulk)
+        public virtual int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, bool bulk)
         { 
-            return AddProductToSlot(sourceSlot, bulk ? sourceSlot.StackSize : 1);
+            return AddProductToSlot(byPlayer, sourceSlot, bulk ? sourceSlot.StackSize : 1);
         }
 
 
@@ -209,11 +218,11 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <param name="amount"></param>
         /// <param name="sourceSlot"></param>
         /// <returns>True if any product was successfully added to the stall slot, false otherwise</returns>        
-        public virtual int AddProductToSlot(ItemSlot sourceSlot, int amount)
+        public virtual int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, int amount)
         {
             if (!MatchesProduct(sourceSlot.Itemstack)) return 0;
 
-            ItemSlot[] slots = GetStallSlots();
+            ItemSlot[] slots = GetProductSlots();
 
             int amountItem = amount;
             int movedItems = 0;
@@ -238,6 +247,57 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             return movedItems;
+        }
+
+        public virtual TradeRequest CreateTradeRequest(IPlayer player, int numPurchases, IShopComponent shop, IStallComponent stall)
+        {
+            TradeRequest request = new TradeRequest(Inventory.Api, player);
+            IOwnable ownable = stall.Ownable;
+            ItemStack currencyStack = Currency.Itemstack;
+            ItemStack productStack = Product.Itemstack;
+            request.WithShop(shop, stall, StallSlot, ownable?.IsAdminOwned ?? false);
+            request.WithPurchases(numPurchases);
+            request.WithCurrency(currencyStack, TradingUtil.GetAllValidSlotsFor(player, currencyStack), currencyStack.StackSize);
+            request.WithProduct(productStack, GetProducts(), productStack.StackSize);
+
+            AggregatedSlots coupons = TradingUtil.GetCouponsSlotsFor(player, request.ProductNeeded, shop);
+            if (coupons.Slots.Count > 0)
+            {
+                request.WithCoupons(coupons.Slots[0]);
+            }
+
+            request.WithContainers(GetRequiredContainers(player));
+
+            if (shop != null)
+            {
+                RegisterInventory inv = shop.GetComponent<IInventoryProvider>()?.Inventory as RegisterInventory;
+                if (inv != null)
+                {
+                    ItemStack tradePass = inv.GetTradePass();
+                    if (tradePass != null)
+                    {
+                        request.WithTradePass(tradePass, TradingUtil.GetAllValidSlotsFor(player, tradePass));
+                    }
+                }
+            }           
+            return request.Build();
+        }
+
+        /// <summary>
+        /// Transfers the product extracted from the stall into the result to the player. How this is done is up to the Stall - for example, a Meal StallSlot will not give items directly to the player, but instead iterate over the Container slots and add the respective servings.
+        /// </summary>
+        /// <param name="result"></param>
+        public abstract void TransferProdutToPlayer(TradeResult result);
+
+        /// <summary>
+        /// Extracts the Product from the stall. Should do any conversion neccesary during extraction - for example, converting Meal ingredients into a Bowl with the appropriate servings as the ItemStack's stacksize, or bundling items into a single item like a Gacha Ball, 
+        /// </summary>
+        /// <param name="result"></param>
+        public abstract void ExtractProductFromStall(TradeResult result);
+
+        public virtual CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
+        {
+            return null;
         }
     }
 }

@@ -17,7 +17,7 @@
     "entityBehaviors": [
 
         {
-            "name": "Vinconomy.StallInventory",
+            "name": "Vinconomy.MealInventory",
             "properties": {
                 "numStalls": 4,
                 "numSlotsPerStall": 1,
@@ -86,7 +86,7 @@
         {
             "name": "Commercially.GuiManager",
             "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
+                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.BuffetOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
             }
         },
         {

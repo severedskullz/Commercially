@@ -29,20 +29,5 @@ namespace Commercially.Vinconomy.Inventory.Impl
         {
             return InternalSlots[0];
         }
-
-        /*
-        public override void FromTreeAttributes(ITreeAttribute tree)
-        {
-            base.FromTreeAttributes(tree);
-            InternalSlots[0].Itemstack = tree.GetItemstack("decoration");
-        }
-
-
-        public override void ToTreeAttributes(ITreeAttribute tree)
-        {
-            base.ToTreeAttributes(tree);
-            tree.SetItemstack("decoration", InternalSlots[0].Itemstack);
-        }
-        */
     }
 }

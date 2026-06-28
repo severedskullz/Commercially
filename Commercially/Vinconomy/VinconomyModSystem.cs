@@ -104,6 +104,8 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Register", typeof(BEShopBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.LiquidInventory", typeof(LiquidStallInventoryProvider));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.MealInventory", typeof(MealStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(BEDisplayMealContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
@@ -119,6 +121,7 @@ namespace Commercially.Vinconomy
 
             RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
             RegisterStallType("MealStallSlot", typeof(MealStallSlot));
+            RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
 
             ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
             guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
@@ -167,20 +170,7 @@ namespace Commercially.Vinconomy
 
         }
 
-        public bool OnBlockBroken(AssetLocation code, IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier)
-        {
-            return true;
-        }
 
-        public void OnBlockPlaced(AssetLocation code, IWorldAccessor world, BlockPos blockPos, ItemStack byItemStack)
-        {
-
-        }
-
-        public bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel)
-        {
-            return true;
-        }
 
         public static void RegisterStallType(string className, Type type) {
             StallTypes.Add(className, type);
@@ -254,6 +244,9 @@ namespace Commercially.Vinconomy
             if (request.NumPurchases <= 0)
                 return SetErrorAndReturn(result, TradingConstants.PURCHASED_ZERO);
 
+            if (!GenericTradingProcessor.HasEnoughContainerCapacity(request))
+                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_CAPACITY);
+
             if (!GenericTradingProcessor.HasEnoughDurability(request))
                 return SetErrorAndReturn(result, TradingConstants.NO_TOOL);
 
@@ -265,6 +258,7 @@ namespace Commercially.Vinconomy
 
             return result;
         }
+
         private void PostValidateTrade(TradeResult result)
         {
             EnumHandling handled = EnumHandling.PassThrough;
@@ -278,9 +272,9 @@ namespace Commercially.Vinconomy
             return; // Handled / PassThrough
         }
 
-        private void PreFinalizeTrade(TradeResult result) {
+        private void PreProcessTrade(TradeResult result) {
             EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PreFinalizeTradeHandlers)
+            foreach (var handlers in PreProcessTradeHandlers)
             {
                 handlers.Value.Invoke(result, ref handled);
 
@@ -290,15 +284,17 @@ namespace Commercially.Vinconomy
             return; // Handled / PassThrough
         }
 
-        private void FinalizeTrade(TradeResult result) {
+        private void ProcessTrade(TradeResult result) {
             TransferCurrencyToParent(result);
             TransferCouponsToParent(result);
-            TransferProductToPlayer(result);
-            result.Request.SellingEntity?.GetBlockEntity().MarkDirty();
+            //TransferProductToPlayer(result);
+            result.Stall.TransferProdutToPlayer(result);
+            result.Request.SellingEntity.GetBlockEntity().MarkDirty();
         }
 
         private void TransferProductToPlayer(TradeResult result)
         {
+            /*
             // TODO: I dont wanna go crazy with all the hashmaps needing everything to be "registered" and I dont think there are any more possible types of trades we can even do
             // If we need to add more in the future, this should be easy enough to harmony patch, or worst case I just come back in here and pull from a hashmap of registered trade types and call its respective method from a container-class for the logic
             switch(result.Request.TradeType) {
@@ -312,6 +308,7 @@ namespace Commercially.Vinconomy
                     GenericTradingProcessor.TransferProductToPlayer(result);
                     break;
             }
+            */        
         }
 
         private void TransferCurrencyToParent(TradeResult result)
@@ -376,9 +373,9 @@ namespace Commercially.Vinconomy
             return false;
         }
 
-        private void PostFinalizeTrade(TradeResult result) {
+        private void PostProcessTrade(TradeResult result) {
             EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PostFinalizeTradeHandlers)
+            foreach (var handlers in PostProcessTradeHandlers)
             {
                 handlers.Value.Invoke(result, ref handled);
 
@@ -395,6 +392,18 @@ namespace Commercially.Vinconomy
             return result;
         }
 
+        public TradeResult TryValidateTrade(TradeRequest request)
+        {
+            if (request == null) return new TradeResult(null) { ErrorMsg = TradingConstants.PURCHASED_ZERO };
+
+            bool runProcessing = PreValidateTrade(request);
+            TradeResult result = ValidateTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
+            if (result.ErrorMsg != null) return result;
+            PostValidateTrade(result);
+
+            return result;
+        }
+
         public TradeResult TryPurchaseItem(TradeRequest request)
         {
             // Dev Note: I tried to make this as flexible as possible. If there are not enough "hook" spots, at the very least you can Harmony Patch the individual methods
@@ -408,13 +417,8 @@ namespace Commercially.Vinconomy
             // an external API like the cross-server-trading server should go in the Pre/Post Finalize steps. At this point the trade is valid, the items have been removed from
             // the source slots and its just a matter of sending things where they should go
 
-            if (request == null) return new TradeResult(null) { ErrorMsg = TradingConstants.PURCHASED_ZERO }; 
-
             // Step 1: Validate the trade by checking if we have enough currency, enough stock, permissions to trade, etc.
-            bool runProcessing = PreValidateTrade(request);
-            TradeResult result = ValidateTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
-            if (result.ErrorMsg != null) return result;
-            PostValidateTrade(result);
+            TradeResult result = TryValidateTrade(request);
             if (result.ErrorMsg != null) return result;
 
             // Step 2: At this point the trade is "Valid" and we can commit to the trade.
@@ -425,11 +429,23 @@ namespace Commercially.Vinconomy
             LogPurchase(result);
 
             //Step 4: Now that we have taken the currency from the player, product from the shop, etc. we need to put the items in their proper places
-            PreFinalizeTrade(result);
-            FinalizeTrade(result);
-            PostFinalizeTrade(result);
+            CommitTrade(result);
 
             return result;
+        }
+
+        private void CommitTrade(TradeResult result)
+        {
+            CommerciallyModSystem.PrintClientMessage(result.Request.Customer, TradingConstants.PURCHASED_ITEMS, new object[] {
+                result.ProductStacks.TotalCount,
+                result.Request.ProductNeeded.GetName(),
+                result.CurrencyStacks.TotalCount,
+                result.Request.CurrencyNeeded.GetName()
+            });
+
+            PreProcessTrade(result);
+            ProcessTrade(result);
+            PostProcessTrade(result);
         }
 
         private void LogPurchase(TradeResult result)
@@ -444,32 +460,9 @@ namespace Commercially.Vinconomy
         /// <param name="result"></param>
         private void ExtractItems(TradeResult result)
         {
-            AggregatedSlots products = result.Request.ProductSourceSlots;
-            int totalProductToMove = result.Request.GetFinalProductNeededPerPurchase() * result.Request.NumPurchases;
-            AggregatedStacks productStacks = result.ProductStacks;
-
-            foreach (ItemSlot slot in products)
-            {
-                ItemStack takenStack = slot.TakeOut(totalProductToMove);
-                if (takenStack != null)
-                {
-                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                    totalProductToMove -= takenStack.StackSize;
-                    productStacks.Add(takenStack);
-                    slot.MarkDirty();
-                }
-
-                if (totalProductToMove <= 0)
-                {
-                    if (totalProductToMove < 0)
-                    {
-                        this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
-                    }
-                    break;
-                }
-
-            }
-
+            //Defer extraction logic to the stall. This way I can abstract that mess between liquids, meals, gachaballs, sculptures and items.
+            result.Stall.ExtractProductFromStall(result);
+           
             AggregatedSlots currency = result.Request.CurrencySourceSlots;
             int totalCurrencyToMove = result.Request.GetFinalCurrencyNeededPerPurchase() * result.Request.NumPurchases;
             AggregatedStacks currencyStacks = result.CurrencyStacks;
@@ -524,29 +517,27 @@ namespace Commercially.Vinconomy
         }
 
         private SortedList<int, PreProcessTrade> PreValidateTradeHandlers = new SortedList<int, PreProcessTrade>();
-        public void RegisterPreProcessTradeHandler(int priority, PreProcessTrade hook)
+        public void RegisterPreValidateTradeHandler(int priority, PreProcessTrade hook)
         {
             PreValidateTradeHandlers.Add(priority, hook);
         }
 
         private SortedList<int, PostProcessTrade> PostValidateTradeHandlers = new SortedList<int, PostProcessTrade>();
-        public void RegisterPostProcessTradeHandlers(int priority, PostProcessTrade hook)
+        public void RegisterPostValidateTradeHandlers(int priority, PostProcessTrade hook)
         {
             PostValidateTradeHandlers.Add(priority, hook);
         }
 
-        private SortedList<int, PreFinalizeTrade> PreFinalizeTradeHandlers = new SortedList<int, PreFinalizeTrade>();
-        public void RegisterPreFinalizeTradeHandler(int priority, PreFinalizeTrade hook)
+        private SortedList<int, PreFinalizeTrade> PreProcessTradeHandlers = new SortedList<int, PreFinalizeTrade>();
+        public void RegisterPreProcessTradeHandler(int priority, PreFinalizeTrade hook)
         {
-            PreFinalizeTradeHandlers.Add(priority, hook);
+            PreProcessTradeHandlers.Add(priority, hook);
         }
 
-        private SortedList<int, PostFinalizeTrade> PostFinalizeTradeHandlers = new SortedList<int, PostFinalizeTrade>();
-
-
-        public void RegisterPostFinalizeTradeHandler(int priority, PostFinalizeTrade hook)
+        private SortedList<int, PostFinalizeTrade> PostProcessTradeHandlers = new SortedList<int, PostFinalizeTrade>();
+        public void RegisterPostProcessTradeHandler(int priority, PostFinalizeTrade hook)
         {
-            PostFinalizeTradeHandlers.Add(priority, hook);
+            PostProcessTradeHandlers.Add(priority, hook);
         }
 
         public OwnableShopInformation GetShopInformation(int shopId)
@@ -561,6 +552,24 @@ namespace Commercially.Vinconomy
             DB.SaveProductListing(shop, stallSlot, product, stockCount, currency);
         }
 
-        
+
+
+        //TODO: Shit not being used below:
+
+        public bool OnBlockBroken(AssetLocation code, IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier)
+        {
+            return true;
+        }
+
+        public void OnBlockPlaced(AssetLocation code, IWorldAccessor world, BlockPos blockPos, ItemStack byItemStack)
+        {
+
+        }
+
+        public bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel)
+        {
+            return true;
+        }
+
     }    
 }

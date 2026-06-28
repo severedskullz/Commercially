@@ -195,7 +195,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             {
                 BinaryWriter writer = new BinaryWriter(ms);
                 writer.Write(StallSlot);
-                writer.Write(1);
+                writer.Write(Quantity);
                 writer.Write(true);
                 data = ms.ToArray();
 

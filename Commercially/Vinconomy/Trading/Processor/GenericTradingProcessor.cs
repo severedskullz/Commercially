@@ -60,6 +60,26 @@ namespace Commercially.Vinconomy.Trading.Processor
             return (request.ProductSourceSlots.TotalCount / request.GetFinalProductNeededPerPurchase()) > 0;
         }
 
+        public static bool HasEnoughContainerCapacity(TradeRequest req)
+        {
+            if (req.ContainerSourceSlots == null)
+            {
+                return true;
+            }
+            else if (req.ContainerSourceSlots is ServingCapacityAggregatedSlots servings)
+            {
+                return servings.TotalCapacity / req.GetFinalProductNeededPerPurchase() > 0;
+            }
+
+            else if (req.ContainerSourceSlots is LiquidCapacityAggregatedSlots capacity)
+            {
+                float litersNeeded = ConvertStackToLiters(req.ProductNeeded, req.GetFinalProductNeededPerPurchase());
+                return (int)(capacity.TotalCapacity / litersNeeded) > 0;
+            }
+            
+            return true;
+        }
+
         public static int GetNumTradesForStock(TradeRequest request)
         {
             if (request.IsAdminShop) return request.NumPurchases;
@@ -75,20 +95,7 @@ namespace Commercially.Vinconomy.Trading.Processor
 
         }
 
-        public static bool CanPlayerHold(TradeRequest request)
-        {
-            if (request.ContainerSourceSlots is ServingCapacityAggregatedSlots servings)
-            {
-                return servings.TotalCapacity / request.GetFinalProductNeededPerPurchase() > 0;
-            }
-            else if (request.ContainerSourceSlots is LiquidCapacityAggregatedSlots capacity)
-            {
-                float litersNeeded = ConvertStackToLiters(request.ProductNeeded, request.GetFinalProductNeededPerPurchase());
-                return (int)(capacity.TotalCapacity / litersNeeded) > 0;
-            }
 
-            return true;
-        }
 
         public static bool HasEnoughDurability(TradeRequest request)
         {
@@ -131,35 +138,6 @@ namespace Commercially.Vinconomy.Trading.Processor
         public static void AuditLogDebug(TradeResult res, string message)
         {
             res.Request.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Debug(message);
-        }
-
-        public static void TransferProductToPlayer(TradeResult result)
-        {
-            if (result.ProductStacks.TotalCount == 0) return;
-
-            IPlayer player = result.Request.Customer;
-            AssetLocation sound = null;
-            while (result.ProductStacks.CanRemoveStack())
-            {
-                ItemStack stack = result.ProductStacks.RemoveStack();
-
-                if (stack != null)
-                {
-                    AuditLogDebug(result, $"Adding {stack.StackSize}x {stack} product to Parent");
-                    if (stack.Block?.Sounds?.Place.Location != null)
-                    {
-                        sound = stack.Block?.Sounds?.Place.Location;
-                    }
-
-                    player.InventoryManager.TryGiveItemstack(stack, true);
-                    if (stack.StackSize > 0)
-                    {
-                        result.Request.Api.World.SpawnItemEntity(stack, player.Entity.Pos.XYZ.Add(0.5), null);
-                    }
-                }
-            }
-
-            result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
     }
 }

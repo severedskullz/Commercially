@@ -157,36 +157,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         public virtual TradeResult PurchaseItem(IPlayer player, int stallSlot, int numPurchases, IShopComponent shopRegister)
         {
-            TradeRequest request = new TradeRequest(Api, player);
-            IOwnable ownable = this.GetComponent<IOwnable>();
-            ItemStack currencyStack = GetCurrencyForStallSlot(stallSlot);
-            ItemStack productStack = GetProductForStallSlot(stallSlot);
-            request.WithShop(shopRegister, this, stallSlot, ownable?.IsAdminOwned ?? false);
-            request.WithPurchases(numPurchases);
-            request.WithCurrency(currencyStack, TradingUtil.GetAllValidSlotsFor(player, currencyStack), currencyStack.StackSize);
-            request.WithProduct(productStack, GetStallSlot(stallSlot).GetProducts(), productStack.StackSize);
-
-            AggregatedSlots coupons = TradingUtil.GetCouponsSlotsFor(player, request.ProductNeeded, shopRegister);
-            if (coupons.Slots.Count > 0)
-            {
-                request.WithCoupons(coupons.Slots[0]);
-            }
-
-            if (shopRegister != null)
-            {
-                RegisterInventory inv = shopRegister.GetComponent<IInventoryProvider>()?.Inventory as RegisterInventory;
-                if (inv != null)
-                {
-                    ItemStack tradePass = inv.GetTradePass();
-                    if (tradePass != null)
-                    {
-                        request.WithTradePass(tradePass, TradingUtil.GetAllValidSlotsFor(player, tradePass));
-                    }
-                }
-            }
-
-
-            request.Build();
+            TradeRequest request = GetStallSlot(stallSlot).CreateTradeRequest(player, numPurchases, shopRegister, this);
 
             TradeResult result = VinconomyCore.TryPurchaseItem(request);
             if (result.ErrorMsg != null)
@@ -294,7 +265,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         stallSlot = (int)reader.ReadInt32();
                         amount = (int)reader.ReadInt32();
                     }
-                    _InventoryProvider.GetStallSlot(stallSlot).CurrencyPerPurchase = amount;
+                    _InventoryProvider.GetStallSlot(stallSlot).ProductPerPurchase = amount;
                     break;
 
                 case CommerciallyConstants.SET_ITEM_PRICE:
@@ -304,7 +275,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         stallSlot = reader.ReadInt32();
                         amount = reader.ReadInt32();
                     }
-                    _InventoryProvider.GetStallSlot(stallSlot).ProductPerPurchase = amount;
+                    _InventoryProvider.GetStallSlot(stallSlot).CurrencyPerPurchase = amount;
                     break;
 
                 case CommerciallyConstants.SET_PARENT_ID:

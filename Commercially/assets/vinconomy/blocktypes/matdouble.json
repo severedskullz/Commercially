@@ -3,7 +3,6 @@
     "class": "Commercially.BlockCommercial",
     "entityClass": "Commercially.BECommercialBase",
     "priorityInteract": true,
-    
     "attributes": {
         "handbook": {
             "groupBy": [ "matdouble-north" ],

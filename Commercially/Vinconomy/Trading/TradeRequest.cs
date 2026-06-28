@@ -1,6 +1,7 @@
 ﻿using Commercially.Common.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
 using System.Collections.Generic;
 using Vinconomy.ItemTypes;
@@ -228,12 +229,14 @@ namespace Commercially.Vinconomy.Trading
 
     public class TradeResult
     {
-        public string ErrorMsg;
-        public TradeRequest Request;
-        public AggregatedStacks ProductStacks;
-        public AggregatedStacks CurrencyStacks;
-        public AggregatedStacks CouponStacks;
-        public Dictionary<string, object> CustomData;
+        public string ErrorMsg { get; set; }
+        public TradeRequest Request { get; set; }
+        public AggregatedStacks ProductStacks { get; set; }
+        public AggregatedStacks CurrencyStacks { get; set; }
+        public AggregatedStacks CouponStacks { get; set; }
+        public Dictionary<string, object> CustomData { get; set; }
+
+        public StallSlotBase Stall => Request.SellingEntity.GetStallSlot(Request.StallSlot);
 
         public TradeResult(TradeRequest req)
         {

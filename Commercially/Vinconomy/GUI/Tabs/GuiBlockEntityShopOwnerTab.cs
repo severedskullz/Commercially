@@ -42,16 +42,16 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 OwnableRegistration[] ownables = Registry.GetOwnablesForOwner(Ownable.OwnerUID, Ownable.GetAllowedParentTypes());
                 int shopLength = ownables.Length;
-                string[] shopsNames = new string[shopLength+1];
-                string[] shopsKeys = new string[shopLength+1];
+                string[] shopsNames = new string[shopLength + 1];
+                string[] shopsKeys = new string[shopLength + 1];
 
                 shopsNames[0] = "( None )";
                 shopsKeys[0] = "-1";
 
                 for (int i = 0; i < shopLength; i++)
                 {
-                    shopsNames[i+1] = ownables[i].Name ?? "Generic Shop";
-                    shopsKeys[i+1] = ownables[i].ID.ToString();
+                    shopsNames[i + 1] = ownables[i].Name ?? "Generic Shop";
+                    shopsKeys[i + 1] = ownables[i].ID.ToString();
                     if (ownables[i].ID == Ownable.ParentID)
                     {
                         SelectedIndex = i + 1;
@@ -74,10 +74,10 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 }
 
                 int numColumns = (int)Math.Ceiling(Math.Sqrt(slotGridIDs.Length));
-                int slotGridWidth = (int) (numColumns * (GuiElementPassiveItemSlot.unscaledSlotSize + GuiElementItemSlotGridBase.unscaledSlotPadding));
+                int slotGridWidth = (int)(numColumns * (GuiElementPassiveItemSlot.unscaledSlotSize + GuiElementItemSlotGridBase.unscaledSlotPadding));
 
 
-                ElementBounds settingBounds = ElementBounds.FixedSize(250, 150).WithFixedOffset(10, GuiStyle.TitleBarHeight+10);
+                ElementBounds settingBounds = ElementBounds.FixedSize(250, 150).WithFixedOffset(10, GuiStyle.TitleBarHeight + 10);
                 settingBounds.BothSizing = ElementSizing.FitToChildren;
                 rootBounds.WithChild(settingBounds);
 
@@ -88,22 +88,22 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-shop"), hoverText, 500, shopSelectionLabel);
                 composer.AddDropDown(shopsKeys, shopsNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
 
-
-
-                ElementBounds chiselLabel = ElementBounds.FixedSize(200, 25).FixedUnder(shopSelectBounds,15);
+                ElementBounds chiselLabel = ElementBounds.FixedSize(200, 25).FixedUnder(shopSelectBounds, 15);
                 ElementBounds chiselSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).FixedUnder(chiselLabel);
                 settingBounds.WithChildren(chiselLabel, chiselSlotBounds);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-decoration-block"), smallText, chiselLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-decoration-block"), hoverText, 500, chiselLabel);
                 composer.AddItemSlotGrid(Inventory, new Action<object>(this.SetCurrencySlot), 1, new int[] { 0 }, chiselSlotBounds, "chisel");
 
-                ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).WithFixedOffset(0, 10);
-                ElementBounds adminShopLabel = ElementBounds.FixedSize(100, 25).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).FixedRightOf(adminShopBounds).WithFixedOffset(0, 10);
+                if (false) { 
+                    ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).WithFixedOffset(0, 10);
+                    ElementBounds adminShopLabel = ElementBounds.FixedSize(100, 25).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).FixedRightOf(adminShopBounds).WithFixedOffset(0, 10);
 
-                settingBounds.WithChildren(adminShopLabel, adminShopBounds);
-                composer.AddSwitch(this.OnToggleAdminShop, adminShopBounds, "admin");
-                composer.AddStaticText(Lang.Get("vinconomy:gui-admin-shop"), smallText, adminShopLabel);
-                composer.AddHoverText(Lang.Get("vinconomy:tooltip-admin-shop"), hoverText, 500, adminShopLabel);
+                    settingBounds.WithChildren(adminShopLabel, adminShopBounds);
+                    composer.AddSwitch(this.OnToggleAdminShop, adminShopBounds, "admin");
+                    composer.AddStaticText(Lang.Get("vinconomy:gui-admin-shop"), smallText, adminShopLabel);
+                    composer.AddHoverText(Lang.Get("vinconomy:tooltip-admin-shop"), hoverText, 500, adminShopLabel);
+                }
 
                 ElementBounds pageBounds = ElementBounds.FixedSize(250, 30).FixedRightOf(settingBounds, 15).WithFixedOffset(0, GuiStyle.TitleBarHeight);
                 rootBounds.WithChild(pageBounds);
@@ -119,7 +119,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 ElementBounds stallBounds = ElementBounds.FixedSize(250, 200).FixedRightOf(settingBounds, 15).FixedUnder(pageBounds,10);
                 stallBounds.BothSizing = ElementSizing.FitToChildren;
                 rootBounds.WithChild(stallBounds);
-                //composer.AddInset(stallBounds);
 
                 ElementBounds priceLabel = ElementBounds.FixedSize(100, 30).WithFixedOffset(5,10);
                 ElementBounds priceSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).WithFixedOffset(5, 0).FixedUnder(priceLabel);
@@ -128,12 +127,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddStaticText(Lang.Get("vinconomy:gui-price"), smallText, priceLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-price"), hoverText, 500, priceLabel);
                 composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { stallSlotOffset }, priceSlotBounds, "currency");
-
-                //ElementBounds priceInputLabel = ElementBounds.FixedSize(150, 30).FixedUnder(priceSlotBounds).WithFixedOffset(0, 15);
-                
-
-                //composer.AddStaticText(Lang.Get("vinconomy:gui-cost-per-purchase"), smallText, priceInputLabel);
-                //composer.AddHoverText(Lang.Get("vinconomy:tooltip-cost-per-purchase"), hoverText, 500, priceInputLabel);
                 composer.AddNumberInput(priceInputBounds, this.OnCostQuantityChanged, smallText, "costQuantity");
 
                 ElementBounds productLabel = ElementBounds.FixedSize(100, 30).FixedRightOf(priceLabel, 80).WithFixedOffset(0,10);
@@ -143,12 +136,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddStaticText(Lang.Get("vinconomy:gui-product"), smallText, productLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-product"), hoverText, 500, productLabel);
                 composer.AddItemSlotGrid(Inventory, this.SetProductSlot, 1, new int[] { stallSlotOffset + 1 }, productSlotBounds, "product");
-
-                //ElementBounds productInputLabel = ElementBounds.FixedSize(150, 30).FixedUnder(priceInputLabel).WithFixedOffset(0, 15);
-                
-                //stallBounds.WithChildren(productInputLabel, productInputBounds);
-                //composer.AddStaticText(Lang.Get("vinconomy:gui-items-per-purchase"), smallText, productInputLabel);
-                //composer.AddHoverText(Lang.Get("vinconomy:tooltip-items-per-purchase"), hoverText, 500, productInputLabel);
                 composer.AddNumberInput(productInputBounds, this.OnSellQuantityChanged, smallText, "sellQuantity");
 
 

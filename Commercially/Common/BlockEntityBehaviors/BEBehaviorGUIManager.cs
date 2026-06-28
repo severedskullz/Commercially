@@ -58,6 +58,11 @@ namespace Commercially.Common.BlockEntityBehaviors
                         packet.AddTab(item, data);
                     }
                 }
+                InventoryBase inventory = Blockentity.GetBehavior<IInventoryProvider>()?.Inventory;
+                if (inventory != null)
+                {
+                    caller.Player.InventoryManager.OpenInventory(inventory);
+                }
 
                 (Api as ICoreServerAPI).Network.SendBlockEntityPacket((IServerPlayer)caller.Player, Blockentity.Pos, CommerciallyConstants.OPEN_GUI, SerializerUtil.Serialize(packet));
             }
