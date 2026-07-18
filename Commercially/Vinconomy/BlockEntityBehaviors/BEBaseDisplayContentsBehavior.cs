@@ -79,6 +79,9 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             _InventoryProvider = this.GetComponent<IStallInventoryProvider>();
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
+            TransformationData gTransform = properties["globalTransform"]?.AsObject(new TransformationData());
+
+
             TfData = new TransformationData[_InventoryProvider.StallCount];
             JsonObject[] displayTransforms = properties["displayTransforms"]?.AsArray();
             for (int i = 0; i < _InventoryProvider.StallCount; i++)
@@ -88,11 +91,17 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 {
                     JsonObject prop = displayTransforms[i];
                     tdata = prop.AsObject(new TransformationData());
+
                 }
                 else
                 {
                     tdata = new TransformationData();
                     tdata.Reset();
+                }
+
+                if (gTransform != null)
+                {
+                    tdata.globalTransform = gTransform;
                 }
 
                 tdata.preRotate += (float)((Block.Shape.rotateY));

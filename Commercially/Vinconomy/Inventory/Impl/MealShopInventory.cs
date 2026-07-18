@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Common;
+﻿using Commercially.Vinconomy.Inventory.StallSlots;
+using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.Inventory.Impl
 {
@@ -10,11 +11,13 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
         public override bool TransferToStall(int stallSlot, ItemSlot sourceSlot, int amount)
         {
-            return true;
+            MealStallSlot stall = GetStall<MealStallSlot>(stallSlot);
+            return stall.AddMeal(sourceSlot, amount); ;
         }
         public override bool TransferFromStall(int stallSlot, ItemSlot destSlot, int amount)
         {
-            return true;
+            MealStallSlot stall = GetStall<MealStallSlot>(stallSlot);
+            return stall.RemoveMeal(destSlot, amount);
         }
     }
 }

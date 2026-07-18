@@ -16,6 +16,7 @@ namespace Commercially.Common.BlockEntityBehaviors
         string[] Tabs;
         string DialogueLangCode;
         string DialogueName;
+        GUIModularBlockEntity Gui = null;
 
         public BEBehaviorGUIManager(BlockEntity blockentity) : base(blockentity)
         {
@@ -100,7 +101,7 @@ namespace Commercially.Common.BlockEntityBehaviors
                 }
                 gui.BlockSelectionIndex = packet?.SelectedIndex ?? 0;
                 gui.LoadTabs(Tabs);
-
+                gui.OnClosed += UnsetGUI;
 
                 if (packet != null)
                 {
@@ -116,8 +117,44 @@ namespace Commercially.Common.BlockEntityBehaviors
                 }
                 gui.TryOpen();
             }
+            else if (packetid == CommerciallyConstants.TAB_UPDATE)
+            {
+                if (Gui == null)
+                {
+                    Api.Logger.Error($"Received tab update packet for GUI at {Blockentity.Pos} but GUI is not open.");
+                    return;
+                }
+
+                GUITabPacket tabPacket = SerializerUtil.Deserialize<GUITabPacket>(data);
+                ModularTab tab = GetTab(tabPacket.TabCode);
+                tab?.OnRecievedData(tabPacket.Data);
+            }
+            else if (packetid == CommerciallyConstants.GUI_UPDATE)
+            {
+                if (Gui == null)
+                {
+                    Api.Logger.Error($"Received GUI update packet for GUI at {Blockentity.Pos} but GUI is not open.");
+                    return;
+                }
+
+                Gui.FullRecompose();
+            }
+
         }
 
+        private void UnsetGUI()
+        {
+            Gui = null;
+        }
 
+        private ModularTab GetTab(string tabCode)
+        {
+            foreach (var tab in Gui.Tabs)
+            {
+                if (tab.Code == tabCode)
+                    return tab;
+            }
+            return null;
+        }
     }
 }

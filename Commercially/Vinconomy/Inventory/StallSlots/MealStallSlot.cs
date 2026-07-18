@@ -359,8 +359,11 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 genMeal.SetContents(RecipeCode, stack, sourceMealBlock.GetContents(world, sourceMeal), 1);
                 stack.StackSize = servingsToTransfer;
                 MealSlot.Itemstack = stack;
+                Product.Itemstack = stack.Clone();
+                Product.MarkDirty();
             }
 
+            
 
             //Remove the meal contents from the source block, converting it to the Eaten Block if neccessary
             sourceMeal.Attributes?.RemoveAttribute("sealed");
@@ -385,6 +388,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             }
 
+            MealSlot.OnItemSlotModified(MealSlot.Itemstack);
             MealSlot.MarkDirty();
             sourceSlot.MarkDirty();
             return true;
@@ -463,6 +467,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 targetMeal.Attributes?.RemoveAttribute("sealed");
             }
 
+            MealSlot.OnItemSlotModified(MealSlot.Itemstack);
             MealSlot.MarkDirty();
             targetSlot.MarkDirty();
             return true;

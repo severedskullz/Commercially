@@ -1,7 +1,9 @@
-﻿using Commercially.Common.BlockEntityBehaviors;
+﻿using Commercially.Common;
+using Commercially.Common.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using System.IO;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -60,6 +62,29 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             return _Inventory[0];
         }
 
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            if (packetid == CommerciallyConstants.TRANSFER_CONTENTS)
+            {
+                using (MemoryStream memoryStream = new MemoryStream(data))
+                {
+                    BinaryReader binaryReader = new BinaryReader(memoryStream);
+                    int stallSlot = binaryReader.ReadInt32();
+                    int amount = binaryReader.ReadInt32();
 
+                    if (amount > 0)
+                    {
+                        _Inventory.TransferToStall(stallSlot, _Inventory.GetTransferSlot(), amount);
+                    } else
+                    {
+                        _Inventory.TransferFromStall(stallSlot, _Inventory.GetTransferSlot(), -amount);
+                    }
+                }
+            }
+            else
+            {
+                base.OnReceivedClientPacket(player, packetid, data);
+            }
+        }
     }
 }

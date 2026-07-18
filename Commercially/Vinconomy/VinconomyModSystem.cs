@@ -129,6 +129,7 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(GuiBlockEntityDisplayDebugTab.CODE, typeof(GuiBlockEntityDisplayDebugTab));
             guiSystem.RegisterTabType(GuiBlockEntityRegisterConfigTab.CODE, typeof(GuiBlockEntityRegisterConfigTab));
             guiSystem.RegisterTabType(GuiVinconCouponCutter.CODE, typeof(GuiVinconCouponCutter));
+            guiSystem.RegisterTabType(GuiBlockEntityMealShopOwnerTab.CODE, typeof(GuiBlockEntityMealShopOwnerTab));
 
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 

@@ -7,6 +7,8 @@ namespace Commercially.Common.Util
     // Thanks, Sonz-ina
     public class TransformationData()
     {
+        public TransformationData globalTransform;
+
         public float preRotate = 0;
         public float X, Y, Z;
         public float OffsetX, OffsetY, OffsetZ;
@@ -39,22 +41,46 @@ namespace Commercially.Common.Util
                 return mat.Scale(0.01f, 0.01f, 0.01f).Values;
             }
 
+            if (globalTransform == null)
+            {
+                globalTransform = new TransformationData();
+            }
+
             mat.Translate(0.5f, 0, 0.5f);
 
             // Handle block rotation
-            mat.RotateYDeg(preRotate);
+            mat.RotateYDeg(globalTransform.preRotate + preRotate);
 
             // Handle segment locations
-            mat.Translate(X, Y, Z);
-            mat.Rotate(RotX * GameMath.DEG2RAD, RotY * GameMath.DEG2RAD, RotZ * GameMath.DEG2RAD);
+            mat.Translate(
+                globalTransform.X + X,
+                globalTransform.Y + Y,
+                globalTransform.Z + Z
+                );
+
+            mat.Rotate(
+                (globalTransform.RotX * GameMath.DEG2RAD) + (RotX * GameMath.DEG2RAD), 
+                (globalTransform.RotY * GameMath.DEG2RAD) + (RotY * GameMath.DEG2RAD), 
+                (globalTransform.RotZ * GameMath.DEG2RAD) + (RotZ * GameMath.DEG2RAD)
+                );
 
             // Handle item offsets
-            mat.Translate(OffsetX, OffsetY, OffsetZ);
-            mat.RotateYDeg(OffsetRotY);
-            mat.RotateXDeg(OffsetRotX);
-            mat.RotateZDeg(OffsetRotZ);
-            mat.Translate(OffsetOriginX, OffsetOriginY, OffsetOriginZ);
-            mat.Scale(ScaleX, ScaleY, ScaleZ);
+            mat.Translate(globalTransform.OffsetX + OffsetX, globalTransform.OffsetY + OffsetY, globalTransform.OffsetZ + OffsetZ);
+            mat.RotateYDeg(globalTransform.OffsetRotY + OffsetRotY);
+            mat.RotateXDeg(globalTransform.OffsetRotX + OffsetRotX);
+            mat.RotateZDeg(globalTransform.OffsetRotZ + OffsetRotZ);
+
+            mat.Translate(
+                globalTransform.OffsetOriginX + OffsetOriginX,
+                globalTransform.OffsetOriginY + OffsetOriginY,
+                globalTransform.OffsetOriginZ + OffsetOriginZ
+                );
+
+            mat.Scale(
+                globalTransform.ScaleX * ScaleX,
+                globalTransform.ScaleY * ScaleY,
+                globalTransform.ScaleZ * ScaleZ
+                );
 
             mat.Translate(-0.5f, 0, -0.5f);
 

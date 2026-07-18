@@ -281,8 +281,8 @@ namespace Commercially.Vinconomy.Inventory
             }
 
             throw new IndexOutOfRangeException($"Index {index} out of bounds for stall. It only has {this.Count} total slots");
-
         }
+
         public override ItemSlot this[int slotId] {
             get { return GetItemSlotFromID(slotId); }
             set {
@@ -409,7 +409,7 @@ namespace Commercially.Vinconomy.Inventory
             }
         }
 
-        public void UpdateStockForSlot(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
+        public virtual void UpdateStockForSlot(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
         {
             // Really strange way of doing this, I know. I wanted to keep the inventory decoupled from the block entity as much as possible
             // This was the simplest way I could think of without having to pass a reference to the BE into each inventory instance.

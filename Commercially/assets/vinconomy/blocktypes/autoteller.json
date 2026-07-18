@@ -1,14 +1,14 @@
 {
-    "code": "clothingstall",
+    "code": "autoteller",
     "class": "Commercially.BlockCommercial",
     "entityClass": "Commercially.BECommercialBase",
     "attributes": {
         "handbook": {
-            "groupBy": [ "clothingstall-north" ],
+            "groupBy": [ "autoteller-north" ],
             "extraSections": [
                 {
                     "title": "",
-                    "text": "vinconomy:handbooktext-clothingstall"
+                    "text": "vinconomy:handbooktext-autoteller"
                 }
             ]
         }
@@ -20,14 +20,6 @@
                 "numStalls": 15,
                 "numSlotsPerStall": 9,
                 "stallType": "GenericStallSlot"
-            }
-        },
-        {
-            "name": "Vinconomy.StallDisplay",
-            "properties": {
-                "globalTransform": {
-                    "preRotate" :  90
-                }
             }
         },
         {
@@ -81,7 +73,7 @@
         {
             "name": "Commercially.TextureSwappable",
             "properties": {
-                "BaseBlock": "clothingstall-north",
+                "BaseBlock": "autoteller-north",
                 "CreativeTabs": [ "vinconomy", "general" ],
                 "SecondaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ],
                 "PrimaryMaterials": [ "bismuth", "bismuthbronze", "blackbronze", "brass", "copper", "silver", "gold", "iron", "lead", "meteoriciron", "tinbronze", "steel", "tin", "uranium", "zinc" ]
@@ -92,7 +84,7 @@
     ],
     "heldTpIdleAnimation": "holdbothhandslarge",
     "heldTpUseAnimation": "twohandplaceblock",
-    "blockmaterial": "Cloth",
+    "blockmaterial": "Metal",
     "variantgroups": [
         {
             "code": "side",
@@ -133,19 +125,19 @@
     },
     "shapebytype": {
         "*-north": {
-            "base": "block/armorstand",
+            "base": "block/tellermachine",
             "rotateY": 0
         },
         "*-west": {
-            "base": "block/armorstand",
+            "base": "block/tellermachine",
             "rotateY": 90
         },
         "*-south": {
-            "base": "block/armorstand",
+            "base": "block/tellermachine",
             "rotateY": 180
         },
         "*-east": {
-            "base": "block/armorstand",
+            "base": "block/tellermachine",
             "rotateY": 270
         }
     },
