@@ -1,4 +1,4 @@
-﻿using Commercially.Common.BlockEntityBehaviors;
+﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;

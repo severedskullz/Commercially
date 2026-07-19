@@ -1,8 +1,9 @@
-﻿using Vintagestory.API.Common;
+﻿using Commercially.Common.Inventory.Slots;
+using Vintagestory.API.Common;
 
 namespace Vinconomy.Inventory.Slots
 {
-    public class VinconCloningSlot : ItemSlot
+    public class VinconCloningSlot : FilteredItemSlot
     {
         
         public VinconCloningSlot(InventoryBase inventory) : base(inventory)
@@ -28,7 +29,7 @@ namespace Vinconomy.Inventory.Slots
 
         protected override void ActivateSlotLeftClick(ItemSlot sourceSlot, ref ItemStackMoveOperation op)
         {
-            if (sourceSlot.Itemstack != null)
+            if (sourceSlot.Itemstack != null && (Filter?.Invoke(sourceSlot) ?? true))
             {
                 SetStack(sourceSlot.Itemstack.Clone());
             }

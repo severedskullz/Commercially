@@ -19,7 +19,24 @@
             "properties": {
                 "numStalls": 15,
                 "numSlotsPerStall": 9,
-                "stallType": "GenericStallSlot"
+                "stallType": "GenericStallSlot",
+                "stallFilters": [
+                    "Commercially.HeadSlot",
+                    "Commercially.ShoulderSlot",
+                    "Commercially.UpperBodySlot",
+                    "Commercially.UpperBodyOverSlot",
+                    "Commercially.LowerBodySlot",
+                    "Commercially.FootSlot",
+                    "Commercially.NeckSlot",
+                    "Commercially.EmblemSlot",
+                    "Commercially.FaceSlot",
+                    "Commercially.ArmSlot",
+                    "Commercially.HandSlot",
+                    "Commercially.WaistSlot",
+                    "Commercially.ArmorHeadSlot",
+                    "Commercially.ArmorBodySlot",
+                    "Commercially.ArmorLegsSlot"
+                ]
             }
         },
         {
@@ -44,7 +61,7 @@
         {
             "name": "Commercially.GuiManager",
             "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ClothingStandCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
             }
         },
         {

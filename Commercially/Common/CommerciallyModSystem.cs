@@ -1,8 +1,8 @@
 ﻿using Cairo;
-using Commercially.Common.BlockBehaviors;
-using Commercially.Common.BlockEntities;
-using Commercially.Common.BlockEntityBehaviors;
-using Commercially.Common.BlockTypes;
+using Commercially.Common.Blocks.BlockBehaviors;
+using Commercially.Common.Blocks.BlockEntities;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
+using Commercially.Common.Blocks.BlockTypes;
 using Commercially.Common.Database;
 using Commercially.Common.Interactions;
 using Commercially.Common.Interfaces;
@@ -12,6 +12,7 @@ using Commercially.Common.Renderer;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
+using Vinconomy.Filters;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -30,6 +31,7 @@ namespace Commercially.Common
         public IOwnableRegistry OwnableRegistry;
         private Dictionary<EnumItemClass, List<IItemRenderer>> Renderers = new Dictionary<EnumItemClass, List<IItemRenderer>>();
         private Dictionary<string, IInteraction> Interactions = new Dictionary<string, IInteraction>();
+        private Dictionary<string, Vintagestory.API.Common.Func<ItemSlot, bool>> SlotFilters = new Dictionary<string, Vintagestory.API.Common.Func<ItemSlot, bool>>();
         private bool isRegisteringRenderers;
         public OwnableMapLayer OwnableMapLayer;
 
@@ -91,12 +93,35 @@ namespace Commercially.Common
                 ;
 
             api.Event.OnTestBlockAccess += TestAccess;
-            
 
+
+            // I made these methods to support harmony patching. Why you would NEED to do that instead of just calling the register methods directly, I don't know.
+            // But I guess it's a thing people might do. So here we are.
+            LifecycleRegisterBlocks(api);
+            LifecycleRegisterBlockBehaviors(api);
+
+            LifecycleRegisterBlockEntities(api);
+            LifecycleRegisterBlockEntityBehaviours(api);
+
+            LifecycleRegisterInteractions(api);
+            LifecycleRegisterFilters(api);
+
+
+
+        }
+
+        public void LifecycleRegisterBlocks(ICoreAPI api)
+        {
             api.RegisterBlockClass("Commercially.BlockCommercial", typeof(BlockCommercialBase));
+        }
 
+        public void LifecycleRegisterBlockEntities(ICoreAPI api)
+        {
             api.RegisterBlockEntityClass("Commercially.BECommercialBase", typeof(BECommercialBase));
+        }
 
+        public void LifecycleRegisterBlockEntityBehaviours(ICoreAPI api)
+        {
             api.RegisterBlockEntityBehaviorClass("Commercially.GuiManager", typeof(BEBehaviorGUIManager));
             api.RegisterBlockEntityBehaviorClass("Commercially.InteractionManager", typeof(InteractionManager));
             api.RegisterBlockEntityBehaviorClass("Commercially.Ownable", typeof(BEBehaviorOwnable));
@@ -106,12 +131,38 @@ namespace Commercially.Common
             api.RegisterBlockEntityBehaviorClass("Commercially.OwnableRoot", typeof(BEBehaviorOwnableRoot));
             api.RegisterBlockEntityBehaviorClass("Commercially.TextureSwappable", typeof(BEBehaviorTextureSwappable));
             api.RegisterBlockEntityBehaviorClass("Commercially.GenericContainer", typeof(BEBehaviorGenericContainer));
+        }
 
-
+        public void LifecycleRegisterBlockBehaviors(ICoreAPI api)
+        {
             api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
             api.RegisterBlockBehaviorClass("Commercially.CommercialEvents", typeof(BehaviorCommercialEvents));
+        }
 
+        public void LifecycleRegisterInteractions(ICoreAPI api)
+        {
             RegisterInteraction(OpenGuiInteraction.Key, new OpenGuiInteraction());
+        }
+
+        public void LifecycleRegisterFilters(ICoreAPI api)
+        {
+            RegisterSlotFilter("Commercially.HeadSlot", CommonFilters.IsHeadDressType);
+            RegisterSlotFilter("Commercially.ShoulderSlot", CommonFilters.IsShoulderDressType);
+            RegisterSlotFilter("Commercially.UpperBodySlot", CommonFilters.IsUpperBodyDressType);
+            RegisterSlotFilter("Commercially.UpperBodyOverSlot", CommonFilters.IsUpperBodyOverDressType);
+            RegisterSlotFilter("Commercially.LowerBodySlot", CommonFilters.IsLowerBodyDressType);
+            RegisterSlotFilter("Commercially.FootSlot", CommonFilters.IsFootDressType);
+            RegisterSlotFilter("Commercially.NeckSlot", CommonFilters.IsNeckDressType);
+            RegisterSlotFilter("Commercially.EmblemSlot", CommonFilters.IsEmblemDressType);
+            RegisterSlotFilter("Commercially.FaceSlot", CommonFilters.IsFaceDressType);
+            RegisterSlotFilter("Commercially.ArmSlot", CommonFilters.IsArmDressType);
+            RegisterSlotFilter("Commercially.HandSlot", CommonFilters.IsHandDressType);
+            RegisterSlotFilter("Commercially.WaistSlot", CommonFilters.IsWaistDressType);
+            RegisterSlotFilter("Commercially.ArmorHeadSlot", CommonFilters.IsArmorHeadDressType);
+            RegisterSlotFilter("Commercially.ArmorBodySlot", CommonFilters.IsArmorBodyDressType);
+            RegisterSlotFilter("Commercially.ArmorLegsSlot", CommonFilters.IsArmorLegsDressType);
+
+            RegisterSlotFilter("Commercially.ToolRackSlot", CommonFilters.IsToolOrWeapon);
         }
 
         public EnumWorldAccessResponse TestAccess(IPlayer player, BlockSelection blockSelection, EnumBlockAccessFlags accessType, ref string claimant, EnumWorldAccessResponse response)
@@ -290,18 +341,26 @@ namespace Commercially.Common
         public void UpdateOwnable(IOwnableReference entity)
         {
             OwnableRegistration reg = OwnableRegistry.GetOwnable(entity.ID);
-            reg.Name = entity.Name;
 
-            reg.OwnerUID = entity.OwnerUID;
-            reg.OwnerName = entity.OwnerName;
-
-            if (entity is IOwnableChild)
+            if (reg != null)
             {
-                reg.ParentId = ((IOwnableChild)entity).ParentID;
-            }
+                reg.Name = entity.Name;
 
-            OwnableRegistry.UpdateOwnable(reg);
-            BroadcastOwnableUpdate(reg);
+                reg.OwnerUID = entity.OwnerUID;
+                reg.OwnerName = entity.OwnerName;
+
+                if (entity is IOwnableChild)
+                {
+                    reg.ParentId = ((IOwnableChild)entity).ParentID;
+                }
+
+                OwnableRegistry.UpdateOwnable(reg);
+                BroadcastOwnableUpdate(reg);
+            } else
+            {
+                this.Mod.Logger.Error($"Somehow tried to update a non-existing Ownable with ID {entity.ID}. Re-adding it as an ownable.");
+                AddOwnable(entity);
+            }
         }
 
         public void UpdateOwnableWaypoint(IOwnableReference entity, bool broadcast,string icon = null, int? color = null)
@@ -539,6 +598,21 @@ namespace Commercially.Common
                 return interaction;
             }
             this.Mod.Logger.Warning("Interaction {0} not found. Returning null.", key);
+            return null;
+        }
+
+        public void RegisterSlotFilter(string key, Vintagestory.API.Common.Func<ItemSlot, bool> filter)
+        {
+            SlotFilters[key] = filter;
+        }
+
+        public Vintagestory.API.Common.Func<ItemSlot, bool>? GetFilter(string key)
+        {
+            if (SlotFilters.TryGetValue(key, out var filter))
+            {
+                return filter;
+            }
+            this.Mod.Logger.Warning("Slot filter {0} not found. Returning null.", key);
             return null;
         }
     }

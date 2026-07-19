@@ -1,5 +1,5 @@
 ﻿
-using Commercially.Common.Slots;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
@@ -34,8 +34,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             set {
-                if (slotId == 0) Currency = value;
-                else if (slotId == 1) Product = value;
+                if (slotId == 0) Currency = (VinconCloningSlot) value;
+                else if (slotId == 1) Product = (FilteredItemSlot) value;
                 else
                 {
                     Liquid = value;
@@ -45,7 +45,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public LiquidStallSlot(InventoryBase inventory, int stallSlot) : base(inventory, stallSlot)
         {
-            Liquid = new VinconItemSlot(inventory, stallSlot, 0);
+            Liquid = new StockItemSlot(inventory, stallSlot, 0);
         }
 
         public override ItemSlot[] GetProductSlots()
@@ -91,7 +91,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             if (!IsInitialized) // Just like the MealStallSlot, this is now redundant with the constructor
             {
-                Liquid = new VinconItemSlot(inventory, StallSlot, 0);
+                Liquid = new StockItemSlot(inventory, StallSlot, 0);
                 Currency = new VinconCloningSlot(inventory);
                 Product = new VinconCloningSlot(inventory);
             }

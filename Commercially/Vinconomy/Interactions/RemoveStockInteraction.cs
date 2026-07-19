@@ -1,6 +1,6 @@
 ﻿
 using Commercially.Common.Interfaces;
-using Commercially.Common.Slots;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;

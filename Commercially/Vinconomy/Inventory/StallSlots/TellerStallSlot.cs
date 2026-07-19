@@ -1,4 +1,4 @@
-﻿using Commercially.Common.Slots;
+﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
 using System;
 using Vinconomy.Inventory.Slots;

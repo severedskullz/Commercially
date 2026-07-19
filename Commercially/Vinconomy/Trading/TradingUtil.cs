@@ -1,5 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
-using Commercially.Common.Slots;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;

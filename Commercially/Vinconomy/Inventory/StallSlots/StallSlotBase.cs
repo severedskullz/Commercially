@@ -1,6 +1,5 @@
-﻿using Commercially.Common;
-using Commercially.Common.Interfaces;
-using Commercially.Common.Slots;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
@@ -9,7 +8,6 @@ using System;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
@@ -25,13 +23,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <summary>
         /// The Currency used for the purchase. The StackSize should be representitive of how much an item costs. For example, if something were to cost 6 Rusty Gears, its stack size would be 6. 
         /// </summary>
-        public ItemSlot Currency { get; protected set; }
+        public VinconCloningSlot Currency { get; protected set; }
 
         /// <summary>
         /// The Product given to the customer. The StackSize should be representitive of how much of an item is given to the customer. For example, if the shop were to be selling a stack of 64 Dirt, then 
         /// the stack size would be 64.
         /// </summary>
-        public ItemSlot Product { get; protected set; }
+        public FilteredItemSlot Product { get; protected set; }
 
         /// <summary>
         /// How many slots are considered "Product" that the player can fill in to sell items from.
@@ -49,8 +47,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// The total number of slots that this stall should take up - inclusive of both Internal (Currency, Product, etc.) and Product (Items for sale) slots
         /// </summary>
         public virtual int TotalSlotCount => InternalSlotCount + StallSlotCount;
-        public int ProductPerPurchase { get => Product.StackSize; set => Product.Itemstack?.StackSize = value; }
-        public int CurrencyPerPurchase { get => Currency.StackSize; set => Currency.Itemstack?.StackSize = value; }
+        public int ProductPerPurchase { get => Math.Max(1,Product.StackSize); set => Product.Itemstack?.StackSize = value; }
+        public int CurrencyPerPurchase { get => Math.Max(1, Currency.StackSize); set => Currency.Itemstack?.StackSize = value; }
 
         public bool IsFuzzyMatching {  get; set; }
 
@@ -298,6 +296,20 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public virtual CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
         {
             return null;
+        }
+
+        public virtual void SetStallFilter(Vintagestory.API.Common.Func<ItemSlot, bool> stallFilter)
+        {
+            Product.Filter = stallFilter;
+
+            ItemSlot[] slots = GetProductSlots();
+            foreach (var item in slots)
+            {
+                if (item is FilteredItemSlot)
+                {
+                    ((FilteredItemSlot)item).Filter = stallFilter;
+                }
+            }
         }
     }
 }

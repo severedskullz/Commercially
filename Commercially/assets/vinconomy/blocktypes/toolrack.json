@@ -21,7 +21,8 @@
             "properties": {
                 "numStalls": 4,
                 "numSlotsPerStall": 16,
-                "stallType": "GenericStallSlot"
+                "stallType": "GenericStallSlot",
+                "stallFilter": "Commercially.ToolRackSlot"
             }
         },
         {

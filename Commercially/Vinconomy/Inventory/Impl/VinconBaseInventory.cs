@@ -20,7 +20,7 @@ namespace Commercially.Vinconomy.Inventory
         public bool IsInternalSlotsInitialized => InternalSlots != null;
         public bool IsSlotsInitialized => StallSlots != null;
 
-        protected VinconomyModSystem modSystem;
+        protected VinconomyModSystem modSystem { get; set; }
         public event OnStockUpdatedDelegate OnStockUpdated;
 
         public IStallComponent StallComponent;
@@ -48,14 +48,16 @@ namespace Commercially.Vinconomy.Inventory
         {
             //modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
+            BlockEntity = entity;
+
             // A Non-Instantiated inventory. Will error out unless Initialize is called
             InitializeInternalSlots();
 
         }
 
-        public VinconBaseInventory(string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(inventoryName, coreAPI)
+        public VinconBaseInventory(BlockEntity entity, string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(inventoryName, coreAPI)
         {
-            Initialize(stallType, numStalls, slotsPerStall, coreAPI);
+            Initialize(entity, stallType, numStalls, slotsPerStall, coreAPI);
         }
 
 
@@ -127,16 +129,18 @@ namespace Commercially.Vinconomy.Inventory
         }
         */
 
-        public void Initialize(string stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
+        public void Initialize(BlockEntity entity, string stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
         {
             Type type = GetStallType(stallType);
-            Initialize(type, numStalls, numSlotsPerStall, api);
+            Initialize(entity, type, numStalls, numSlotsPerStall, api);
           
         }
 
-        public void Initialize(Type stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
+        public void Initialize(BlockEntity entity, Type stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
         {
+            BlockEntity = entity;
             StallType = stallType;
+            StallComponent = entity.GetBehavior<IStallComponent>();
             /*
              string[] stallTypes = properties["stallTypes"].AsArray<string>();
              if (stallTypes != null && stallTypes.Length != numStalls)
@@ -168,6 +172,7 @@ namespace Commercially.Vinconomy.Inventory
         {
             base.OnItemSlotModified(slot);
             this.OnStockModified(slot);
+            this.BlockEntity.MarkDirty(true);
         }
         
 
@@ -178,11 +183,42 @@ namespace Commercially.Vinconomy.Inventory
             this.className = className;
             modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
+            
+
             int numStalls = properties["numStalls"].AsInt(4);
             int numSlotsPerStall = properties["numSlotsPerStall"].AsInt(16);
             string stallType = properties["stallType"].AsString("GenericStallSlot");
 
-            Initialize(stallType, numStalls, numSlotsPerStall, api);
+            Initialize(BlockEntity, stallType, numStalls, numSlotsPerStall, api);
+
+            string stallFilter = properties["stallFilter"].AsString(null);
+            string[] stallFilters = properties["stallFilters"].AsArray<string>(null);
+            if (stallFilter != null && stallFilters != null)
+            {
+                throw new ArgumentException($"Choose either stallFilter or stallFilters - not both");
+            }
+
+            if (stallFilter != null)
+            {
+                Vintagestory.API.Common.Func<ItemSlot, bool> filter = modSystem.CommerciallySystem.GetFilter(stallFilter);
+                foreach (StallSlotBase stall in StallSlots)
+                {
+                    
+                    stall.SetStallFilter(filter);
+                }
+            }
+            else if (stallFilters != null)
+            {
+                if (stallFilters.Length != StallSlots.Length)
+                {
+                    throw new ArgumentException($"Number of stall filters present in the array must match the length of numStalls of {StallSlots.Length}");
+                }
+                for (int i = 0; i < StallSlots.Length; i++)
+                {
+                    Vintagestory.API.Common.Func<ItemSlot, bool> filter = modSystem.CommerciallySystem.GetFilter(stallFilters[i]);
+                    StallSlots[i].SetStallFilter(filter);
+                }
+            }
         }
 
         public override void ResolveBlocksOrItems()
@@ -405,7 +441,7 @@ namespace Commercially.Vinconomy.Inventory
                 ItemStack currency = stall.Currency?.Itemstack?.Clone();
                 int stockCount = stall.GetProducts().TotalCount;
 
-                OnStockUpdated?.Invoke(StallComponent, stallSlot, product, stockCount, currency);
+                UpdateStockForSlot(StallComponent, stallSlot, product, stockCount, currency);
             }
         }
 
@@ -416,6 +452,9 @@ namespace Commercially.Vinconomy.Inventory
 
             // TODO: This is now redundant, as the BE is now passed into the inventory on to check if the stall is an admin shop or not... Whoops! Remove this and just call modSystem.UpdateStockForSlot directly from the BE
             // Do I even need that event anymore? would it be useful to have a generic event for when stock is updated? Could be useful for other mods to hook into
+
+            //TODO: Taking OUT results in 2 events, whereas inserting generates 1... why?
+            OnStockUpdated?.Invoke(shop, stallSlot, product, stockCount, currency);
             modSystem.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
         }
 

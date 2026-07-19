@@ -1,4 +1,4 @@
-﻿using Commercially.Common.BlockEntities;
+﻿using Commercially.Common.Blocks.BlockEntities;
 using Vintagestory.API.Common;
 
 namespace Commercially.Common.Interfaces

@@ -1,6 +1,6 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Slots;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
@@ -35,15 +35,15 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 else return MealSlot;
             }
             set {
-                if (slotId == 0) Currency = value;
-                else if (slotId == 1) Product = value;
+                if (slotId == 0) Currency = (VinconCloningSlot) value;
+                else if (slotId == 1) Product = (FilteredItemSlot) value;
                 else MealSlot = value;
             } 
         }
 
         public MealStallSlot(InventoryBase inventory, int stallSlot) : base(inventory, stallSlot)
         {
-            MealSlot = new VinconItemSlot(inventory, stallSlot, 0);
+            MealSlot = new StockItemSlot(inventory, stallSlot, 0);
         }
 
         public override void PreInitialize(VinconBaseInventory inventory, int stallSlot)
@@ -58,7 +58,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             if (!IsInitialized) // Now that this is passed in through the constructor, this is redundant. Oh well...
             {
-                MealSlot = new VinconItemSlot(inventory, StallSlot, 0);
+                MealSlot = new StockItemSlot(inventory, StallSlot, 0);
                 Currency = new VinconCloningSlot(inventory);
                 Product = new VinconCloningSlot(inventory);
             }

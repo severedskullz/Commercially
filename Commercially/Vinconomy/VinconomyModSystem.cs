@@ -1,6 +1,6 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interactions;
-using Commercially.Common.Slots;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
@@ -13,6 +13,7 @@ using Commercially.Vinconomy.Trading.Processor;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
+using Vinconomy.Filters;
 using Vinconomy.ItemTypes;
 using Vinconomy.Util;
 using Vintagestory.API.Client;
@@ -25,7 +26,7 @@ namespace Commercially.Vinconomy
     public class VinconomyModSystem : ModSystem
     {
         private ICoreServerAPI _CoreServerAPI;
-        CommerciallyModSystem CommerciallySystem;
+        public CommerciallyModSystem CommerciallySystem { get; private set; }
 
         private static Dictionary<string, Type> StallTypes;
 
@@ -80,12 +81,8 @@ namespace Commercially.Vinconomy
         // Useful for registering block/entity classes on both sides
         public override void Start(ICoreAPI api)
         {
-            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
-            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
-            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
-            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
-            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
-            api.RegisterItemClass("VinconCoupon", typeof(ItemCoupon));
+            CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
+
 
             api.Network.RegisterChannel(VinConstants.VINCONOMY_CHANNEL);
                 //.RegisterMessageType(typeof(RegistryUpdatePacket))
@@ -100,6 +97,51 @@ namespace Commercially.Vinconomy
 
             //api.RegisterBlockEntityClass("Commercially.BECommercialBase", typeof(BECommercialBase));
 
+            Lifecycle_RegisterBlockEntityBehaviors(api);
+            Lifecycle_RegisterItemClasses(api);
+            Lifecycle_RegisterStallTypes(api);
+            Lifecycle_RegisterModularTabs(api);
+            Lifecycle_RegisterInteractions(api);
+        }
+
+        public void Lifecycle_RegisterInteractions(ICoreAPI api)
+        {
+            CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
+            CommerciallySystem.RegisterInteraction(AddMealInteraction.Key, new AddMealInteraction());
+            CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
+            CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
+        }
+
+        public void Lifecycle_RegisterStallTypes(ICoreAPI api)
+        {
+            RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
+            RegisterStallType("MealStallSlot", typeof(MealStallSlot));
+            RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
+        }
+
+        public void Lifecycle_RegisterModularTabs(ICoreAPI api)
+        {
+            ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
+            guiSystem.RegisterTabType(ShopCustomerTab.CODE, typeof(ShopCustomerTab));
+            guiSystem.RegisterTabType(ShopOwnerTab.CODE, typeof(ShopOwnerTab));
+            guiSystem.RegisterTabType(DisplayDebugTab.CODE, typeof(DisplayDebugTab));
+            guiSystem.RegisterTabType(RegisterConfigTab.CODE, typeof(RegisterConfigTab));
+            guiSystem.RegisterTabType(CouponCutterTab.CODE, typeof(CouponCutterTab));
+            guiSystem.RegisterTabType(MealShopOwnerTab.CODE, typeof(MealShopOwnerTab));
+            guiSystem.RegisterTabType(ClothingStandCustomerTab.CODE, typeof(ClothingStandCustomerTab));
+        }
+
+        public void Lifecycle_RegisterItemClasses(ICoreAPI api)
+        {
+            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
+            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
+            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
+            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
+            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
+        }
+
+        public void Lifecycle_RegisterBlockEntityBehaviors(ICoreAPI api)
+        {
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Stall", typeof(BEStallBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Register", typeof(BEShopBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
@@ -109,37 +151,7 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(BEDisplayMealContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
-
-            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
-            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
-            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
-            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
-            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
-
-
-            //api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
-
-            RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
-            RegisterStallType("MealStallSlot", typeof(MealStallSlot));
-            RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
-
-            ModularGUIModSystem guiSystem = api.ModLoader.GetModSystem<ModularGUIModSystem>();
-            guiSystem.RegisterTabType(GuiBlockEntityShopCustomerTab.CODE, typeof(GuiBlockEntityShopCustomerTab));
-            guiSystem.RegisterTabType(GuiBlockEntityShopOwnerTab.CODE, typeof(GuiBlockEntityShopOwnerTab));
-            guiSystem.RegisterTabType(GuiBlockEntityDisplayDebugTab.CODE, typeof(GuiBlockEntityDisplayDebugTab));
-            guiSystem.RegisterTabType(GuiBlockEntityRegisterConfigTab.CODE, typeof(GuiBlockEntityRegisterConfigTab));
-            guiSystem.RegisterTabType(GuiVinconCouponCutter.CODE, typeof(GuiVinconCouponCutter));
-            guiSystem.RegisterTabType(GuiBlockEntityMealShopOwnerTab.CODE, typeof(GuiBlockEntityMealShopOwnerTab));
-
-            CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
-            CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
-            CommerciallySystem.RegisterInteraction(AddMealInteraction.Key, new AddMealInteraction());
-            CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
-            CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
         }
-
-
 
         public override void StartServerSide(ICoreServerAPI api)
         {
@@ -549,7 +561,7 @@ namespace Commercially.Vinconomy
         public void UpdateStockForSlot(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
         {
             if (shop == null) return; //Unregistered Ownable. Shouldn't be possible to get here, but just in case
-
+            this.Mod.Logger.Debug($"Got Stock Update: {shop.Ownable.Name} @ ({shop.GetPos().X} {shop.GetPos().Y} {shop.GetPos().Z}) - {stallSlot} = {stockCount}x {product} for {currency}");
             DB.SaveProductListing(shop, stallSlot, product, stockCount, currency);
         }
 

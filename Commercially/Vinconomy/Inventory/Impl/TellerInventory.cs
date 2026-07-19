@@ -13,7 +13,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
         {
         }
 
-        public TellerInventory(string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(inventoryName, stallType, numStalls, slotsPerStall, coreAPI)
+        public TellerInventory(BlockEntity entity, string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(entity, inventoryName, stallType, numStalls, slotsPerStall, coreAPI)
         {
         }
     }

@@ -1,4 +1,4 @@
-﻿using Commercially.Common.Slots;
+﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
@@ -27,8 +27,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             set {
-                if (slotId == 0) Currency = value;
-                else if (slotId == 1) Product = value;
+                if (slotId == 0) Currency = (VinconCloningSlot) value;
+                else if (slotId == 1) Product = (FilteredItemSlot) value;
                 else
                 {
                     Products[slotId - 2] = value;
@@ -69,7 +69,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 Products = new ItemSlot[numSlots];
                 for (int i = 0; i < numSlots; i++)
                 {
-                    Products[i] = new VinconItemSlot(Inventory, StallSlot, i);
+                    Products[i] = new StockItemSlot(Inventory, StallSlot, i);
                     ItemStack itemStack = tree.GetItemstack("slot" + i);
                     Products[i].Itemstack = itemStack;
                     if (Inventory.Api?.World != null)
@@ -112,7 +112,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 Products = new ItemSlot[numSlotsPerStall];
                 for (int i = 0; i < numSlotsPerStall; i++)
                 {
-                    Products[i] = new VinconItemSlot(inventory, StallSlot, i); ;
+                    Products[i] = new StockItemSlot(inventory, StallSlot, i); ;
                 }
                 Currency = new VinconCloningSlot(inventory);
                 Product = new VinconCloningSlot(inventory);

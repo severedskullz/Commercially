@@ -44,8 +44,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         {
             if (slotId == 0)
             {
-                VinconItemSlot slot = new VinconItemSlot(self, 0, slotId);
-                slot.SetFilter(IsPaper);
+                StockItemSlot slot = new StockItemSlot(self, 0, slotId);
+                slot.Filter = IsPaper;
                 slot.BackgroundIcon = "vicon-paper";
                 return slot;
             }

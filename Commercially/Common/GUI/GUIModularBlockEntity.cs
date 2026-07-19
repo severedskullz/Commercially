@@ -1,4 +1,4 @@
-﻿using Commercially.Common.BlockEntities;
+﻿using Commercially.Common.Blocks.BlockEntities;
 using Commercially.Common.Interfaces;
 using System;
 using System.Collections.Generic;

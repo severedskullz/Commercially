@@ -1,9 +1,7 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using System;
@@ -50,11 +48,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
             VinconomyCore = api.ModLoader.GetModSystem<VinconomyModSystem>();
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
-            if (_InventoryProvider.Inventory is IStallStockUpdater shopInv)
-            {
-                shopInv.OnStockUpdated += OnStockUpdated;
-            }
 
             if (properties["stallSelectionIndexes"] != null)
             {
@@ -372,13 +365,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         public void SetNowTesselatingShape(Shape shape)
         {
             throw new NotImplementedException();
-        }
-
-        private void OnStockUpdated(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
-        {
-            VinconomyCore.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
-            //We need to get the block entity into scope. This was the simplest way I could think of without having to pass in a reference for each Inventory
-            //(_InventoryProvider.Inventory as IStallStockUpdater).UpdateStockForSlot(this, stallSlot, product, stockCount, currency);
         }
 
         public override void OnBlockBroken(IPlayer byPlayer = null)

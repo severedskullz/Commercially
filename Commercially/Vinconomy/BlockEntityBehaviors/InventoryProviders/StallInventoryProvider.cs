@@ -1,4 +1,4 @@
-﻿using Commercially.Common.BlockEntityBehaviors;
+﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
