@@ -236,6 +236,10 @@ namespace Commercially.Vinconomy.Trading
         public AggregatedStacks CouponStacks { get; set; }
         public Dictionary<string, object> CustomData { get; set; }
 
+        public int TotalProductAmount => Request.GetFinalProductNeededPerPurchase() * Request.NumPurchases;
+        public int TotalCurrencyAmount => Request.GetFinalCurrencyNeededPerPurchase() * Request.NumPurchases;
+        public int FinalPurchases => Request.NumPurchases;
+
         public StallSlotBase Stall => Request.SellingEntity.GetStallSlot(Request.StallSlot);
 
         public TradeResult(TradeRequest req)

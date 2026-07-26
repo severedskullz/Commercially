@@ -10,6 +10,9 @@ namespace Vinconomy.ItemTypes
 {
     public class ItemSculptureBundle : Item
     {
+        //TODO: I switched it from X/Y/Z to Layer/X/Y in the bundle creation code. Need to update the rest, or revert my change if it becomes a PITA to update.
+
+
         /*
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {

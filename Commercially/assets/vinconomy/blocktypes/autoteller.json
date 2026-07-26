@@ -17,9 +17,8 @@
         {
             "name": "Vinconomy.StallInventory",
             "properties": {
-                "numStalls": 15,
-                "numSlotsPerStall": 9,
-                "stallType": "GenericStallSlot"
+                "numStalls": 5,
+                "stallType": "TellerStallSlot"
             }
         },
         {
@@ -43,10 +42,6 @@
             "name": "Commercially.InteractionManager",
             "properties": {
                 "interactions": [
-                    {
-                        "code": "Vinconomy.AddStock",
-                        "priority": 10
-                    },
                     {
                         "code": "Vinconomy.PurchaseItem",
                         "priority": 10

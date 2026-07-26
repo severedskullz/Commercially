@@ -43,7 +43,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             } 
         }
 
-        public LiquidStallSlot(InventoryBase inventory, int stallSlot) : base(inventory, stallSlot)
+        public LiquidStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
             Liquid = new StockItemSlot(inventory, stallSlot, 0);
         }
@@ -79,15 +79,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return Liquid;
         }
 
-        public override void PreInitialize(VinconBaseInventory inventory, int stallSlot)
-        {
-            Inventory = inventory;
-            StallSlot = stallSlot;
-        }
-
         public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
         {
-            PreInitialize(inventory, stallSlot);
+            base.Initialize(inventory, stallSlot, numSlotsPerStall);
 
             if (!IsInitialized) // Just like the MealStallSlot, this is now redundant with the constructor
             {

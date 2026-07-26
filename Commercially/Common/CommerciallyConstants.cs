@@ -10,16 +10,16 @@
         public const int TAB_UPDATE = 4002;
         public const int GUI_UPDATE = 4012;
 
-        public const int PURCHASE_ITEMS = 4003;
-        public const int SET_ITEMS_PER_PURCHASE = 4005;
-        public const int SET_PARENT_ID = 4006;
-        public const int SET_ADMIN_OWNED = 4007;
-        public const int SET_ITEM_PRICE = 4008;
-        public const int SET_SHOULD_DISCARD_CURRENCY = 4009;
-        public const int SET_NAME = 4010;
-        public const int SET_WAYPOINT = 4011;
-        public const int TRANSFER_CONTENTS = 4011;
-
+        public const int PURCHASE_ITEMS                 = 4100;
+        public const int SET_ITEMS_PER_PURCHASE         = 4101;
+        public const int SET_PARENT_ID                  = 4102;
+        public const int SET_ADMIN_OWNED                = 4107;
+        public const int SET_ITEM_PRICE                 = 4108;
+        public const int SET_SHOULD_DISCARD_CURRENCY    = 4109;
+        public const int SET_NAME                       = 4110;
+        public const int SET_WAYPOINT                   = 4111;
+        public const int TRANSFER_CONTENTS              = 4114;
+        public const int TOGGLE_SLOT                    = 4113;
 
         public const int DEFAULT_WAYPOINT_COLOR = 256;
         public const string DEFAULT_WAYPOINT_ICON = "genericOwnable";

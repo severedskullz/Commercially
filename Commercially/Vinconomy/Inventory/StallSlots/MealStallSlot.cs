@@ -41,20 +41,14 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             } 
         }
 
-        public MealStallSlot(InventoryBase inventory, int stallSlot) : base(inventory, stallSlot)
+        public MealStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
             MealSlot = new StockItemSlot(inventory, stallSlot, 0);
         }
 
-        public override void PreInitialize(VinconBaseInventory inventory, int stallSlot)
-        {
-            Inventory = inventory;
-            StallSlot = stallSlot;
-        }
-
         public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
         {
-            PreInitialize(inventory, stallSlot);
+            base.Initialize(inventory, stallSlot, numSlotsPerStall);
 
             if (!IsInitialized) // Now that this is passed in through the constructor, this is redundant. Oh well...
             {

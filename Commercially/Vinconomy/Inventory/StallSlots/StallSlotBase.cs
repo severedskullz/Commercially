@@ -18,7 +18,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public const string FUZZY_MATCHING = "fuzzyMatching";
 
 
-        public InventoryBase Inventory { get; protected set; }
+        public VinconBaseInventory Inventory { get; protected set; }
 
         /// <summary>
         /// The Currency used for the purchase. The StackSize should be representitive of how much an item costs. For example, if something were to cost 6 Rusty Gears, its stack size would be 6. 
@@ -63,7 +63,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <returns></returns>
         public abstract ItemSlot this[int slotId] { get; set; }
 
-        public StallSlotBase(InventoryBase inventory, int stallSlot) {
+        public StallSlotBase(VinconBaseInventory inventory, int stallSlot) {
             this.Inventory = inventory;
             this.StallSlot = stallSlot;
             Currency = new VinconCloningSlot(inventory);
@@ -146,12 +146,55 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// </summary>
         /// <param name="inventory"></param>
         /// <param name="stallSlot"></param>
-        public abstract void PreInitialize(VinconBaseInventory inventory, int stallSlot);
-        public abstract void Initialize(VinconBaseInventory vinconBaseInventory, int stallSlot, int numSlotsPerStall);
-        public abstract ItemSlot GetProductSlot(int itemSlot);
+        public virtual void PreInitialize(VinconBaseInventory inventory, int stallSlot)
+        {
+            Inventory = inventory;
+            StallSlot = stallSlot;
+        }
+
+        public virtual void Initialize(VinconBaseInventory vinconBaseInventory, int stallSlot, int numSlotsPerStall)
+        {
+            PreInitialize(vinconBaseInventory, stallSlot);
+        }   
+
+        public virtual ItemSlot GetProductSlot(int itemSlot)
+        {
+            ItemSlot[] slots = GetProductSlots();
+            if (itemSlot < 0 || itemSlot >= slots.Length) throw new ArgumentOutOfRangeException($"Cannot get Product Slot {itemSlot} of stall with {slots.Length} slots");
+            return slots[itemSlot];
+        }
+
+        /// <summary>
+        /// Returns the slots that are considered "Product" slots for this stall. These are the slots that the player can fill in to sell items from. In most cases the contents of these slots will match the Product slot.
+        /// An exceptions would be the Sculpture stalls where the slots are used to hold the individual items that make up the final product, but the Product slot is a single item that represents the finished product.
+        /// </summary>
+        /// <returns></returns>
         public abstract ItemSlot[] GetProductSlots();
 
-        public abstract AggregatedSlots GetProducts();
+        /// <summary>
+        /// Returns an aggregated slot count of all the products available in the stall. In most cases this should be the same slots contained within GetProductSlots(), but in some cases (Sculpture) the product may be a single item that is composed of multiple items.
+        /// In this case, the product slots may be dummy slots not connected to the inventory created to house a finished product. The ExtractProductFromStall() method would then be responsible for correctly taking the items from the stall without using the slots provided
+        /// by the TradeResult.
+        /// </summary>
+        /// <returns></returns>
+        public virtual AggregatedSlots GetProducts()
+        {
+            ICoreAPI api = Inventory.Api;
+            AggregatedSlots slots = new AggregatedSlots(api);
+            ItemSlot[] products = GetProductSlots();
+
+            if (products.Length > 0)
+            {
+                foreach (var slot in products)
+                {
+                    if (slot.Itemstack != null && TradingUtil.IsMatchingItem(Product.Itemstack, slot.Itemstack, api.World))
+                    {
+                        slots.Add(slot);
+                    }
+                }
+            }
+            return slots;
+        }
 
         public virtual bool MatchesProduct(ItemStack itemStack)
         {
@@ -288,10 +331,82 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public abstract void TransferProdutToPlayer(TradeResult result);
 
         /// <summary>
-        /// Extracts the Product from the stall. Should do any conversion neccesary during extraction - for example, converting Meal ingredients into a Bowl with the appropriate servings as the ItemStack's stacksize, or bundling items into a single item like a Gacha Ball, 
+        /// Extracts the Product from the stall and adds them to TradeResult.ProductStacks. Should do any conversion neccesary during extraction - for example, converting Meal ingredients into a Bowl with the appropriate servings as the ItemStack's stacksize, or bundling items into a single item like a Gacha Ball, 
         /// </summary>
         /// <param name="result"></param>
         public abstract void ExtractProductFromStall(TradeResult result);
+
+        /// <summary>
+        /// Transfers the currency from the result to the ownable's currency sink. In most cases this will be the Parent Ownable's inventory.
+        /// </summary>
+        /// <param name="result"></param>
+        public virtual void TransferCurrencyToOwnable(TradeResult result)
+        {
+            if (result.CurrencyStacks.TotalCount == 0) return;
+
+            ILogger logger = this.Inventory.modSystem.Mod.Logger;
+            ICurrencySinkProvider provider = result.Request.GetCurrencySink();
+            if (provider != null)
+            {
+                ItemSlot[] slots = provider.CurrencySlots;
+                while (result.CurrencyStacks.CanRemoveStack())
+                {
+                    ItemStack nextStack = result.CurrencyStacks.RemoveStack();
+                    logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
+                }
+                provider.GetBlockEntity().MarkDirty();
+            }
+        }
+
+        /// <summary>
+        /// Transfers the coupons from the result to the ownable's currency sink. In most cases this will be the Parent Ownable's inventory.
+        /// </summary>
+        /// <param name="result"></param>
+        public virtual void TransferCouponsToOwnable(TradeResult result)
+        {
+            if (result.CouponStacks.TotalCount == 0) return;
+
+            ILogger logger = this.Inventory.modSystem.Mod.Logger;
+            ICurrencySinkProvider provider = result.Request.GetCurrencySink();
+            if (provider != null)
+            {
+                ItemSlot[] slots = provider.CouponSlots;
+                while (result.CouponStacks.CanRemoveStack())
+                {
+                    ItemStack nextStack = result.CouponStacks.RemoveStack();
+                    logger.Debug($"Adding {nextStack.StackSize}x {nextStack} coupon to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
+
+                }
+                provider.GetBlockEntity().MarkDirty();
+            }
+        }
+
+        public static bool AddItemToSlots(ICoreAPI api, ItemStack stack, ItemSlot[] slots)
+        {
+            if (stack == null || stack.StackSize == 0) return false;
+
+            ItemSlot dslot = new ItemSlot(null);
+            dslot.Itemstack = stack;
+
+            int amountLeft = stack.StackSize;
+
+            foreach (ItemSlot slot in slots)
+            {
+                if (slot.CanHold(dslot))
+                {
+                    amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
+                    slot.MarkDirty();
+                }
+
+                if (amountLeft <= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public virtual CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
         {

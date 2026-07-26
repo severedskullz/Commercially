@@ -20,7 +20,7 @@ namespace Commercially.Vinconomy.Inventory
         public bool IsInternalSlotsInitialized => InternalSlots != null;
         public bool IsSlotsInitialized => StallSlots != null;
 
-        protected VinconomyModSystem modSystem { get; set; }
+        public VinconomyModSystem modSystem { get; protected set; }
         public event OnStockUpdatedDelegate OnStockUpdated;
 
         public IStallComponent StallComponent;
@@ -228,7 +228,7 @@ namespace Commercially.Vinconomy.Inventory
             while (enumerator.MoveNext())
             {
                 ItemSlot current = enumerator.Current;
-                if (current.Itemstack != null && !current.Itemstack.ResolveBlockOrItem(Api.World))
+                if (current?.Itemstack != null && !current.Itemstack.ResolveBlockOrItem(Api.World))
                 {
                     current.Itemstack = null;
                 }
@@ -367,7 +367,7 @@ namespace Commercially.Vinconomy.Inventory
                     StallSlots[i] = stall;
                 }
 
-                //TODO: How to handle resizing of internal slots? Is this even supported?
+                //TODO: How to handle resizing of internal slots? Can we even support this?
                 ITreeAttribute internalSlots = tree.GetOrAddTreeAttribute("internalSlots");
                 //int numInternalSlots = internalSlots.GetInt("numSlots",0);
                 for (int i = 0; i < InternalSlots.Length; i++)
@@ -429,7 +429,7 @@ namespace Commercially.Vinconomy.Inventory
             }
         }
 
-        public void OnStockModified(ItemSlot slot)
+        public virtual void OnStockModified(ItemSlot slot)
         {
             if (Api.Side == EnumAppSide.Client) return;
 

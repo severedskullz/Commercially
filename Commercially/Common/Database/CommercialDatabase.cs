@@ -192,6 +192,27 @@ namespace Commercially.Common.Database
             return ownables;
         }
 
+        public OwnableRegistration GetOwnable(long id)
+        {
+            using (SqliteConnection connection = GetConnection())
+            {
+                connection.Open();
+                SqliteCommand cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT * FROM Ownables WHERE Id = @ID;";
+                cmd.Parameters.Add("@ID", SqliteType.Integer).Value = id;
+
+                SqliteDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    return ReadOwnable(reader);
+                }
+            }
+
+            return null;
+        }
+
+
         public OwnableRegistration GetOwnable(string ownerUID, long? parentID)
         {
             using (SqliteConnection connection = GetConnection())

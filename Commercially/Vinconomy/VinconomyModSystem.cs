@@ -13,7 +13,6 @@ using Commercially.Vinconomy.Trading.Processor;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
-using Vinconomy.Filters;
 using Vinconomy.ItemTypes;
 using Vinconomy.Util;
 using Vintagestory.API.Client;
@@ -30,7 +29,7 @@ namespace Commercially.Vinconomy
 
         private static Dictionary<string, Type> StallTypes;
 
-        private readonly string CONFIG_NAME = "vinconomy-core.json";
+        private readonly string CONFIG_NAME = "vinconomy.json";
         public VinconomyConfig Config;
         public VinconomyDatabase DB { get; private set; }
 
@@ -38,14 +37,14 @@ namespace Commercially.Vinconomy
 
         public VinconomyConfig ResetModConfig()
         {
-            VinconomyConfig config = new VinconomyConfig();
+            VinconomyConfig config = new();
 
             return config;
         }
 
         public override void StartPre(ICoreAPI api)
         {
-            StallTypes = new Dictionary<string, Type>();
+            StallTypes = [];
 
 
             try
@@ -117,6 +116,8 @@ namespace Commercially.Vinconomy
             RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
             RegisterStallType("MealStallSlot", typeof(MealStallSlot));
             RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
+            RegisterStallType("TellerStallSlot", typeof(TellerStallSlot));
+            RegisterStallType("SculptureStallSlot", typeof(SculptureStallSlot));
         }
 
         public void Lifecycle_RegisterModularTabs(ICoreAPI api)
@@ -164,7 +165,6 @@ namespace Commercially.Vinconomy
             */
 
             DB.InitializeDB();
-
 
         }
 
@@ -298,92 +298,13 @@ namespace Commercially.Vinconomy
         }
 
         private void ProcessTrade(TradeResult result) {
-            TransferCurrencyToParent(result);
-            TransferCouponsToParent(result);
-            //TransferProductToPlayer(result);
+
+            // Defer processing logic to the stall. This way I can abstract that mess between buying/selling.
+            // Purchase Crates for instance deposit the purchased goods into the stall itself, and not the register.
             result.Stall.TransferProdutToPlayer(result);
+            result.Stall.TransferCurrencyToOwnable(result);
+            result.Stall.TransferCouponsToOwnable(result);
             result.Request.SellingEntity.GetBlockEntity().MarkDirty();
-        }
-
-        private void TransferProductToPlayer(TradeResult result)
-        {
-            /*
-            // TODO: I dont wanna go crazy with all the hashmaps needing everything to be "registered" and I dont think there are any more possible types of trades we can even do
-            // If we need to add more in the future, this should be easy enough to harmony patch, or worst case I just come back in here and pull from a hashmap of registered trade types and call its respective method from a container-class for the logic
-            switch(result.Request.TradeType) {
-                case TradeType.Meal:
-                    MealTradingProcessor.TransferProductToPlayer(result);
-                    break;
-                case TradeType.Liquid:
-                    LiquidTradingProcessor.TransferProductToPlayer(result);
-                    break;
-                default:
-                    GenericTradingProcessor.TransferProductToPlayer(result);
-                    break;
-            }
-            */        
-        }
-
-        private void TransferCurrencyToParent(TradeResult result)
-        {
-            if (result.CurrencyStacks.TotalCount == 0) return;
-
-            ICurrencySinkProvider provider = result.Request.GetCurrencySink();
-            if (provider != null)
-            {
-                ItemSlot[] slots = provider.CurrencySlots;
-                while (result.CurrencyStacks.CanRemoveStack())
-                {
-                    ItemStack nextStack = result.CurrencyStacks.RemoveStack();
-                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
-                    AddItemToSlots(result.Request.Api, nextStack, slots);
-                }
-                provider.GetBlockEntity().MarkDirty();
-            }
-        }
-
-        private void TransferCouponsToParent(TradeResult result)
-        {
-            if (result.CouponStacks.TotalCount == 0) return;
-
-            ICurrencySinkProvider provider = result.Request.GetCurrencySink();
-            if (provider != null)
-            {
-                ItemSlot[] slots = provider.CouponSlots;
-                while (result.CouponStacks.CanRemoveStack())
-                {
-                    ItemStack nextStack = result.CouponStacks.RemoveStack();
-                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} coupon to Parent");
-                    AddItemToSlots(result.Request.Api, nextStack, slots);
-
-                }
-                provider.GetBlockEntity().MarkDirty();
-            }
-        }
-
-        private static bool AddItemToSlots(ICoreAPI api, ItemStack stack, ItemSlot[] slots)
-        {
-            if (stack == null || stack.StackSize == 0) return false;
-
-            ItemSlot dslot = new ItemSlot(null);
-            dslot.Itemstack = stack;
-
-            int amountLeft = stack.StackSize;
-
-            foreach (ItemSlot slot in slots)
-            {
-                if (slot.CanHold(dslot))
-                {
-                    amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
-                    slot.MarkDirty();
-                }
-
-                if (amountLeft <= 0)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private void PostProcessTrade(TradeResult result) {
@@ -475,7 +396,7 @@ namespace Commercially.Vinconomy
         {
             //Defer extraction logic to the stall. This way I can abstract that mess between liquids, meals, gachaballs, sculptures and items.
             result.Stall.ExtractProductFromStall(result);
-           
+
             AggregatedSlots currency = result.Request.CurrencySourceSlots;
             int totalCurrencyToMove = result.Request.GetFinalCurrencyNeededPerPurchase() * result.Request.NumPurchases;
             AggregatedStacks currencyStacks = result.CurrencyStacks;

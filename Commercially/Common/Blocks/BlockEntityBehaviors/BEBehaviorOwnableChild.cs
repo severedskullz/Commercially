@@ -47,6 +47,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
         public IOwnable GetParent()
         {
+            //TODO: This will be very expensive. Lets figure out if we actually want to implement this or not.
             throw new System.NotImplementedException();
         }
 

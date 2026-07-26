@@ -168,6 +168,10 @@ namespace Vinconomy.Filters
             if (slot == null || slot.Itemstack == null)
                 return false;
 
+            // Shields seem to have toolrackTransforms now for some reason
+            if (IsShield(slot))
+                return false;
+
             return slot.Itemstack.Item?.Attributes?.KeyExists("toolrackTransform") == true 
                 || slot.Itemstack.Item?.Code.Path.StartsWith("bugnet") == true
                 || slot.Itemstack.Item?.Code.Path.StartsWith("arrow-") == true;
@@ -207,6 +211,11 @@ namespace Vinconomy.Filters
         public static bool IsMicroblock(ItemSlot slot)
         {
             return slot.Itemstack?.Block is BlockMicroBlock;
+        }
+
+        public static bool IsBlock(ItemSlot slot)
+        {
+            return slot.Itemstack?.Block != null;
         }
 
         public static bool IsFoodContainer(ItemSlot slot)

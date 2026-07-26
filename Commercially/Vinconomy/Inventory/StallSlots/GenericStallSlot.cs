@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
-using Commercially.Vinconomy.Trading.Processor;
 using System;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
@@ -36,7 +35,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             } 
         }
 
-        public GenericStallSlot(InventoryBase inventory, int stallSlot) : base(inventory, stallSlot) { 
+        public GenericStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot) { 
         }
 
 
@@ -92,20 +91,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             
         }
 
-        public override ItemSlot GetProductSlot(int itemSlot)
-        {
-            return Products[itemSlot];
-        }
-
-        public override void PreInitialize(VinconBaseInventory inventory, int stallSlot)
-        {
-            Inventory = inventory;
-            StallSlot = stallSlot;
-        }
-
         public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
         {
-            PreInitialize(inventory, stallSlot);
+            base.Initialize(inventory, stallSlot, numSlotsPerStall);
 
             if (!IsInitialized)
             {
@@ -117,21 +105,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 Currency = new VinconCloningSlot(inventory);
                 Product = new VinconCloningSlot(inventory);
             }
-        }
-
-        public override AggregatedSlots GetProducts()
-        {
-            ICoreAPI api = Inventory.Api;
-            AggregatedSlots slots = new AggregatedSlots(api);
-            foreach (var slot in Products)
-            {
-                if (slot.Itemstack != null && TradingUtil.IsMatchingItem(Product.Itemstack, slot.Itemstack, api.World))
-                {
-                    slots.Add(slot);
-                }
-            }
-
-            return slots;
         }
 
         public override void TransferProdutToPlayer(TradeResult result)
@@ -146,7 +119,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
                 if (stack != null)
                 {
-                    this.Inventory.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Debug($"Adding {stack.StackSize}x {stack} product to Parent");
+                    this.Inventory.modSystem.Mod.Logger.Debug($"Adding {stack.StackSize}x {stack} product to Parent");
                     if (stack.Block?.Sounds?.Place.Location != null)
                     {
                         sound = stack.Block?.Sounds?.Place.Location;
@@ -166,7 +139,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public override void ExtractProductFromStall(TradeResult result)
         {
             AggregatedSlots products = result.Request.ProductSourceSlots;
-            int totalProductToMove = result.Request.GetFinalProductNeededPerPurchase() * result.Request.NumPurchases;
+            int totalProductToMove = result.TotalProductAmount;
             AggregatedStacks productStacks = result.ProductStacks;
 
             foreach (ItemSlot slot in products)
@@ -174,7 +147,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 ItemStack takenStack = slot.TakeOut(totalProductToMove);
                 if (takenStack != null)
                 {
-                    GenericTradingProcessor.AuditLogDebug(result, $"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                    this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
                     totalProductToMove -= takenStack.StackSize;
                     productStacks.Add(takenStack);
                     slot.MarkDirty();
@@ -184,7 +157,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 {
                     if (totalProductToMove < 0)
                     {
-                        GenericTradingProcessor.AuditLogError(result, $"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
                     }
                     break;
                 }

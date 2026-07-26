@@ -582,6 +582,21 @@ namespace Commercially.Common
             return entity?.GetBehavior<IOwnableReference>();
         }
 
+        public IOwnableReference GetOwnable(long? ownableId)
+        {
+            if (ownableId == null)
+            {
+                return null;
+            }
+
+            OwnableRegistration ownableReg = DB.GetOwnable(ownableId.Value);
+
+            if (ownableReg == null || ownableReg.Position == null) { return null; }
+
+            BlockEntity entity = _CoreServerApi.World.BlockAccessor.GetBlockEntity(ownableReg.Position);
+            return entity?.GetBehavior<IOwnableReference>();
+        }
+
         public void RegisterInteraction(string key, IInteraction interaction)
         {
             if (Interactions.ContainsKey(key))
