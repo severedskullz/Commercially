@@ -5,6 +5,7 @@ using System;
 using Vinconomy.Filters;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
@@ -12,10 +13,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
     public class SculptureStallSlot : StallSlotBase
     {
         ToggledStockItemSlot[] Slots;
-        int SculptureHorizontalSize = 1;
-        int SculptureVerticalSize = 1;
-        string SculptureName = "Sculpture";
-        private const int MaxSculptureSize = 5;
+        public int SculptureHorizontalSize = MaxSculptureSize;
+        public int SculptureVerticalSize = MaxSculptureSize;
+        public string SculptureName = "Sculpture";
+        public const int MaxSculptureSize = 5;
 
         public SculptureStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
@@ -39,9 +40,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
             set
             {
-                if (slotId == 0) Currency = (VinconCloningSlot)value;
-                else if (slotId == 1) Product = (FilteredItemSlot)value;
-                else Slots[slotId - 2] = (ToggledStockItemSlot)value;
+                if (slotId == 0) Currency = (CurrencySlot) value;
+                else if (slotId == 1) Product = (ProductSlot) value;
+                else Slots[slotId - 2] = (ToggledStockItemSlot) value;
             }
         }
 
@@ -50,17 +51,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public override ItemSlot[] GetProductSlots()
         { 
             return Slots;
-        }
-
-        public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
-        {
-            base.Initialize(inventory, stallSlot, numSlotsPerStall);
-
-            if (!IsInitialized)
-            {
-                Currency = new VinconCloningSlot(inventory);
-                Product = new VinconCloningSlot(inventory);
-            }
         }
 
         public override void TransferProdutToPlayer(TradeResult result)
@@ -122,10 +112,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public ToggledStockItemSlot GetSlotForGrid(int layer, int x, int y)
         {
-            int layerOffset = layer * (SculptureHorizontalSize * SculptureHorizontalSize);
-            int yOffset = y * SculptureHorizontalSize;
+            int layerOffset = layer * (MaxSculptureSize * MaxSculptureSize);
+            int yOffset = y * MaxSculptureSize;
             int index = layerOffset + yOffset + x;
-
             return Slots[index];
         }
 
@@ -133,29 +122,33 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public override void ExtractProductFromStall(TradeResult result)
         {
             AggregatedSlots products = result.Request.ProductSourceSlots;
-            int totalProductToMove = result.TotalProductAmount;
-            AggregatedStacks productStacks = result.ProductStacks;
+            int numPurchases = result.TotalProductAmount;
 
-            foreach (ItemSlot slot in products)
+            if (!result.Request.IsAdminShop)
             {
-                ItemStack takenStack = slot.TakeOut(totalProductToMove);
-                if (takenStack != null)
-                {
-                    this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                    totalProductToMove -= takenStack.StackSize;
-                    productStacks.Add(takenStack);
-                    slot.MarkDirty();
-                }
 
-                if (totalProductToMove <= 0)
+                foreach (ItemSlot slot in products)
                 {
-                    if (totalProductToMove < 0)
+                    ItemStack takenStack = slot.TakeOut(numPurchases);
+                    if (takenStack != null)
                     {
-                        this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                        slot.MarkDirty();
                     }
-                    break;
                 }
+            }
 
+            AggregatedStacks productStacks = result.ProductStacks;
+            ItemStack bundle = GenNewSculptureBundle();
+            if (numPurchases == 1)
+                productStacks.Add(bundle);
+            else
+            {
+                for (int i = 0; i < numPurchases; i++)
+                {
+                    // Max stack size for bundles is 1, so prevent getting more than 1 in a stack if they purchase in bulk.
+                    productStacks.Add(bundle.Clone());
+                }
             }
         }
 
@@ -163,7 +156,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         {
             ItemStack stack = new ItemStack(Inventory.Api.World.GetItem(new AssetLocation("vinconomy:sculpturebundle")), 1);
             TreeAttribute treeAttr = new TreeAttribute();
-            treeAttr.SetString("SculptureName", SculptureName);
+            if (SculptureName?.Length > 0 && !SculptureName.IsWhiteSpace())
+                treeAttr.SetString("SculptureName", SculptureName);
+            else
+                treeAttr.SetString("SculptureName", Lang.Get("vinconomy:generic-sculpture"));
 
             // SetLong instead of SetInt per Tyron's documentation for JSON serialization (See SetInt)
             // Why is this a thing? More Tyron Jank.
@@ -192,7 +188,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                         if (!slot.Empty && slot.Enabled)
                         {
                             numBlocks++;
-                            contents.SetItemstack(String.Format("{0}-{1}-{2}", layer, x, y), TradingUtil.GetItemStackClone(slot, 1));
+                            contents.SetItemstack(String.Format("x{0}-y{1}-z{2}", x, layer, y), TradingUtil.GetItemStackClone(slot, 1));
                             //i++;
                         }
 
@@ -218,6 +214,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 tree.SetBool($"slot_{i}_enabled", Slots[i].Enabled);
             }
 
+            tree.SetString("sculptureName", SculptureName);
             tree.SetInt("sculptureHorizontalSize", SculptureHorizontalSize);
             tree.SetInt("sculptureVerticalSize", SculptureVerticalSize);
 
@@ -236,8 +233,51 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
 
+            SculptureName = tree.GetString("sculptureName", "Sculpture");
             SculptureHorizontalSize = tree.GetInt("sculptureHorizontalSize", 1);
             SculptureVerticalSize = tree.GetInt("sculptureVerticalSize", 1);
+
+            //UpdateEnabledSlots();
+        }
+
+        public void UpdateEnabledSlots()
+        {
+            for (int layer = 0; layer < MaxSculptureSize; layer++)
+            {
+                for (int y = 0; y < MaxSculptureSize; y++)
+                {
+                    for (int x = 0; x < MaxSculptureSize; x++)
+                    {
+                        ToggledStockItemSlot slot = GetSlotForGrid(layer, x, y);
+                        slot.Enabled = layer < SculptureVerticalSize && y < SculptureHorizontalSize && x < SculptureHorizontalSize;
+                        //Slots[index].MarkDirty();
+                    }
+                }
+            }
+            this.UpdateProductSlot();
+            this.Inventory.BlockEntity.MarkDirty();
+        }
+
+        public void UpdateProductSlot()
+        {
+            this.Product.Itemstack = GenStubbedBundle();
+            this.Product.MarkDirty();
+        }
+
+        public override int GetProductQuantity()
+        {
+            if (Product?.Itemstack == null) return 0;
+
+            int amount = Int32.MaxValue;
+            foreach (ToggledStockItemSlot item in Slots)
+            {
+                if (item.Enabled) {
+                    if (item.StackSize <= 0) return 0;
+                    amount = Math.Min(amount, item.StackSize);
+                }
+            }
+
+            return amount;
         }
     }
 }

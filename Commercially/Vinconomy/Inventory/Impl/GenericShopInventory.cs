@@ -14,7 +14,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             if (!IsInternalSlotsInitialized)
             {
                 InternalSlots = new ItemSlot[1];
-                InternalSlots[0] = new VinconDecoBlockSlot(this, 0);
+                InternalSlots[0] = new DecoBlockSlot(this, 0);
 
                 /*
                 for (int i = 1; i < InternalSlots.Length; i++)

@@ -12,6 +12,7 @@ using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
@@ -35,8 +36,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 else return MealSlot;
             }
             set {
-                if (slotId == 0) Currency = (VinconCloningSlot) value;
-                else if (slotId == 1) Product = (FilteredItemSlot) value;
+                if (slotId == 0) Currency = (CurrencySlot) value;
+                else if (slotId == 1) Product = (ProductSlot) value;
                 else MealSlot = value;
             } 
         }
@@ -45,19 +46,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         {
             MealSlot = new StockItemSlot(inventory, stallSlot, 0);
         }
-
-        public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
-        {
-            base.Initialize(inventory, stallSlot, numSlotsPerStall);
-
-            if (!IsInitialized) // Now that this is passed in through the constructor, this is redundant. Oh well...
-            {
-                MealSlot = new StockItemSlot(inventory, StallSlot, 0);
-                Currency = new VinconCloningSlot(inventory);
-                Product = new VinconCloningSlot(inventory);
-            }
-        }
-
 
         public override ItemSlot[] GetProductSlots()
         {
@@ -730,6 +718,11 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public string GetRecipeCode()
         {
             return VinUtils.GetRecipeCode(Product.Itemstack, Inventory.Api);
+        }
+
+        public override void DropInventory(Vec3d pos, int maxStackSize)
+        {
+            // DO NOTHING. Meals go bye-bye! Dont wanna duplicate the cooking pots I use to hold the ingredients. Pretend they spilled on the floor and got dirty or something, I don't care.
         }
     }
 }

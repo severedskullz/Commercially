@@ -21,6 +21,20 @@
         public const int TRANSFER_CONTENTS              = 4114;
         public const int TOGGLE_SLOT                    = 4113;
 
+        // Reserved Logic Constants - Use these for any specific
+        // implementation that you might want to share with other
+        // mods. Vinconomy might use these for Stall-specific functions
+        public const int RLOGIC_1                       = 4201;
+        public const int RLOGIC_2                       = 4202;
+        public const int RLOGIC_3                       = 4203;
+        public const int RLOGIC_4                       = 4204;
+        public const int RLOGIC_5                       = 4205;
+        public const int RLOGIC_6                       = 4206;
+        public const int RLOGIC_7                       = 4207;
+        public const int RLOGIC_8                       = 4208;
+        public const int RLOGIC_9                       = 4209;
+        public const int RLOGIC_10                      = 4210;
+
         public const int DEFAULT_WAYPOINT_COLOR = 256;
         public const string DEFAULT_WAYPOINT_ICON = "genericOwnable";
     }

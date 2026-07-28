@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 
 namespace Commercially.Vinconomy.Inventory
@@ -183,14 +184,49 @@ namespace Commercially.Vinconomy.Inventory
             this.className = className;
             modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
-            
+
 
             int numStalls = properties["numStalls"].AsInt(4);
             int numSlotsPerStall = properties["numSlotsPerStall"].AsInt(16);
             string stallType = properties["stallType"].AsString("GenericStallSlot");
 
             Initialize(BlockEntity, stallType, numStalls, numSlotsPerStall, api);
+            ApplyFilters(properties);
+            ApplyBackgrounds(properties);
+        }
 
+        private void ApplyBackgrounds(JsonObject properties)
+        {
+            string stallBackground = properties["stallBackground"].AsString(null);
+            string[] stallBackgrounds = properties["stallBackgrounds"].AsArray<string>(null);
+            if (stallBackground != null)
+            {
+                foreach (StallSlotBase stall in StallSlots)
+                {
+                    stall.SetStallBackground(stallBackground);
+                }
+            }
+            else if (stallBackgrounds != null)
+            {
+                if (stallBackgrounds.Length != StallSlots.Length)
+                {
+                    throw new ArgumentException($"Number of stall backgrounds present in the array must match the length of numStalls of {StallSlots.Length}");
+                }
+                for (int i = 0; i < StallSlots.Length; i++)
+                {
+                    StallSlots[i].SetStallBackground(stallBackgrounds[i]);
+                }
+            }
+
+            // TODO: Tyron's patented "Jank" in GuiDialogCharacter prevents Armor icons from being rendered until you open the character screen atleast once.
+            // Rather than just register them wherever the rest of the icons were registered, he made a whole new method "RegisterArmorIcons" to do so and checks if they exist
+            // in capi.Gui.Icons.CustomIcons when we open the dialog and then register them if they dont... What in the literal FUCK?
+            // Now I need to figure out how to invoke this method automatically so the thing shows up, or just go ahead and register them manually in the Vinconomy Mod System?
+
+        }
+
+        private void ApplyFilters(JsonObject properties)
+        {
             string stallFilter = properties["stallFilter"].AsString(null);
             string[] stallFilters = properties["stallFilters"].AsArray<string>(null);
             if (stallFilter != null && stallFilters != null)
@@ -203,7 +239,7 @@ namespace Commercially.Vinconomy.Inventory
                 Vintagestory.API.Common.Func<ItemSlot, bool> filter = modSystem.CommerciallySystem.GetFilter(stallFilter);
                 foreach (StallSlotBase stall in StallSlots)
                 {
-                    
+
                     stall.SetStallFilter(filter);
                 }
             }
@@ -433,7 +469,7 @@ namespace Commercially.Vinconomy.Inventory
         {
             if (Api.Side == EnumAppSide.Client) return;
 
-            if (slot is IStallProductSlot stallProductSlot)
+            if (slot is IStallProductStockSlot stallProductSlot)
             {
                 int stallSlot = stallProductSlot.GetStall();
                 StallSlotBase stall = this.GetStall(stallSlot);
@@ -479,6 +515,14 @@ namespace Commercially.Vinconomy.Inventory
                 return 0;
             }
 
+        }
+
+        public override void DropAll(Vec3d pos, int maxStackSize = 0)
+        {
+            for (int i = 0; i < StallSlots.Length; i++)
+            {
+                GetStall(i).DropInventory(pos, maxStackSize);
+            }
         }
     }
 }

@@ -3,13 +3,13 @@ using Vintagestory.GameContent;
 
 namespace Vinconomy.Inventory.Slots
 {
-    public class VinconDecoBlockSlot : ItemSlot
+    public class DecoBlockSlot : ItemSlot
     {
         public bool isDisabled { get; set; } = false;
-        public VinconDecoBlockSlot(InventoryBase inventory, int itemSlot) : base(inventory)
+        public DecoBlockSlot(InventoryBase inventory, int itemSlot) : base(inventory)
         {
-            this.HexBackgroundColor = "#65d934";
-            //this.BackgroundIcon = "vicon-boots";
+            //this.HexBackgroundColor = "#65d934";
+            this.BackgroundIcon = "commercially-chisel";
             MaxSlotStackSize = 1;
 
         }

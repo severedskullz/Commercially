@@ -18,6 +18,8 @@ namespace Commercially.Common.Util
         public float OffsetOriginX, OffsetOriginY, OffsetOriginZ;
         public bool hidden;
 
+        public float ScaleXYZ { set { ScaleX = value; ScaleY = value; ScaleZ = value; } }
+
         /// <summary>
         /// Resets all properties to 0, except preRotate.
         /// </summary>

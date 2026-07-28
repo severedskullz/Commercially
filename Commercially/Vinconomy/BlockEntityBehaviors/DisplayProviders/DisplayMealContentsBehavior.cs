@@ -4,13 +4,13 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
-namespace Commercially.Vinconomy.BlockEntityBehaviors
+namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
 {
-    public class BEDisplayMealContentsBehavior : BEBaseDisplayContentsBehavior
+    public class DisplayMealContentsBehavior : BaseDisplayContentsBehavior
     {
 
 
-        public BEDisplayMealContentsBehavior(BlockEntity blockentity) : base(blockentity)
+        public DisplayMealContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
 

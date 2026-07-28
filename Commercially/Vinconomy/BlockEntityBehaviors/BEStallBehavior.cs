@@ -27,7 +27,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         IOwnableChild IStallComponent.Ownable => _Ownable;
         protected IOwnableChild _Ownable;
 
-        protected bool RequiresParent;
+        protected bool RequiresParent = true;
         protected bool DiscardProduct;
 
         public int StallCount => _InventoryProvider?.StallCount ?? 0;
@@ -178,11 +178,9 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         protected virtual bool TesselateDecoBlock(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
         {
-
-            if (_InventoryProvider.GetDecorationStack() != null)
+            ItemSlot decoration = _InventoryProvider.GetDecorationSlot();
+            if (decoration?.Itemstack != null)
             {
-                ItemSlot decoration = _InventoryProvider.GetDecorationSlot();
-
                 MeshData mesh = CommerciallyCore.GetRenderer(decoration).CreateMesh(this, decoration, 0);
                 mesh = mesh.Clone().Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0, (float)((Block.Shape.rotateY * Math.PI) / 180), 0);
                 mesher.AddMeshData(mesh);

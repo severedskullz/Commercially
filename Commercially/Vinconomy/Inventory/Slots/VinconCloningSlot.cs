@@ -8,7 +8,7 @@ namespace Vinconomy.Inventory.Slots
         
         public VinconCloningSlot(InventoryBase inventory) : base(inventory)
         {
-            this.HexBackgroundColor = "#B62521";
+            //this.HexBackgroundColor = "#B62521";
             //BackgroundIcon = "vicon-payment";
         }
 

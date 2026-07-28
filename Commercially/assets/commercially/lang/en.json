@@ -1,21 +1,21 @@
 {
-    "tabname-ownership": "Ownership",
-    "tabname-debug": "Entity Debug",
-    "tabname-container": "Container Debug",
-    "tabname-generic-customer": "Customer Debug",
+  "tabname-ownership": "Ownership",
+  "tabname-debug": "Entity Debug",
+  "tabname-container": "Container",
+  "tabname-waypoint": "Waypoint",
 
-    "label-name": "Name",
-    "label-parent": "Parent",
-    "label-admin-owned": "Is Admin Owned",
+  "label-name": "Name",
+  "label-parent": "Parent",
+  "label-admin-owned": "Is Admin Owned",
 
-    "label-primary-material": "Primary Material",
-    "label-secondary-material": "Secondary Material",
-    "label-deco-material": "Decoration Material",
+  "label-primary-material": "Primary Material",
+  "label-secondary-material": "Secondary Material",
+  "label-deco-material": "Decoration Material",
 
-    "label-owner": "Owner",
-    "label-owner-uid": "Owner UID",
-    "label-ownable-id": "Ownable ID",
-    "label-parent-id": "Parent ID",
-    "label-ownable-type": "Ownable Type"
+  "label-owner": "Owner",
+  "label-owner-uid": "Owner UID",
+  "label-ownable-id": "Ownable ID",
+  "label-parent-id": "Parent ID",
+  "label-ownable-type": "Ownable Type"
 
 }

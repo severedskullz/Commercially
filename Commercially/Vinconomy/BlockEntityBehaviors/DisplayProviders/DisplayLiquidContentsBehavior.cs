@@ -8,14 +8,14 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace Commercially.Vinconomy.BlockEntityBehaviors
+namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
 {
-    public class BEDisplayLiquidContentsBehavior : BEBaseDisplayContentsBehavior
+    public class DisplayLiquidContentsBehavior : BaseDisplayContentsBehavior
     {
 
         public virtual AssetLocation liquidContentsShape { get; protected set; } = AssetLocation.Create("shapes/block/wood/barrel/liquidcontents.json");
 
-        public BEDisplayLiquidContentsBehavior(BlockEntity blockentity) : base(blockentity)
+        public DisplayLiquidContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
 

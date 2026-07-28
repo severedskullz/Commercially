@@ -19,7 +19,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
         {
             if (Api.Side == EnumAppSide.Client) return;
 
-            if (slot is IStallProductSlot stallProductSlot)
+            if (slot is IStallProductStockSlot stallProductSlot)
             {
                 int stallSlot = stallProductSlot.GetStall();
                 StallSlotBase stall = this.GetStall(stallSlot);

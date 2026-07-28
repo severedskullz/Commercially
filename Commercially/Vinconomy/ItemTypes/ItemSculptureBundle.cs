@@ -10,10 +10,6 @@ namespace Vinconomy.ItemTypes
 {
     public class ItemSculptureBundle : Item
     {
-        //TODO: I switched it from X/Y/Z to Layer/X/Y in the bundle creation code. Need to update the rest, or revert my change if it becomes a PITA to update.
-
-
-        /*
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
             if (byEntity.Api.Side == EnumAppSide.Client)
@@ -61,18 +57,18 @@ namespace Vinconomy.ItemTypes
 
             //Create the matrix, and resolve all the block items in the bundle
             ItemStack[][][] matrix = new ItemStack[sizeY][][];
-            for (int y = 0; y < sizeY; y++)
+            for (int layer = 0; layer < sizeY; layer++)
             {
-                matrix[y] = new ItemStack[sizeX][];
+                matrix[layer] = new ItemStack[sizeX][];
                 for (int x = 0; x < sizeX; x++)
                 {
-                    matrix[y][x] = new ItemStack[sizeZ];
+                    matrix[layer][x] = new ItemStack[sizeZ];
                     for (int z = 0; z < sizeZ; z++)
                     {
-                        ItemStack blockStack = contents.GetItemstack(String.Format("{0}-{1}-{2}", z, y, x));
+                        ItemStack blockStack = contents.GetItemstack(String.Format("x{0}-y{1}-z{2}", x, layer, z));
                         if (blockStack != null)
                         {
-                            matrix[y][x][z] = blockStack;
+                            matrix[layer][x][z] = blockStack;
                             blockStack.ResolveBlockOrItem(ent.World);
                         }
                     }
@@ -147,7 +143,7 @@ namespace Vinconomy.ItemTypes
                                 if (blockStack.StackSize > 0)
                                 {
                                     //Console.WriteLine("Should have spawned item for " + String.Format("{0}-{1}-{2}", x, y, z));
-                                    ent.World.SpawnItemEntity(blockStack, ent.SidedPos.XYZ.Add(0.0f, 0.5f, 0.0f), null);
+                                    ent.World.SpawnItemEntity(blockStack, ent.Pos.XYZ.Add(0.0f, 0.5f, 0.0f), null);
                                 }
                             } else
                             {
@@ -178,13 +174,13 @@ namespace Vinconomy.ItemTypes
             ITreeAttribute contents = (TreeAttribute)treeAttr.GetTreeAttribute("Contents");
             EntityAgent ent = player.Entity;
 
-            for (int y = 0; y < sizeY; y++)
+            for (int layer = 0; layer < sizeY; layer++)
             {
-                for (int z = 0; z < sizeZ; z++)
+                for (int y = 0; y < sizeZ; y++)
                 {
                     for (int x = 0; x < sizeX; x++)
                     {
-                        ItemStack blockStack = contents.GetItemstack(String.Format("{0}-{1}-{2}", x, y, z));
+                        ItemStack blockStack = contents.GetItemstack(String.Format("x{0}-y{1}-z{2}", x, layer, y));
                         if (blockStack != null)
                         {
                             blockStack.ResolveBlockOrItem(ent.World);
@@ -193,7 +189,7 @@ namespace Vinconomy.ItemTypes
                             if (blockStack.StackSize > 0)
                             {
                                 //Console.WriteLine("Should have spawned item for " + String.Format("{0}-{1}-{2}", x, y, z));
-                                ent.World.SpawnItemEntity(blockStack, ent.SidedPos.XYZ.Add(0.0f, 0.5f, 0.0f), null);
+                                ent.World.SpawnItemEntity(blockStack, ent.Pos.XYZ.Add(0.0f, 0.5f, 0.0f), null);
                             }
                         }
 
@@ -208,11 +204,11 @@ namespace Vinconomy.ItemTypes
         {
             ITreeAttribute attrs = inSlot.Itemstack.Attributes;
             dsc.AppendLine("Sculpture: " + attrs.GetString("SculptureName"));
-            dsc.AppendLine("Size: " + attrs.GetInt("SizeX") + " x " + attrs.GetInt("SizeY") + " x " + attrs.GetInt("SizeZ"));
+            dsc.AppendLine("Size: " + attrs.GetLong("SizeX") + " x " + attrs.GetLong("SizeY") + " x " + attrs.GetLong("SizeZ"));
             base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
           
 
         }
-        */
+        
     }
 }

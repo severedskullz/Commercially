@@ -1,14 +1,16 @@
 ﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Trading;
+using Commercially.Vinconomy.Inventory.StallSlots;
 using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.Inventory.Slots
 {
-    public class ToggledStockItemSlot : ToggledSlot, IStallProductSlot
+    public class ToggledStockItemSlot : ToggledSlot, IStallProductStockSlot
     {
         public int stallSlot { get; private set; } = 0;
         public int itemSlot { get; private set; } = 0;
+
+        
 
         public ToggledStockItemSlot(InventoryBase inventory, int stallSlot, int itemSlot) : base(inventory)
         {
@@ -16,35 +18,22 @@ namespace Commercially.Vinconomy.Inventory.Slots
 
         public override bool CanHold(ItemSlot sourceSlot)
         {
-            if ((Filter?.Invoke(sourceSlot) ?? true) == false)
-            {
-                return false;
-            }
-
             if (!Enabled)
             {
                 return false;
             }
 
-            if (inventory is VinconBaseInventory)
+            if (inventory is VinconBaseInventory vinconInventory)
             {
-                ItemSlot slot = ((VinconBaseInventory)inventory).GetStall(stallSlot).Product;
-                if (slot?.Itemstack == null)
+                ItemSlot productSlot = vinconInventory.GetStall(stallSlot).Product;
+
+                if (ShouldUpdateProductSlot(productSlot, sourceSlot))
                 {
-                    bool canHold = base.CanHold(sourceSlot);
-
-                    if (canHold)
-                    {
-                        slot.Itemstack = sourceSlot.Itemstack.Clone();
-                        slot.Itemstack.StackSize = 1;
-                        slot.MarkDirty();
-                    }
-
-                    return canHold;
+                    UpdateProductSlot(productSlot, sourceSlot);
                 }
-                else if (TradingUtil.IsMatchingItem(slot.Itemstack, sourceSlot.Itemstack, inventory.Api.World))
+
+                if (ItemMatchesProduct(productSlot.Itemstack, sourceSlot))
                 {
-                    //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot satisfied, so we called Base");
                     return base.CanHold(sourceSlot);
                 }
                 else
@@ -54,9 +43,9 @@ namespace Commercially.Vinconomy.Inventory.Slots
 
             }
 
-            //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot was not satisfied, so we return false");
             return base.CanHold(sourceSlot);
         }
+
 
         public override bool CanTakeFrom(ItemSlot sourceSlot, EnumMergePriority priority = EnumMergePriority.AutoMerge)
         {
@@ -93,6 +82,23 @@ namespace Commercially.Vinconomy.Inventory.Slots
                 base.ActivateSlot(sourceSlot, ref op);
         }
 
+        public bool ShouldUpdateProductSlot(ItemSlot productSlot, ItemSlot sourceSlot)
+        {
+            // We always need to update the product with a new bundle
+            return true;
+        }
 
+        public bool ItemMatchesProduct(ItemStack product, ItemSlot sourceSlot)
+        {
+            // Blocks will never match the bundle, so we always return true to allow the block to be placed in the slot
+            return true;
+        }
+
+
+        public void UpdateProductSlot(ItemSlot productSlot, ItemSlot sourceSlot)
+        {
+            VinconBaseInventory inv = inventory as VinconBaseInventory;
+            productSlot.Itemstack = inv.GetStall<SculptureStallSlot>(stallSlot).GenStubbedBundle(); // Stubbed because we dont actually care about the block contents. No point in serializing all that crap.
+        }
     }
 }

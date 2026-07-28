@@ -7,6 +7,9 @@ namespace Commercially.Common.Inventory.Slots
         public ToggledSlot(InventoryBase inventory) : base(inventory)
         {
         }
+
+        public override bool DrawUnavailable => !Enabled;
+
         private bool _Enabled = true;
         public bool Enabled { 
             get => _Enabled; 

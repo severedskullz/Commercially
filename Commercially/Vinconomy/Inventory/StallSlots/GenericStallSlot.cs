@@ -26,8 +26,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             set {
-                if (slotId == 0) Currency = (VinconCloningSlot) value;
-                else if (slotId == 1) Product = (FilteredItemSlot) value;
+                if (slotId == 0) Currency = (CurrencySlot) value;
+                else if (slotId == 1) Product = (ProductSlot) value;
                 else
                 {
                     Products[slotId - 2] = value;
@@ -102,8 +102,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 {
                     Products[i] = new StockItemSlot(inventory, StallSlot, i); ;
                 }
-                Currency = new VinconCloningSlot(inventory);
-                Product = new VinconCloningSlot(inventory);
             }
         }
 
@@ -138,30 +136,47 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override void ExtractProductFromStall(TradeResult result)
         {
-            AggregatedSlots products = result.Request.ProductSourceSlots;
             int totalProductToMove = result.TotalProductAmount;
             AggregatedStacks productStacks = result.ProductStacks;
-
-            foreach (ItemSlot slot in products)
+           
+            if (result.Request.IsAdminShop)
             {
-                ItemStack takenStack = slot.TakeOut(totalProductToMove);
-                if (takenStack != null)
+                int maxStackSize = result.Request.ProductNeeded.Collectible.MaxStackSize;
+                while (totalProductToMove > 0)
                 {
-                    this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                    totalProductToMove -= takenStack.StackSize;
-                    productStacks.Add(takenStack);
-                    slot.MarkDirty();
+                    ItemStack transferStack = result.Request.ProductNeeded.Clone();
+                    int stackSize = Math.Min(totalProductToMove, maxStackSize);
+                    transferStack.StackSize = stackSize;
+                    productStacks.Add(transferStack);
+                    totalProductToMove -= stackSize;
                 }
-
-                if (totalProductToMove <= 0)
+            } else {
+                AggregatedSlots products = result.Request.ProductSourceSlots;
+                foreach (ItemSlot slot in products)
                 {
-                    if (totalProductToMove < 0)
+                    ItemStack takenStack = slot.TakeOut(totalProductToMove);
+                    if (takenStack != null)
                     {
-                        this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                        totalProductToMove -= takenStack.StackSize;
+                        productStacks.Add(takenStack);
+                        slot.MarkDirty();
                     }
-                    break;
-                }
 
+                    if (totalProductToMove <= 0)
+                    {
+                        if (totalProductToMove < 0)
+                        {
+                            this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (totalProductToMove > 0)
+            {
+                this.Inventory.modSystem.Mod.Logger.Error($"Somehow missing {totalProductToMove}  items from Product");
             }
         }
     }

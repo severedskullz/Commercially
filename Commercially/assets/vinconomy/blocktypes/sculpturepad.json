@@ -17,7 +17,7 @@
   "entityBehaviors": [
 
     {
-      "name": "Vinconomy.StallInventory",
+      "name": "Vinconomy.SculptureInventory",
       "properties": {
         "numStalls": 1,
         "stallType": "SculptureStallSlot"
@@ -32,7 +32,7 @@
     {
       "name": "Commercially.GuiManager",
       "properties": {
-        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.SculptureOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
       }
     },
     {
@@ -108,7 +108,7 @@
       "z1": 0,
       "x2": 1,
       "y2": 1,
-      "z2": 0.25
+      "z2": 1
     }
   ],
 
@@ -118,7 +118,7 @@
       "y1": 0,
       "z1": 0,
       "x2": 1,
-      "y2": 1,
+      "y2": 1.0625,
       "z2": 1
     }
   ],

@@ -5,9 +5,12 @@ using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Trading;
 using System;
+using System.Collections.Generic;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
@@ -23,13 +26,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <summary>
         /// The Currency used for the purchase. The StackSize should be representitive of how much an item costs. For example, if something were to cost 6 Rusty Gears, its stack size would be 6. 
         /// </summary>
-        public VinconCloningSlot Currency { get; protected set; }
+        public CurrencySlot Currency { get; protected set; }
 
         /// <summary>
         /// The Product given to the customer. The StackSize should be representitive of how much of an item is given to the customer. For example, if the shop were to be selling a stack of 64 Dirt, then 
         /// the stack size would be 64.
         /// </summary>
-        public FilteredItemSlot Product { get; protected set; }
+        public ProductSlot Product { get; protected set; }
 
         /// <summary>
         /// How many slots are considered "Product" that the player can fill in to sell items from.
@@ -66,8 +69,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public StallSlotBase(VinconBaseInventory inventory, int stallSlot) {
             this.Inventory = inventory;
             this.StallSlot = stallSlot;
-            Currency = new VinconCloningSlot(inventory);
-            Product = new VinconCloningSlot(inventory);
+            Currency = new CurrencySlot(inventory);
+            Product = new ProductSlot(inventory);
         }
 
         public virtual ItemSlot GetInternalSlot(int slotId)
@@ -162,6 +165,11 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             ItemSlot[] slots = GetProductSlots();
             if (itemSlot < 0 || itemSlot >= slots.Length) throw new ArgumentOutOfRangeException($"Cannot get Product Slot {itemSlot} of stall with {slots.Length} slots");
             return slots[itemSlot];
+        }
+
+        public T GetProductSlot<T>(int itemSlot) where T : ItemSlot
+        {
+            return GetProductSlot(itemSlot) as T;
         }
 
         /// <summary>
@@ -332,6 +340,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         /// <summary>
         /// Extracts the Product from the stall and adds them to TradeResult.ProductStacks. Should do any conversion neccesary during extraction - for example, converting Meal ingredients into a Bowl with the appropriate servings as the ItemStack's stacksize, or bundling items into a single item like a Gacha Ball, 
+        /// <br/> If the stall is set to Admin Owned, only populate the ProductStacks
         /// </summary>
         /// <param name="result"></param>
         public abstract void ExtractProductFromStall(TradeResult result);
@@ -424,6 +433,38 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 {
                     ((FilteredItemSlot)item).Filter = stallFilter;
                 }
+            }
+        }
+
+        public virtual void SetStallBackground(string background)
+        {
+            ItemSlot[] slots = GetProductSlots();
+            Product.BackgroundIcon = background;
+            foreach (var item in slots)
+            {
+                item.BackgroundIcon = background;
+            }
+        }
+
+        public virtual void DropInventory(Vec3d pos, int maxStackSize)
+        {
+            ItemSlot[] slots = GetProductSlots();
+            foreach (var slot in slots)
+            {
+                if (maxStackSize > 0)
+                {
+                    while (slot.StackSize > 0)
+                    {
+                        ItemStack itemstack = slot.TakeOut(GameMath.Clamp(slot.StackSize, 1, maxStackSize));
+                        this.Inventory.Api.World.SpawnItemEntity(itemstack, pos);
+                    }
+                }
+                else
+                {
+                    this.Inventory.Api.World.SpawnItemEntity(slot.Itemstack, pos);
+                }
+                slot.Itemstack = null;
+                slot.MarkDirty();
             }
         }
     }

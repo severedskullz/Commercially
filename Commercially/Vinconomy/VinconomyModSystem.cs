@@ -3,6 +3,7 @@ using Commercially.Common.Interactions;
 using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
+using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
 using Commercially.Vinconomy.GUI.Tabs;
 using Commercially.Vinconomy.Interactions;
@@ -130,6 +131,7 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(CouponCutterTab.CODE, typeof(CouponCutterTab));
             guiSystem.RegisterTabType(MealShopOwnerTab.CODE, typeof(MealShopOwnerTab));
             guiSystem.RegisterTabType(ClothingStandCustomerTab.CODE, typeof(ClothingStandCustomerTab));
+            guiSystem.RegisterTabType(SculptureShopOwnerTab.CODE, typeof(SculptureShopOwnerTab));
         }
 
         public void Lifecycle_RegisterItemClasses(ICoreAPI api)
@@ -145,13 +147,18 @@ namespace Commercially.Vinconomy
         {
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Stall", typeof(BEStallBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Register", typeof(BEShopBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
+
+
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.LiquidInventory", typeof(LiquidStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealInventory", typeof(MealStallInventoryProvider));
-            api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(BEDisplayContentsBehavior));
-            api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(BEDisplayMealContentsBehavior));
-            api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.SculptureInventory", typeof(SculptureStallInventoryProvider));
+
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(DisplayMealContentsBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(DisplayContentsBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.SculptureDisplay", typeof(DisplaySculptureBehavior));
         }
 
         public override void StartServerSide(ICoreServerAPI api)

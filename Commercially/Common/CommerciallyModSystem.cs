@@ -97,30 +97,30 @@ namespace Commercially.Common
 
             // I made these methods to support harmony patching. Why you would NEED to do that instead of just calling the register methods directly, I don't know.
             // But I guess it's a thing people might do. So here we are.
-            LifecycleRegisterBlocks(api);
-            LifecycleRegisterBlockBehaviors(api);
+            Lifecycle_RegisterBlocks(api);
+            Lifecycle_RegisterBlockBehaviors(api);
 
-            LifecycleRegisterBlockEntities(api);
-            LifecycleRegisterBlockEntityBehaviours(api);
+            Lifecycle_RegisterBlockEntities(api);
+            Lifecycle_RegisterBlockEntityBehaviours(api);
 
-            LifecycleRegisterInteractions(api);
-            LifecycleRegisterFilters(api);
+            Lifecycle_RegisterInteractions(api);
+            Lifecycle_RegisterFilters(api);
 
 
 
         }
 
-        public void LifecycleRegisterBlocks(ICoreAPI api)
+        public void Lifecycle_RegisterBlocks(ICoreAPI api)
         {
             api.RegisterBlockClass("Commercially.BlockCommercial", typeof(BlockCommercialBase));
         }
 
-        public void LifecycleRegisterBlockEntities(ICoreAPI api)
+        public void Lifecycle_RegisterBlockEntities(ICoreAPI api)
         {
             api.RegisterBlockEntityClass("Commercially.BECommercialBase", typeof(BECommercialBase));
         }
 
-        public void LifecycleRegisterBlockEntityBehaviours(ICoreAPI api)
+        public void Lifecycle_RegisterBlockEntityBehaviours(ICoreAPI api)
         {
             api.RegisterBlockEntityBehaviorClass("Commercially.GuiManager", typeof(BEBehaviorGUIManager));
             api.RegisterBlockEntityBehaviorClass("Commercially.InteractionManager", typeof(InteractionManager));
@@ -133,18 +133,18 @@ namespace Commercially.Common
             api.RegisterBlockEntityBehaviorClass("Commercially.GenericContainer", typeof(BEBehaviorGenericContainer));
         }
 
-        public void LifecycleRegisterBlockBehaviors(ICoreAPI api)
+        public void Lifecycle_RegisterBlockBehaviors(ICoreAPI api)
         {
             api.RegisterBlockBehaviorClass("Commercially.TextureSwappable", typeof(BehaviorTextureSwappable));
             api.RegisterBlockBehaviorClass("Commercially.CommercialEvents", typeof(BehaviorCommercialEvents));
         }
 
-        public void LifecycleRegisterInteractions(ICoreAPI api)
+        public void Lifecycle_RegisterInteractions(ICoreAPI api)
         {
             RegisterInteraction(OpenGuiInteraction.Key, new OpenGuiInteraction());
         }
 
-        public void LifecycleRegisterFilters(ICoreAPI api)
+        public void Lifecycle_RegisterFilters(ICoreAPI api)
         {
             RegisterSlotFilter("Commercially.HeadSlot", CommonFilters.IsHeadDressType);
             RegisterSlotFilter("Commercially.ShoulderSlot", CommonFilters.IsShoulderDressType);
@@ -163,6 +163,29 @@ namespace Commercially.Common
             RegisterSlotFilter("Commercially.ArmorLegsSlot", CommonFilters.IsArmorLegsDressType);
 
             RegisterSlotFilter("Commercially.ToolRackSlot", CommonFilters.IsToolOrWeapon);
+        }
+
+        public void Lifecycle_RegisterRenderers()
+        {
+            RegisterRenderer(new BlockRenderer());
+            RegisterRenderer(new ItemRenderer());
+            RegisterRenderer(new ClutterBlockRenderer());
+            RegisterRenderer(new CoinItemRenderer());
+            RegisterRenderer(new MicroBlockRenderer());
+        }
+
+        public void Lifecycle_RegisterCustomIcons()
+        {
+            RegisterCustomIcon("general");
+            RegisterCustomIcon("general2");
+            RegisterCustomIcon("paper");
+            RegisterCustomIcon("payment");
+            RegisterCustomIcon("produce");
+            RegisterCustomIcon("shield");
+            RegisterCustomIcon("toolrack");
+            RegisterCustomIcon("weapon");
+            RegisterCustomIcon("chisel");
+            RegisterCustomIcon("chisel2");
         }
 
         public EnumWorldAccessResponse TestAccess(IPlayer player, BlockSelection blockSelection, EnumBlockAccessFlags accessType, ref string claimant, EnumWorldAccessResponse response)
@@ -250,13 +273,12 @@ namespace Commercially.Common
                 Renderers[i] = new List<IItemRenderer>();
             }
             BeginRendererRegistration();
-            RegisterRenderer(new BlockRenderer());
-            RegisterRenderer(new ItemRenderer());
-            RegisterRenderer(new ClutterBlockRenderer());
-            RegisterRenderer(new CoinItemRenderer());
-            RegisterRenderer(new MicroBlockRenderer());
+            Lifecycle_RegisterRenderers();
             EndRendererRegistration();
+            Lifecycle_RegisterCustomIcons();
         }
+
+
 
         private void OnMapLinkClicked(LinkTextComponent component)
         {
@@ -552,7 +574,7 @@ namespace Commercially.Common
 
         public void RegisterCustomIcon(string key)
         {
-            _CoreClientApi.Gui.Icons.CustomIcons["vicon-" + key] = delegate (Context ctx, int x, int y, float w, float h, double[] rgba)
+            _CoreClientApi.Gui.Icons.CustomIcons["commercially-" + key] = delegate (Context ctx, int x, int y, float w, float h, double[] rgba)
             {
                 AssetLocation loc = new AssetLocation("commercially:textures/icons/slot-" + key + ".svg");
                 IAsset asset = _CoreClientApi.Assets.TryGet(loc, true);

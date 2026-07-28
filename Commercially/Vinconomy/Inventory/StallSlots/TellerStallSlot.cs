@@ -26,8 +26,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
             set
             {
-                if (slotId == 0) Currency = (VinconCloningSlot)value;
-                else Product = (FilteredItemSlot)value;
+                if (slotId == 0) Currency = (CurrencySlot)value;
+                else Product = (ProductSlot)value;
 
             }
         }
@@ -75,17 +75,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 return ownable.GetComponent<ICurrencySinkProvider>()?.CurrencySlots ?? [];
             }
             return [];
-        }
-
-        public override void Initialize(VinconBaseInventory inventory, int stallSlot, int numSlotsPerStall)
-        {
-            base.Initialize(inventory, stallSlot, numSlotsPerStall);
-
-            if (!IsInitialized)
-            {
-                Currency = new VinconCloningSlot(inventory);
-                Product = new VinconCloningSlot(inventory);
-            }
         }
 
         public override void TransferProdutToPlayer(TradeResult result)

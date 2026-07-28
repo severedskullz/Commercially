@@ -16,7 +16,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
     {
         public const string CODE = "Vinconomy.ClothingStandCustomer";
         public override string Code => CODE;
-        public override string TabName => Lang.Get("vinconomy:tabname-clothing-stand-customer");
+        public override string TabName => Lang.Get("vinconomy:tabname-generic-customer");
 
         DummyInventory DInv;
         VinconBaseInventory Inventory;

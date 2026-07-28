@@ -7,6 +7,7 @@ using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
@@ -34,8 +35,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             set {
-                if (slotId == 0) Currency = (VinconCloningSlot) value;
-                else if (slotId == 1) Product = (FilteredItemSlot) value;
+                if (slotId == 0) Currency = (CurrencySlot) value;
+                else if (slotId == 1) Product = (ProductSlot) value;
                 else
                 {
                     Liquid = value;
@@ -86,8 +87,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             if (!IsInitialized) // Just like the MealStallSlot, this is now redundant with the constructor
             {
                 Liquid = new StockItemSlot(inventory, StallSlot, 0);
-                Currency = new VinconCloningSlot(inventory);
-                Product = new VinconCloningSlot(inventory);
             }
         }
 
@@ -107,30 +106,49 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override void ExtractProductFromStall(TradeResult result)
         {
-            AggregatedSlots products = result.Request.ProductSourceSlots;
-            int totalProductToMove = result.Request.GetFinalProductNeededPerPurchase() * result.Request.NumPurchases;
+            int totalProductToMove = result.TotalProductAmount;
             AggregatedStacks productStacks = result.ProductStacks;
 
-            foreach (ItemSlot slot in products)
+            if (result.Request.IsAdminShop)
             {
-                ItemStack takenStack = slot.TakeOut(totalProductToMove);
-                if (takenStack != null)
+                int maxStackSize = result.Request.ProductNeeded.Collectible.MaxStackSize;
+                while (totalProductToMove > 0)
                 {
-                    GenericTradingProcessor.AuditLogDebug(result, $"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                    totalProductToMove -= takenStack.StackSize;
-                    productStacks.Add(takenStack);
-                    slot.MarkDirty();
+                    ItemStack transferStack = result.Request.ProductNeeded.Clone();
+                    int stackSize = Math.Min(totalProductToMove, maxStackSize);
+                    transferStack.StackSize = stackSize;
+                    productStacks.Add(transferStack);
+                    totalProductToMove -= stackSize;
                 }
-
-                if (totalProductToMove <= 0)
+            }
+            else
+            {
+                AggregatedSlots products = result.Request.ProductSourceSlots;
+                foreach (ItemSlot slot in products)
                 {
-                    if (totalProductToMove < 0)
+                    ItemStack takenStack = slot.TakeOut(totalProductToMove);
+                    if (takenStack != null)
                     {
-                        GenericTradingProcessor.AuditLogError(result, $"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                        totalProductToMove -= takenStack.StackSize;
+                        productStacks.Add(takenStack);
+                        slot.MarkDirty();
                     }
-                    break;
-                }
 
+                    if (totalProductToMove <= 0)
+                    {
+                        if (totalProductToMove < 0)
+                        {
+                            this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (totalProductToMove > 0)
+            {
+                this.Inventory.modSystem.Mod.Logger.Error($"Somehow missing {totalProductToMove}  items from Product");
             }
         }
 
@@ -308,6 +326,11 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             Liquid.Itemstack.StackSize -= moved;
 
             return moved;
+        }
+
+        public override void DropInventory(Vec3d pos, int maxStackSize)
+        {
+            // DO NOTHING. Liquids go bye-bye! Needs a container since liquid-portion isnt an actual obtainable item. Pretend they spilled on the floor, I don't care.
         }
 
     }

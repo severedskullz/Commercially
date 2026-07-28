@@ -263,6 +263,23 @@ namespace Vinconomy.Util
             return player.WorldData.CurrentGameMode == EnumGameMode.Creative && player.HasPrivilege("gamemode");
         }
 
+        public static void Rotate(ItemStack[][] slots)
+        {
+            int size = slots.Length;
+
+            int n = slots.Length;
+            for (int i = 0; i < n / 2; i++)
+            {
+                for (int j = i; j < n - i - 1; j++)
+                {
+                    ItemStack tmp = slots[i][j];
+                    slots[i][j] = slots[n - 1 - j][i];
+                    slots[n - 1 - j][i] = slots[n - 1 - i][n - 1 - j];
+                    slots[n - 1 - i][n - 1 - j] = slots[j][n - 1 - i];
+                    slots[j][n - 1 - i] = tmp;
+                }
+            }
+        }
 
 
     }

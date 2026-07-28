@@ -55,6 +55,7 @@
   <Content Include="assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
+  <Content Include="..\..\..\Viconomy\Viconomy\Viconomy\assets\vinconomy\itemtypes\sculpturebundle.json" Link="assets\vinconomy\itemtypes\sculpturebundle.json" />
   <Content Include="modinfo.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>

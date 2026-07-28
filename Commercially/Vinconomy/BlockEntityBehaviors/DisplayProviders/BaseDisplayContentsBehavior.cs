@@ -11,9 +11,9 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
-namespace Commercially.Vinconomy.BlockEntityBehaviors
+namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
 {
-    public abstract class BEBaseDisplayContentsBehavior : BlockEntityBehavior, IShapeTesselator
+    public abstract class BaseDisplayContentsBehavior : BlockEntityBehavior, IShapeTesselator
     {
         protected CommerciallyModSystem CommerciallyCore;
         protected IStallInventoryProvider _InventoryProvider;
@@ -66,7 +66,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             }
         }
 
-        public BEBaseDisplayContentsBehavior(BlockEntity blockentity) : base(blockentity)
+        public BaseDisplayContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
 
@@ -285,7 +285,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             return mesh;
         }
 
-        protected float[][] GenTransformationMatrices()
+        /*
+        protected virtual float[][] GenTransformationMatrices()
         {
             int stallCount = _InventoryProvider.StallCount;
             float[][] tfMatrices = new float[stallCount][];
@@ -296,6 +297,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             }
             return tfMatrices;
         }
+        */
 
         protected virtual string GetMeshCacheKey(ItemSlot slot)
         {
@@ -320,7 +322,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
 
 
-        protected void ApplyDefaultTranforms(ItemStack stack, MeshData mesh)
+        protected virtual void ApplyDefaultTranforms(ItemStack stack, MeshData mesh)
         {
             ModelTransform transform = stack.Collectible.Attributes?[AttributeTransformCode].AsObject<ModelTransform>();
             if (AttributeTransformCode == "onshelfTransform") // special logic because shelves a little more complicated

@@ -4,7 +4,7 @@
     {
         public const string VINCONOMY_CHANNEL = "Vinconomy";
 
-        //Shared Packets
+        //Shared Packets [1000 - 1999]
         public const int SEARCH_SHOPS = 1002;
         public const int GET_PRODUCTS = 1003;
         public const int SET_TRADER = 1004;
@@ -21,7 +21,7 @@
         public const int SAVE_ITEM = 1022;
         public const int CREATE_ITEM = 1023;
 
-        //Owner Packets
+        //Owner Packets [2000 - 2999]
         public const int SET_ITEMS_PER_PURCHASE = 2001;
         public const int SET_REGISTER_ID = 2002;
         public const int SET_SHOP_NAME = 2003;
@@ -48,7 +48,7 @@
 
 
 
-        // Customer Packets
+        // Customer Packets [3000 - 3999]
         public const int PURCHASE_ITEMS = 3002;
         public const int CONVERT_CURRENCY = 3003;
 

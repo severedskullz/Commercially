@@ -9,6 +9,7 @@ using Vinconomy.Network.Packets;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy
 {
@@ -52,11 +53,15 @@ namespace Commercially.Vinconomy
 
         public void SavePurchase(TradeResult purchaseResult)
         {
+            if (purchaseResult.ProductStacks.StackCount == 0 || purchaseResult.CurrencyStacks.StackCount == 0) {
+                throw new ArgumentException("Could not persist purchase with no stock or currency");
+            };
+
+            ItemStack product = purchaseResult.ProductStacks[0].Clone();
+            ItemStack currency = purchaseResult.CurrencyStacks[0].Clone();
+
             using (SqliteConnection connection = GetConnection())
             {
-                ItemStack product = purchaseResult.ProductStacks[0].Clone();
-                ItemStack currency = purchaseResult.CurrencyStacks[0].Clone();
-
                 connection.Open();
                 SqliteCommand cmd = connection.CreateCommand();
                 cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = purchaseResult.Request.ParentEntity.Ownable.ID;

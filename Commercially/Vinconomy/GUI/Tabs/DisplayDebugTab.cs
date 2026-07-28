@@ -1,6 +1,6 @@
 ﻿using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
-using Commercially.Vinconomy.BlockEntityBehaviors;
+using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -13,7 +13,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public const string CODE = "Vinconomy.DisplayDebug";
         public override string Code => CODE;
 
-        BEBaseDisplayContentsBehavior Display;
+        BaseDisplayContentsBehavior Display;
         private int StallSlot;
         private bool isUpdating;
 
@@ -22,7 +22,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Display = entity?.GetBehavior<BEBaseDisplayContentsBehavior>();
+            Display = entity?.GetBehavior<BaseDisplayContentsBehavior>();
         }
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)

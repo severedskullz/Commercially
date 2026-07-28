@@ -2,14 +2,17 @@
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Trading;
+using System.Runtime.Intrinsics.X86;
 using Vintagestory.API.Common;
 
 namespace Vinconomy.Inventory.Slots
 {
-    public class StockItemSlot : FilteredItemSlot, IStallProductSlot
+    public class StockItemSlot : FilteredItemSlot, IStallProductStockSlot
     {
         public int stallSlot { get; private set; } = 0;
         public int itemSlot { get; private set; } = 0;
+
+
 
         public StockItemSlot(InventoryBase inventory, int stallSlot, int itemSlot) : base(inventory)
         {
@@ -27,27 +30,16 @@ namespace Vinconomy.Inventory.Slots
 
         public override bool CanHold(ItemSlot sourceSlot)
         {
-            if ((Filter?.Invoke(sourceSlot) ?? true) == false)
+            if (inventory is VinconBaseInventory vinconInventory)
             {
-                return false;
-            }
+                ItemSlot productSlot = vinconInventory.GetStall(stallSlot).Product;
 
-            if (inventory is VinconBaseInventory)
-            {
-                ItemSlot slot = ((VinconBaseInventory)inventory).GetStall(stallSlot).Product;
-                if (slot?.Itemstack == null)
+                if ( ShouldUpdateProductSlot(productSlot, sourceSlot) )
                 {
-                    bool canHold = base.CanHold(sourceSlot);
+                    UpdateProductSlot(productSlot, sourceSlot);
+                }
 
-                    if (canHold)
-                    {
-                        slot.Itemstack = sourceSlot.Itemstack.Clone();
-                        slot.Itemstack.StackSize = 1;
-                        slot.MarkDirty();
-                    }
-
-                    return canHold;
-                } else if (TradingUtil.IsMatchingItem(slot.Itemstack, sourceSlot.Itemstack, inventory.Api.World))
+                if (ItemMatchesProduct(productSlot.Itemstack, sourceSlot))
                 {
                     //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot satisfied, so we called Base");
                     return base.CanHold(sourceSlot);
@@ -61,6 +53,37 @@ namespace Vinconomy.Inventory.Slots
 
             //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot was not satisfied, so we return false");
             return base.CanHold(sourceSlot);
+        }
+
+        public virtual bool ShouldUpdateProductSlot(ItemSlot productSlot, ItemSlot sourceSlot)
+        {
+            return productSlot?.Itemstack == null;
+        }
+
+        public virtual bool ItemMatchesProduct(ItemStack product, ItemSlot sourceSlot)
+        {
+            VinconBaseInventory inv = (VinconBaseInventory) inventory;
+            return TradingUtil.IsMatchingItem(product, sourceSlot.Itemstack, inventory.Api.World);
+        }
+
+        /// <summary>
+        /// Updates the product slot for the stall with the given source slot. Returns true if the update is successful.
+        /// Consequently, this also means that the item stack can be contained in the stall.
+        /// </summary>
+        /// <param name="sourceSlot"></param>
+        /// <returns></returns>
+        public virtual void UpdateProductSlot(ItemSlot productSlot, ItemSlot sourceSlot)
+        {
+
+            bool canHold = base.CanHold(sourceSlot);
+
+            if (canHold)
+            {
+                productSlot.Itemstack = sourceSlot.Itemstack?.Clone();
+                productSlot.Itemstack.StackSize = 1;
+                productSlot.MarkDirty();
+                    
+            }
         }
 
         public override bool CanTakeFrom(ItemSlot sourceSlot, EnumMergePriority priority = EnumMergePriority.AutoMerge)

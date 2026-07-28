@@ -52,11 +52,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             return _Inventory[0].Itemstack;
         }
 
-        public ItemStack GetDecorationStack()
-        {
-            return _Inventory[0].Itemstack;
-        }
-
         public ItemSlot GetDecorationSlot()
         {
             return _Inventory[0];
