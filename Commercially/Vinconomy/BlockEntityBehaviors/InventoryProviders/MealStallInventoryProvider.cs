@@ -1,5 +1,6 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Blocks.BlockEntityBehaviors;
+using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -9,7 +10,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class MealStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
+    public class MealStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
     {
         private MealShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
@@ -24,7 +25,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
-            _Inventory.Initialize(properties, "MealShopInventory", this.Pos.ToString(), api);
+            _Inventory.InitializeFromProperties(properties, "MealShopInventory", this.Pos.ToString(), api);
         }
 
         public ItemStack GetCurrencyForStallSlot(int stallSlot)

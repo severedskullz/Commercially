@@ -5,7 +5,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 {
     public class BEBehaviorInventoryProvider : BlockEntityBehavior
     {
-        InWorldContainer container;
+        //InWorldContainer container;
 
         public BEBehaviorInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {

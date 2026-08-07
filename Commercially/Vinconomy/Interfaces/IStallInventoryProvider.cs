@@ -11,6 +11,5 @@ namespace Commercially.Vinconomy.Interfaces
         public ItemStack GetProductForStallSlot(int stallSlot);
         public StallSlotBase GetStallSlot(int stallSlot);
         public T GetStallSlot<T>(int stallSlot) where T : StallSlotBase;
-        public ItemSlot GetDecorationSlot();
     }
 }

@@ -164,12 +164,36 @@ namespace Commercially.Vinconomy.Trading
         public ICurrencySinkProvider GetCurrencySink()
         {
 
-            if (ParentEntity != null)
-            {
-                return ParentEntity.ShopInventoryProvider;
+            ICurrencySinkProvider sink = SellingEntity.GetStallSlot(StallSlot) as ICurrencySinkProvider;
+            if (sink != null) {
+                return sink;
             }
 
-            return SellingEntity.GetComponent<ICurrencySinkProvider>();
+
+            sink = SellingEntity.GetComponent<ICurrencySinkProvider>();
+            if (sink != null)
+            {
+                return sink;
+            }
+            return ParentEntity?.GetComponent<IShopInventoryProvider>();
+        }
+
+        public ICouponSinkProvider GetCouponSink()
+        {
+
+            ICouponSinkProvider sink = SellingEntity.GetStallSlot(StallSlot) as ICouponSinkProvider;
+            if (sink != null)
+            {
+                return sink;
+            }
+
+
+            sink = SellingEntity.GetComponent<ICouponSinkProvider>();
+            if (sink != null)
+            {
+                return sink;
+            }
+            return ParentEntity?.GetComponent<ICouponSinkProvider>();
         }
 
         public TradeRequest Build()

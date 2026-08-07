@@ -22,7 +22,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
-            _Inventory.Initialize(properties, "BERegisterInventoryProvider", this.Pos.ToString(), api);
+            _Inventory.InitializeFromProperties(properties, "BERegisterInventoryProvider", this.Pos.ToString(), api);
         }
 
     }

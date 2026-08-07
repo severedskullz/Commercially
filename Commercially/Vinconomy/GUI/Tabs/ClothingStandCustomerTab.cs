@@ -21,9 +21,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         DummyInventory DInv;
         VinconBaseInventory Inventory;
         IStallInventoryProvider StallProvider;
-        private IOwnableChild Ownable;
-
-
+        
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
@@ -39,8 +37,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         private void UpdateStock()
         {
-            int totalCost = 0;
-
             for (int i = 0; i < 15; i++)
             {
                 StallSlotBase slot = StallProvider.GetStallSlot(i);

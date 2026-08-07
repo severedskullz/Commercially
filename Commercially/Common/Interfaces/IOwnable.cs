@@ -90,6 +90,8 @@ namespace Commercially.Common.Interfaces
         /// </summary>
         public long? ParentID { get;}
 
+        public bool HasParent() { return ParentID.HasValue; }
+
         /// <summary>
         /// The Parent's OwnableType
         /// </summary>

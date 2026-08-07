@@ -37,39 +37,13 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 CairoFont smallText = CairoFont.WhiteSmallText();
                 CairoFont labelTextFont = CairoFont.WhiteSmallText().WithOrientation(EnumTextOrientation.Center);
                 string labelText = $"Page {StallSlot + 1} of {StallProvider.StallCount}"; //Lang.Get("vinconomy:gui-slot", new object[] { StallSlot + 1, stall.StallSlotCount });
+                
+                OwnableRegistryKeys shopKeys = GUIUtils.GetOwnableDropdownListForOwner(Registry, Ownable);
+                SelectedIndex = shopKeys.CurrentSelectedIndex;
 
-                OwnableRegistration[] ownables = Registry.GetOwnablesForOwner(Ownable.OwnerUID, Ownable.GetAllowedParentTypes());
-                int shopLength = ownables.Length;
-                string[] shopsNames = new string[shopLength + 1];
-                string[] shopsKeys = new string[shopLength + 1];
-
-                shopsNames[0] = "( None )";
-                shopsKeys[0] = "-1";
-
-                for (int i = 0; i < shopLength; i++)
-                {
-                    shopsNames[i + 1] = ownables[i].Name ?? "Generic Shop";
-                    shopsKeys[i + 1] = ownables[i].ID.ToString();
-                    if (ownables[i].ID == Ownable.ParentID)
-                    {
-                        SelectedIndex = i + 1;
-                    }
-                }
-
-                // Figure out the slot indexes for SlotGrid
-                StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
-                int[] slotGridIDs = new int[stall.StallSlotCount];
-                int stallSlotOffset = Inventory.InternalSlots.Length;
-                for (int i = 0; i < StallSlot; i++)
-                {
-                    stallSlotOffset += StallProvider.GetStallSlot(i).TotalSlotCount;
-                }
-
-
-                for (int i = 0; i < slotGridIDs.Length; i++)
-                {
-                    slotGridIDs[i] = stallSlotOffset + stall.InternalSlotCount + i;
-                }
+                int[] slotGridIDs = GUIUtils.GetSlotIDsForStall(StallProvider, StallSlot);
+                int currencySlotId = GUIUtils.GetCurrencySlotIdForStall(StallProvider, StallSlot);
+                int productSlotId = GUIUtils.GetProductSlotIdForStall(StallProvider, StallSlot);
 
                 int numColumns = (int)Math.Ceiling(Math.Sqrt(slotGridIDs.Length));
                 int slotGridWidth = (int)(numColumns * (GuiElementPassiveItemSlot.unscaledSlotSize + GuiElementItemSlotGridBase.unscaledSlotPadding));
@@ -84,7 +58,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(shopSelectBounds, shopSelectionLabel);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-shop"), smallText, shopSelectionLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-shop"), hoverText, 500, shopSelectionLabel);
-                composer.AddDropDown(shopsKeys, shopsNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
+                composer.AddDropDown(shopKeys.ShopKeys, shopKeys.ShopNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
 
                 ElementBounds chiselLabel = ElementBounds.FixedSize(200, 25).FixedUnder(shopSelectBounds, 15);
                 ElementBounds chiselSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).FixedUnder(chiselLabel);
@@ -124,7 +98,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 stallBounds.WithChildren(priceLabel, priceSlotBounds, priceInputBounds);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-price"), smallText, priceLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-price"), hoverText, 500, priceLabel);
-                composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { stallSlotOffset }, priceSlotBounds, "currency");
+                composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { currencySlotId }, priceSlotBounds, "currency");
                 composer.AddNumberInput(priceInputBounds, this.OnCostQuantityChanged, smallText, "costQuantity");
 
                 ElementBounds productLabel = ElementBounds.FixedSize(100, 30).FixedRightOf(priceLabel, 80).WithFixedOffset(0,10);
@@ -133,7 +107,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 stallBounds.WithChildren(productLabel, productSlotBounds, productInputBounds);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-product"), smallText, productLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-product"), hoverText, 500, productLabel);
-                composer.AddItemSlotGrid(Inventory, this.SetProductSlot, 1, new int[] { stallSlotOffset + 1 }, productSlotBounds, "product");
+                composer.AddItemSlotGrid(Inventory, this.SetProductSlot, 1, new int[] { productSlotId }, productSlotBounds, "product");
                 composer.AddNumberInput(productInputBounds, this.OnSellQuantityChanged, smallText, "sellQuantity");
 
 

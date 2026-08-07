@@ -12,17 +12,7 @@ namespace Commercially.Vinconomy.Trading.Processor
 
         public static bool CanFitPaymentIntoParent(TradeRequest request)
         {
-            ICurrencySinkProvider currencySinkProvider = null;
-            if (request.ParentEntity != null)
-            {
-                currencySinkProvider = request.ParentEntity.GetComponent<ICurrencySinkProvider>();
-            }
-
-            if (currencySinkProvider == null)
-            {
-                currencySinkProvider = request.SellingEntity.GetComponent<ICurrencySinkProvider>();
-            }
-
+            ICurrencySinkProvider currencySinkProvider = request.GetCurrencySink();;
             if (currencySinkProvider == null)
             {
                 return false;

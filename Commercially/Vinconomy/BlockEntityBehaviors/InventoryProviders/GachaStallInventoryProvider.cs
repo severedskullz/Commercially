@@ -1,5 +1,4 @@
 ﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
-using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -8,22 +7,22 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GenericStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
+    public class GachaStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
     {
-        private GenericShopInventory _Inventory;
+        private GachaShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
 
         public int StallCount => _Inventory.StallSlots?.Length ?? 0;
 
-        public GenericStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
+        public GachaStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {
-            _Inventory = new GenericShopInventory(blockentity, blockentity.Api);
+            _Inventory = new GachaShopInventory(blockentity, blockentity.Api);
         }
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
-            _Inventory.InitializeFromProperties(properties, "GenericShopInventory", this.Pos.ToString(), api);
+            _Inventory.InitializeFromProperties(properties, "GachaShopInventory", this.Pos.ToString(), api);
         }
 
         public ItemStack GetCurrencyForStallSlot(int stallSlot)
@@ -48,12 +47,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
         public ItemStack GetDecorationBlock()
         {
-            return _Inventory[0].Itemstack;
+            return null;
         }
 
         public ItemSlot GetDecorationSlot()
         {
-            return _Inventory[0];
+            return null;
         }
 
 

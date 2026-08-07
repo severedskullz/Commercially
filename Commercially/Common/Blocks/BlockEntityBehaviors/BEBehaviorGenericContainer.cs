@@ -18,7 +18,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
-            _Inventory.Initialize(properties, "BEBehaviorGenericContainer", this.Pos.ToString(), api);
+            _Inventory.InitializeFromProperties(properties, "BEBehaviorGenericContainer", this.Pos.ToString(), api);
         }
     }
 }

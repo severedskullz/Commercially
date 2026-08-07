@@ -261,6 +261,21 @@
     }
 
   ],
+  "guiTransform": {
+    "translation": {
+      "x": 10,
+      "y": 5,
+      "z": 0
+    },
+
+    "rotation": {
+      "x": -22,
+      "y": 135,
+      "z": 0
+    },
+
+    "scale": 1.42
+  },
   "lightAbsorption": 0,
   "sidesolid": {
     "all": "false"

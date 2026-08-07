@@ -1,5 +1,5 @@
 {
-  "code": "shelf",
+  "code": "purchasestall",
   "class": "Commercially.BlockCommercial",
   "entityClass": "Commercially.BECommercialBase",
   "priorityInteract": true,
@@ -17,11 +17,11 @@
   "entityBehaviors": [
 
     {
-      "name": "Vinconomy.StallInventory",
+      "name": "Vinconomy.PurchaseInventory",
       "properties": {
-        "numStalls": 4,
-        "numSlotsPerStall": 16,
-        "stallType": "GenericStallSlot"
+        "numStalls": 2,
+        "stockSlotsPerStall": 30,
+        "currencySlotsPerStall": 20
       }
     },
     {
@@ -58,9 +58,7 @@
       "properties": {
         "stallSelectionIndexes": {
           "2": 0,
-          "3": 1,
-          "4": 2,
-          "5": 3
+          "3": 1
         }
 
       }
@@ -72,7 +70,7 @@
     {
       "name": "Commercially.GuiManager",
       "properties": {
-        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.PurchaseStallOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
       }
     },
     {
@@ -90,15 +88,13 @@
     {
       "name": "Commercially.TextureSwappable",
       "properties": {
-        "BaseBlock": "shelf-north",
+        "BaseBlock": "purchasestall-north",
         "CreativeTabs": [ "vinconomy", "general" ],
-        "PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ]
+        "PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ],
+        "SecondaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ]
       }
     },
-    {
-      "name": "HorizontalAttachable",
-      "properties": { "dropBlockFace": "north" }
-    }
+    { "name": "HorizontalOrientable" }
   ],
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldTpUseAnimation": "twohandplaceblock",
@@ -110,69 +106,61 @@
     }
   ],
   "textures": {
-    "default": { "base": "game:block/wood/planks/acacia1" },
+    "default": { "base": "game:block/wood/crate/acacia-sides" },
 
-    "acacia": { "base": "game:block/wood/planks/acacia1" },
-    "baldcypress": { "base": "game:block/wood/planks/baldcypress1" },
-    "birch": { "base": "game:block/wood/planks/birch1" },
-    "ebony": { "base": "game:block/wood/planks/ebony1" },
-    "kapok": { "base": "game:block/wood/planks/kapok1" },
-    "larch": { "base": "game:block/wood/planks/larch1" },
-    "maple": { "base": "game:block/wood/planks/maple1" },
-    "oak": { "base": "game:block/wood/planks/oak1" },
-    "pine": { "base": "game:block/wood/planks/pine1" },
-    "purpleheart": { "base": "game:block/wood/planks/purpleheart1" },
-    "redwood": { "base": "game:block/wood/planks/redwood1" },
-    "walnut": { "base": "game:block/wood/planks/walnut1" }
+    "acacia-sides": { "base": "game:block/wood/crate/acacia-sides" },
+    "baldcypress-sides": { "base": "game:block/wood/crate/baldcypress-sides" },
+    "birch-sides": { "base": "game:block/wood/crate/birch-sides" },
+    "ebony-sides": { "base": "game:block/wood/crate/ebony-sides" },
+    "kapok-sides": { "base": "game:block/wood/crate/kapok-sides" },
+    "larch-sides": { "base": "game:block/wood/crate/larch-sides" },
+    "maple-sides": { "base": "game:block/wood/crate/maple-sides" },
+    "oak-sides": { "base": "game:block/wood/crate/oak-sides" },
+    "pine-sides": { "base": "game:block/wood/crate/pine-sides" },
+    "purpleheart-sides": { "base": "game:block/wood/crate/purpleheart-sides" },
+    "redwood-sides": { "base": "game:block/wood/crate/redwood-sides" },
+    "walnut-sides": { "base": "game:block/wood/crate/walnut-sides" },
+
+    "acacia": { "base": "game:block/wood/crate/acacia-inside" },
+    "baldcypress": { "base": "game:block/wood/crate/baldcypress-inside" },
+    "birch": { "base": "game:block/wood/crate/birch-inside" },
+    "ebony": { "base": "game:block/wood/crate/ebony-inside" },
+    "kapok": { "base": "game:block/wood/crate/kapok-inside" },
+    "larch": { "base": "game:block/wood/crate/larch-inside" },
+    "maple": { "base": "game:block/wood/crate/maple-inside" },
+    "oak": { "base": "game:block/wood/crate/oak-inside" },
+    "pine": { "base": "game:block/wood/crate/pine-inside" },
+    "purpleheart": { "base": "game:block/wood/crate/purpleheart-inside" },
+    "redwood": { "base": "game:block/wood/crate/redwood-inside" },
+    "walnut": { "base": "game:block/wood/crate/walnut-inside" }
   },
   "shapebytype": {
     "*-north": {
-      "base": "block/shelf",
+      "base": "block/purchasecrate",
       "rotateY": 0
     },
     "*-west": {
-      "base": "block/shelf",
+      "base": "block/purchasecrate",
       "rotateY": 90
     },
     "*-south": {
-      "base": "block/shelf",
+      "base": "block/purchasecrate",
       "rotateY": 180
     },
     "*-east": {
-      "base": "block/shelf",
+      "base": "block/purchasecrate",
       "rotateY": 270
     }
   },
 
   "collisionboxes": [
     {
-
       "x1": 0,
-      "y1": 0.5625,
+      "y1": 0,
       "z1": 0,
       "x2": 1,
-      "y2": 0.6253,
-      "z2": 0.5,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0,
-      "y1": 0.0625,
-      "z1": 0,
-      "x2": 1,
-      "y2": 0.125,
-      "z2": 0.5,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
+      "y2": 1,
+      "z2": 1
     }
   ],
 
@@ -268,17 +256,11 @@
 
   ],
   "guiTransform": {
-    "translation": {
-      "x": 5,
-      "y": 0,
-      "z": 0
-    },
     "rotation": {
       "x": -22,
       "y": 135,
       "z": 0
-    },
-    "scale": 1.2
+    }
   },
   "lightAbsorption": 0,
   "sidesolid": {

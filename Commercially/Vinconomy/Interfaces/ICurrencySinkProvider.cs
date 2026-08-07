@@ -7,7 +7,6 @@ namespace Commercially.Vinconomy.Interfaces
     public interface ICurrencySinkProvider : IInventoryProvider
     {
         public ItemSlot[] CurrencySlots { get; }
-        public ItemSlot[] CouponSlots { get; }
 
     }
 }

@@ -11,10 +11,6 @@ namespace Commercially.Vinconomy.Inventory.Impl
         {
         }
 
-        public SculptureShopInventory(BlockEntity entity, string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(entity, inventoryName, stallType, numStalls, slotsPerStall, coreAPI)
-        {
-        }
-
         public override void OnStockModified(ItemSlot slot)
         {
             if (Api.Side == EnumAppSide.Client) return;

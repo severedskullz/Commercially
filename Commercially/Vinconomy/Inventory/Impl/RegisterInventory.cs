@@ -1,11 +1,12 @@
-﻿using Commercially.Common.Inventory;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.Impl
 {
-    public class RegisterInventory : InventoryBase, ILateInitInventory
+    public class RegisterInventory : InventoryBase, ILateInitInventory, ITradePassProvider
     {
         public VinconCloningSlot TradePass {  get; protected set; }
         public ItemSlot[] CurrencySlots { get; protected set; }
@@ -80,7 +81,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             tree.SetItemstack("tradePass", TradePass.Itemstack);
         }
 
-        public void Initialize(JsonObject properties, string className, string instanceID, ICoreAPI api)
+        public void InitializeFromProperties(JsonObject properties, string className, string instanceID, ICoreAPI api)
         {
             int numSlots = properties["numSlots"].AsInt(30);
             int numCouponSlots = properties["numCouponSlots"].AsInt(10);

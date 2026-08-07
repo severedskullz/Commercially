@@ -1,4 +1,5 @@
 ﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -6,7 +7,7 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class StallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
+    public class StallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
     {
         protected VinconBaseInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

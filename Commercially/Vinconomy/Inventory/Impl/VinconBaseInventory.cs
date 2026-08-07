@@ -3,6 +3,7 @@ using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -54,11 +55,6 @@ namespace Commercially.Vinconomy.Inventory
             // A Non-Instantiated inventory. Will error out unless Initialize is called
             InitializeInternalSlots();
 
-        }
-
-        public VinconBaseInventory(BlockEntity entity, string inventoryName, Type stallType, int numStalls, int slotsPerStall, ICoreAPI coreAPI) : base(inventoryName, coreAPI)
-        {
-            Initialize(entity, stallType, numStalls, slotsPerStall, coreAPI);
         }
 
 
@@ -130,18 +126,11 @@ namespace Commercially.Vinconomy.Inventory
         }
         */
 
-        public void Initialize(BlockEntity entity, string stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
+        public virtual void InitializeSlots(JsonObject properties, ICoreAPI api)
         {
-            Type type = GetStallType(stallType);
-            Initialize(entity, type, numStalls, numSlotsPerStall, api);
-          
-        }
 
-        public void Initialize(BlockEntity entity, Type stallType, int numStalls, int numSlotsPerStall, ICoreAPI api)
-        {
-            BlockEntity = entity;
-            StallType = stallType;
-            StallComponent = entity.GetBehavior<IStallComponent>();
+
+            StallComponent = BlockEntity.GetBehavior<IStallComponent>();
             /*
              string[] stallTypes = properties["stallTypes"].AsArray<string>();
              if (stallTypes != null && stallTypes.Length != numStalls)
@@ -156,7 +145,7 @@ namespace Commercially.Vinconomy.Inventory
              */
 
             InitializeInternalSlots();
-            InitializeStallSlots(stallType, numStalls, numSlotsPerStall);
+            InitializeStallSlots(properties);
 
             // This has bit us in the but more times than I can count, so lets triple check that InvNetworkUtil is initialized
             if (api != null && InvNetworkUtil == null)
@@ -177,25 +166,19 @@ namespace Commercially.Vinconomy.Inventory
         }
         
 
-        public void Initialize(JsonObject properties, string className, string instanceID, ICoreAPI api)
+        public virtual void InitializeFromProperties(JsonObject properties, string className, string instanceID, ICoreAPI api)
         {
             Api = api;
             this.instanceID = instanceID;
             this.className = className;
             modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
-
-
-            int numStalls = properties["numStalls"].AsInt(4);
-            int numSlotsPerStall = properties["numSlotsPerStall"].AsInt(16);
-            string stallType = properties["stallType"].AsString("GenericStallSlot");
-
-            Initialize(BlockEntity, stallType, numStalls, numSlotsPerStall, api);
+            InitializeSlots(properties, api);
             ApplyFilters(properties);
             ApplyBackgrounds(properties);
         }
 
-        private void ApplyBackgrounds(JsonObject properties)
+        protected virtual void ApplyBackgrounds(JsonObject properties)
         {
             string stallBackground = properties["stallBackground"].AsString(null);
             string[] stallBackgrounds = properties["stallBackgrounds"].AsArray<string>(null);
@@ -225,7 +208,7 @@ namespace Commercially.Vinconomy.Inventory
 
         }
 
-        private void ApplyFilters(JsonObject properties)
+        protected virtual void ApplyFilters(JsonObject properties)
         {
             string stallFilter = properties["stallFilter"].AsString(null);
             string[] stallFilters = properties["stallFilters"].AsArray<string>(null);
@@ -276,16 +259,26 @@ namespace Commercially.Vinconomy.Inventory
         /// Initialize the Stall Slot array. This method should keep already existing arrays in tact if IsSlotsInitialized is true (in this case, it was instantiated in FromTreeAttributes)
         /// otherwise it should initialize the array with empty item slots;
         /// </summary>
-        public virtual void InitializeStallSlots(Type stallType, int numStalls, int numSlotsPerStall)
+        public virtual void InitializeStallSlots(JsonObject properties)
         {
+            string stallType = properties["stallType"].AsString("GenericStallSlot");
 
+
+
+            if (stallType == null)
+                return;
+
+            StallType = GetStallType(stallType);
+
+            int numStalls = properties["numStalls"].AsInt(4);
+            int numSlotsPerStall = properties["numSlotsPerStall"].AsInt(16);
 
             if (!IsSlotsInitialized)
             {
                 StallSlots = new StallSlotBase[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase instance =  InstantiateStallType(stallType, i);
+                    StallSlotBase instance =  InstantiateStallType(StallType, i);
                     instance.Initialize(this, i, numSlotsPerStall);
                     StallSlots[i] = instance;
                 }
@@ -298,7 +291,7 @@ namespace Commercially.Vinconomy.Inventory
                 if (StallSlots.Length < numStalls)
                 {
                     int amount = numStalls - StallSlots.Length;
-                    AddStallSlots(stallType, amount, numSlotsPerStall);
+                    AddStallSlots(StallType, amount, numSlotsPerStall);
                 }
 
                 //TODO: Figure out how to grow individual stall's product slot size for numSlotsPerStall

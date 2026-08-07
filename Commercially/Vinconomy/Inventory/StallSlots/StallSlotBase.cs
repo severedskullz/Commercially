@@ -2,13 +2,10 @@
 using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Trading;
 using System;
-using System.Collections.Generic;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
@@ -26,13 +23,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         /// <summary>
         /// The Currency used for the purchase. The StackSize should be representitive of how much an item costs. For example, if something were to cost 6 Rusty Gears, its stack size would be 6. 
         /// </summary>
-        public CurrencySlot Currency { get; protected set; }
+        public virtual CurrencySlot Currency { get; protected set; }
 
         /// <summary>
         /// The Product given to the customer. The StackSize should be representitive of how much of an item is given to the customer. For example, if the shop were to be selling a stack of 64 Dirt, then 
         /// the stack size would be 64.
         /// </summary>
-        public ProductSlot Product { get; protected set; }
+        public virtual ProductSlot Product { get; protected set; }
 
         /// <summary>
         /// How many slots are considered "Product" that the player can fill in to sell items from.
@@ -319,7 +316,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             if (shop != null)
             {
-                RegisterInventory inv = shop.GetComponent<IInventoryProvider>()?.Inventory as RegisterInventory;
+                ITradePassProvider inv = shop.GetComponent<IInventoryProvider>()?.Inventory as ITradePassProvider;
                 if (inv != null)
                 {
                     ItemStack tradePass = inv.GetTradePass();
@@ -377,7 +374,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             if (result.CouponStacks.TotalCount == 0) return;
 
             ILogger logger = this.Inventory.modSystem.Mod.Logger;
-            ICurrencySinkProvider provider = result.Request.GetCurrencySink();
+            ICouponSinkProvider provider = result.Request.GetCouponSink();
             if (provider != null)
             {
                 ItemSlot[] slots = provider.CouponSlots;
@@ -466,6 +463,50 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 slot.Itemstack = null;
                 slot.MarkDirty();
             }
+        }
+
+        public virtual bool CanHoldPayment(TradeRequest request)
+        {
+            ICurrencySinkProvider currencySinkProvider = null;
+            if (request.ParentEntity != null)
+            {
+                currencySinkProvider = request.ParentEntity.GetComponent<ICurrencySinkProvider>();
+            }
+
+            if (currencySinkProvider == null)
+            {
+                currencySinkProvider = request.SellingEntity.GetComponent<ICurrencySinkProvider>();
+            }
+
+            if (currencySinkProvider == null)
+            {
+                return false;
+            }
+
+            ItemSlot[] currencySlots = currencySinkProvider.CurrencySlots;
+            int maxStackSize = request.CurrencyNeeded.Collectible.MaxStackSize;
+            int qntyLeft = request.CurrencyNeeded.StackSize * request.NumPurchases;
+            foreach (ItemSlot itemSlot in currencySlots)
+            {
+                if (itemSlot.Itemstack == null)
+                {
+                    qntyLeft -= maxStackSize;
+                }
+                else
+                {
+                    if (TradingUtil.IsMatchingItem(itemSlot.Itemstack, request.CurrencyNeeded, request.Api.World, false))
+                    {
+                        qntyLeft -= maxStackSize - itemSlot.StackSize;
+                    }
+                }
+
+                if (qntyLeft <= 0)
+                {
+                    break;
+                }
+            }
+
+            return (qntyLeft <= 0);
         }
     }
 }

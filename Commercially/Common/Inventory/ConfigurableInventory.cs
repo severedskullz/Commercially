@@ -21,7 +21,7 @@ namespace Commercially.Common.Inventory
             AddSlots(amount);
         }
 
-        public void Initialize(JsonObject properties, string className, string instanceID, ICoreAPI api)
+        public void InitializeFromProperties(JsonObject properties, string className, string instanceID, ICoreAPI api)
         {
             int numSlots = properties["numSlots"].AsInt(9);
             this.instanceID = instanceID;

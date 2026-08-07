@@ -119,6 +119,8 @@ namespace Commercially.Vinconomy
             RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
             RegisterStallType("TellerStallSlot", typeof(TellerStallSlot));
             RegisterStallType("SculptureStallSlot", typeof(SculptureStallSlot));
+            RegisterStallType("PurchaseStallSlot", typeof(PurchaseStallSlot));
+            RegisterStallType("GachaStallSlot", typeof(GachaStallSlot));
         }
 
         public void Lifecycle_RegisterModularTabs(ICoreAPI api)
@@ -132,6 +134,8 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(MealShopOwnerTab.CODE, typeof(MealShopOwnerTab));
             guiSystem.RegisterTabType(ClothingStandCustomerTab.CODE, typeof(ClothingStandCustomerTab));
             guiSystem.RegisterTabType(SculptureShopOwnerTab.CODE, typeof(SculptureShopOwnerTab));
+            guiSystem.RegisterTabType(PurchaseStallOwnerTab.CODE, typeof(PurchaseStallOwnerTab));
+            guiSystem.RegisterTabType(GachaStallOwnerTab.CODE, typeof(GachaStallOwnerTab));
         }
 
         public void Lifecycle_RegisterItemClasses(ICoreAPI api)
@@ -146,15 +150,18 @@ namespace Commercially.Vinconomy
         public void Lifecycle_RegisterBlockEntityBehaviors(ICoreAPI api)
         {
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Stall", typeof(BEStallBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.GachaStall", typeof(BEGachaStallBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.Register", typeof(BEShopBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.CouponCutter", typeof(BECouponCutterBehavior));
 
 
             api.RegisterBlockEntityBehaviorClass("Vinconomy.RegisterInventory", typeof(RegisterInventoryProvider));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.GachaStallInventory", typeof(GachaStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallInventory", typeof(GenericStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.LiquidInventory", typeof(LiquidStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealInventory", typeof(MealStallInventoryProvider));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.SculptureInventory", typeof(SculptureStallInventoryProvider));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.PurchaseInventory", typeof(PurchaseStallInventoryProvider));
 
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(DisplayMealContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(DisplayContentsBehavior));

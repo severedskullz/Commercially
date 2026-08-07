@@ -14,7 +14,7 @@ using Vintagestory.API.MathTools;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
-    public class BEStallBehavior : BlockEntityBehavior, IStallComponent, IShapeTesselator
+    public class BEGachaStallBehavior : BlockEntityBehavior, IStallComponent, IShapeTesselator
     {
         protected VinconomyModSystem VinconomyCore;
         protected CommerciallyModSystem CommerciallyCore;
@@ -36,7 +36,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         public TextureAtlasPosition this[string textureCode] => throw new NotImplementedException();
 
-        public BEStallBehavior(BlockEntity blockentity) : base(blockentity)
+        public BEGachaStallBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
 
@@ -53,13 +53,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             {
                 Dictionary<int, int> stallIndexObj = properties["stallSelectionIndexes"].AsObject<Dictionary<int, int>>();
                 _StallIndices = stallIndexObj;
-                /*
-                foreach (var slot in stallIndexObj)
-                {
-                    int index = stallIndexObj[slot].AsInt();
-                    _StallIndices[slot] = index;
-                }
-                */
             }
 
         }
@@ -169,29 +162,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         public int GetRemainingProductForStallSlot(int stallSlot)
         {
             return _InventoryProvider.GetStallSlot(stallSlot).GetProducts().TotalCount;
-        }
-
-        public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-        {
-            return TesselateDecoBlock(mesher, tessThreadTesselator);
-        }
-
-        protected virtual bool TesselateDecoBlock(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-        {
-            IDecocratedBlock deco = _InventoryProvider as IDecocratedBlock;
-            if (deco != null)
-            {
-                ItemSlot decoration = deco.GetDecorationSlot();
-                if (decoration?.Itemstack != null)
-                {
-                    MeshData mesh = CommerciallyCore.GetRenderer(decoration).CreateMesh(this, decoration, 0);
-                    mesh = mesh.Clone().Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0, (float)((Block.Shape.rotateY * Math.PI) / 180), 0);
-                    mesher.AddMeshData(mesh);
-                    return true;
-                }
-            }
-           
-            return false;
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)

@@ -23,6 +23,6 @@ namespace Commercially.Common.Inventory
         /// <param name="className"></param>
         /// <param name="instanceID"></param>
         /// <param name="api"></param>
-        public void Initialize(JsonObject properties, string className, string instanceID, ICoreAPI api);
+        public void InitializeFromProperties(JsonObject properties, string className, string instanceID, ICoreAPI api);
     }
 }
