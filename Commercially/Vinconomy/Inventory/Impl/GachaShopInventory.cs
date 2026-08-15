@@ -1,4 +1,6 @@
-﻿using Commercially.Vinconomy.Inventory.StallSlots;
+﻿using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory.StallSlots;
+using System;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -7,8 +9,10 @@ namespace Commercially.Vinconomy.Inventory.Impl
 {
     public class GachaShopInventory : VinconBaseInventory
     {
-        // How many slots can be provided for each "Product" gacha ball. re
+        // How many slots can be provided for each "Product" gacha ball.
         private int ContentSlotsPerStall;
+
+        public bool IsCountBasedRandomizer;
 
         public GachaShopInventory(BlockEntity entity, ICoreAPI api) : base(entity, api)
         {
@@ -27,6 +31,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
             int numStalls = tree.GetInt("numStalls");
+            IsCountBasedRandomizer = tree.GetBool("isCountBasedRandomizer", false);
             if (!IsSlotsInitialized)
             {
 
@@ -84,12 +89,25 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
         }
 
+        public int GetTotalWeights()
+        {
+            int totalWeight = 0;
+            foreach (GachaStallSlot stall in StallSlots)
+            {
+                int quanitty = stall.GetProductQuantity();
+                if (quanitty > 0)
+                    totalWeight += stall.Weight;
+            }
+            return Math.Max(1, totalWeight); // Prevent divide by 0 by having the lowest possible weight as 1
+        }
+
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             tree.SetInt("numStalls", StallSlots.Length);
             tree.SetString("stallType", StallType?.Name);
             tree.SetInt("numSlotsPerStall", SlotsPerStall);
             tree.SetInt("contentsPerStall", ContentSlotsPerStall);
+            tree.SetBool("isCountBasedRandomizer", IsCountBasedRandomizer);
 
             for (int i = 0; i < StallSlots.Length; i++)
             {
@@ -124,5 +142,26 @@ namespace Commercially.Vinconomy.Inventory.Impl
                 }
             }
         }
+
+        /*
+        public override void OnStockModified(ItemSlot slot)
+        {
+            if (Api.Side == EnumAppSide.Client) return;
+
+            if (slot is IStockUpdater stallProductSlot)
+            {
+                int stallSlot = stallProductSlot.GetStallIndex();
+                GachaStallSlot stall = this.GetStall<GachaStallSlot>(stallSlot);
+
+                stall.RegenProduct();
+                ItemStack product = stall.Product?.Itemstack?.Clone();
+                ItemStack currency = stall.Currency?.Itemstack?.Clone();
+                int stockCount = stall.GetProducts().TotalCount;
+
+                UpdateStockForSlot(StallComponent, stallSlot, product, stockCount, currency);
+
+            }
+        }
+        */
     }
 }

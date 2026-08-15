@@ -5,15 +5,27 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.Inventory.Slots
 {
-    public class ToggledStockItemSlot : ToggledSlot, IStallProductStockSlot
+    public class ToggledStockItemSlot : ToggledSlot, IStockUpdater
     {
-        public int stallSlot { get; private set; } = 0;
-        public int itemSlot { get; private set; } = 0;
+        public int StallIndex { get; private set; } = 0;
+        public int SlotIndex { get; private set; } = 0;
 
         
 
         public ToggledStockItemSlot(InventoryBase inventory, int stallSlot, int itemSlot) : base(inventory)
         {
+            this.StallIndex = stallSlot;
+            this.SlotIndex = itemSlot;
+        }
+
+        public int GetStallIndex()
+        {
+            return StallIndex;
+        }
+
+        public int GetSlotIndex()
+        {
+            return SlotIndex;
         }
 
         public override bool CanHold(ItemSlot sourceSlot)
@@ -25,7 +37,7 @@ namespace Commercially.Vinconomy.Inventory.Slots
 
             if (inventory is VinconBaseInventory vinconInventory)
             {
-                ItemSlot productSlot = vinconInventory.GetStall(stallSlot).Product;
+                ItemSlot productSlot = vinconInventory.GetStall(StallIndex).Product;
 
                 if (ShouldUpdateProductSlot(productSlot, sourceSlot))
                 {
@@ -64,12 +76,12 @@ namespace Commercially.Vinconomy.Inventory.Slots
 
         public int GetStall()
         {
-            return stallSlot;
+            return StallIndex;
         }
 
         public int GetProductSlot()
         {
-            return itemSlot;
+            return SlotIndex;
         }
 
         public override void ActivateSlot(ItemSlot sourceSlot, ref ItemStackMoveOperation op)
@@ -98,7 +110,7 @@ namespace Commercially.Vinconomy.Inventory.Slots
         public void UpdateProductSlot(ItemSlot productSlot, ItemSlot sourceSlot)
         {
             VinconBaseInventory inv = inventory as VinconBaseInventory;
-            productSlot.Itemstack = inv.GetStall<SculptureStallSlot>(stallSlot).GenStubbedBundle(); // Stubbed because we dont actually care about the block contents. No point in serializing all that crap.
+            productSlot.Itemstack = inv.GetStall<SculptureStallSlot>(StallIndex).GenStubbedBundle(); // Stubbed because we dont actually care about the block contents. No point in serializing all that crap.
         }
     }
 }

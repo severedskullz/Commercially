@@ -1,4 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -17,7 +18,7 @@ namespace Commercially.Common.Renderer
             return stack.Block is BlockClutter;
         }
 
-        public MeshData CreateMesh(IShapeTesselator stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
         {
             //ICoreClientAPI coreClientAPI = (ICoreClientAPI)stall.Api;
 

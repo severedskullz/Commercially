@@ -1,22 +1,27 @@
-﻿using Commercially.Common.Inventory.Slots;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
+using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory.Impl;
+using Commercially.Vinconomy.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
 using System;
+using System.Collections.Generic;
 using Vinconomy.Inventory.Slots;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class GachaStallSlot : StallSlotBase
+    public class GachaStallSlot : StallSlotBase, IGeneratedProductStall
     {
-        public override int StallSlotCount => (GachaContents?.Length ?? 0)  + (Products?.Length ?? 0);
+        public override int StallSlotCount => (GachaContents?.Length ?? 0)  + (Products?.Length ?? 0) + 1;
 
         public override bool IsInitialized => Products != null;
         public override int InternalSlotCount => 0;
 
-        public VinconCloningSlot[] GachaContents;
+        public GachaProductSlot[] GachaContents;
         public ItemSlot[] Products;
         public int Weight;
 
@@ -31,14 +36,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                     return Product;
 
                 int index = slotId - 1;
-                int gachaLength = GachaContents?.Length ?? 0;
-
-                // Correct boundary check: valid indices are 0 to (gachaLength - 1)
-                if (index < gachaLength)
+                if (index < GachaContents?.Length)
                     return GachaContents[index];
 
-                // Subtract the exact offset to shift into the Products array index space
-                index -= gachaLength;
+                index -= GachaContents?.Length ?? 0;
                 return Products[index];
 
             }
@@ -49,7 +50,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
                 int index = slotId - 1;
                 if (index < GachaContents?.Length)
-                    GachaContents[index] = (VinconCloningSlot)value;
+                    GachaContents[index] = (GachaProductSlot)value;
 
                 index -= GachaContents?.Length ?? 0;
                 Products[index] = value;
@@ -58,10 +59,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public GachaStallSlot(VinconBaseInventory inventory, int stallSlot, int contentSlots, int stockSlots) : base(inventory, stallSlot)
         {
-            GachaContents = new VinconCloningSlot[contentSlots];
+            GachaContents = new GachaProductSlot[contentSlots];
             for (int i = 0; i < contentSlots; i++)
             {
-                GachaContents[i] = new VinconCloningSlot(inventory);
+                GachaContents[i] = new GachaProductSlot(inventory, stallSlot, i);
             }
             Products = new ItemSlot[stockSlots];
             for (int i = 0; i < stockSlots; i++)
@@ -92,6 +93,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             // We do NOT want Currency / Product to tree, as these are generated or come from the Inventory itself.
             //base.ToTreeAttributes(tree);
 
+            tree.SetInt("weight", Weight);
             tree.SetInt("numSlots", Products.Length);
             for (int j = 0; j < Products.Length; j++)
             {
@@ -118,13 +120,14 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             int numSlots = tree.GetInt("numSlots");
             int numGachaSlots = tree.GetInt("numGachaSlots");
+            Weight = Math.Max(1, tree.GetInt("weight", 1));
 
             if (!IsInitialized)
             {
                 Products = new ItemSlot[numGachaSlots];
                 for (int i = 0; i < numGachaSlots; i++)
                 {
-                    GachaContents[i] = new VinconCloningSlot(Inventory);
+                    GachaContents[i] = new GachaProductSlot(Inventory, StallSlot, i);
                     ItemStack itemStack = tree.GetItemstack("gachaSlot" + i);
                     GachaContents[i].Itemstack = itemStack;
                     if (Inventory.Api?.World != null)
@@ -265,16 +268,42 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override int GetProductQuantity()
         {
-            int amount = Int32.MaxValue;
-            if (Product?.Itemstack == null) return 0;
 
-            for (int i = 0; i < StallSlotCount; i++)
+
+            List<ItemStack> neededItems = new List<ItemStack>(GachaContents.Length);
+            //Check for duplicate items and combine them if players have 2 of the same items in 2 or more slots
+            for (int i = 0; i < GachaContents.Length; i++)
             {
                 ItemStack contents = GachaContents[i].Itemstack;
-                if (contents != null)
+                if (contents == null) continue;
+
+                ItemStack existing = null;
+                foreach (ItemStack desired in neededItems)
                 {
-                    amount = Math.Min(amount, GetGachaContentQuantity(contents));
+                    if (TradingUtil.IsMatchingItem(contents, desired, this.Inventory.Api.World, IsFuzzyMatching))
+                    {
+                        existing = desired;
+                        break;
+                    }
                 }
+
+                if (existing != null)
+                {
+                    existing.StackSize += contents.StackSize;
+                }
+                else
+                {
+                    neededItems.Add(contents);
+                }
+            }
+
+            if (neededItems.Count == 0) return 0;
+
+            int amount = Int32.MaxValue;
+            // Once we have all of the condensed items, check if we have enough for a trade
+            foreach (ItemStack desired in neededItems)
+            {
+                amount = Math.Min(amount, GetGachaContentQuantity(desired));
             }
 
             return amount;
@@ -295,5 +324,110 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
             return amount / contents.StackSize;
         }
+
+        public int GetStallWeight()
+        {
+            int productCount = GetProductQuantity();
+
+            if (productCount <= 0)
+                return 0;
+
+            GachaShopInventory gachaInventory = Inventory as GachaShopInventory;
+            if (gachaInventory?.IsCountBasedRandomizer == true)
+            {
+                return productCount * Weight;
+            }
+
+            return Weight;
+        }
+
+        public ItemStack GenStubbedProduct()
+        {
+            ItemStack stack = new ItemStack(Inventory.Api.World.GetItem(new AssetLocation("vinconomy:gachaball")), 1);          
+            return stack;
+        }
+
+        public ItemStack GenProduct()
+        {
+            ItemStack stack = GenStubbedProduct();
+
+            TreeAttribute contents = new TreeAttribute();
+
+            //ITreeAttribute contents = (TreeAttribute)treeAttr.GetTreeAttribute("Contents");
+            int numItems = 0;
+            foreach (var itemSlot in GachaContents)
+            {
+                if (itemSlot.Itemstack != null)
+                {
+                    contents.SetItemstack("Item" + numItems, itemSlot.Itemstack);
+                    numItems++;
+                }
+            }
+            TreeAttribute treeAttr = stack.Attributes as TreeAttribute;
+
+            contents.SetLong("NumContents", numItems);
+            treeAttr.SetAttribute("Contents", contents);
+            return stack;
+        }
+
+        public void RegenProduct()
+        {
+            int slot = StallSlot;
+            if (GetProductQuantity() == 0)
+            {
+                Product.Itemstack = null;
+            } else
+            {
+                Product.Itemstack = GenProduct();
+            }
+            
+            Product.MarkDirty();
+        }
+
+        /*
+        public override TradeRequest CreateTradeRequest(IPlayer player, int numPurchases, IShopComponent shop, IStallComponent stall)
+        {
+            TradeRequest request = new TradeRequest(Inventory.Api, player);
+            IOwnable ownable = stall.Ownable;
+            ItemStack currencyStack = Currency.Itemstack;
+            ItemStack productStack = Product.Itemstack;
+            request.WithShop(shop, stall, StallSlot, ownable?.IsAdminOwned ?? false);
+            request.WithPurchases(numPurchases);
+            request.WithCurrency(currencyStack, TradingUtil.GetAllValidSlotsFor(player, currencyStack), currencyStack.StackSize);
+
+            AggregatedSlots slots = new AggregatedSlots(Inventory.Api);
+            int quantity = GetProductQuantity();
+            for (int i = 0; i < quantity; i++)
+            {
+                slots.Add(productStack.Clone());   
+            }
+
+
+            request.WithProduct(productStack, GetProducts(), productStack.StackSize);
+
+            AggregatedSlots coupons = TradingUtil.GetCouponsSlotsFor(player, request.ProductNeeded, shop);
+            if (coupons.Slots.Count > 0)
+            {
+                request.WithCoupons(coupons.Slots[0]);
+            }
+
+            request.WithContainers(GetRequiredContainers(player));
+
+            if (shop != null)
+            {
+                ITradePassProvider inv = shop.GetComponent<IInventoryProvider>()?.Inventory as ITradePassProvider;
+                if (inv != null)
+                {
+                    ItemStack tradePass = inv.GetTradePass();
+                    if (tradePass != null)
+                    {
+                        request.WithTradePass(tradePass, TradingUtil.GetAllValidSlotsFor(player, tradePass));
+                    }
+                }
+            }
+            return request.Build();
+        }
+        */
+
     }
 }

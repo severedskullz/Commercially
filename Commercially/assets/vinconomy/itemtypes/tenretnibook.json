@@ -1,6 +1,6 @@
 {
-  "code": "ledger",
-  "class": "Vinconomy.Ledger",
+  "code": "book-tenretni",
+  "class": "Vinconomy.Tenretni",
   "maxstacksize": 1,
   "behaviors": [
     {
@@ -38,11 +38,27 @@
         "y": 0.05,
         "z": 0.5
       }
+    },
+
+    "handbook": {
+      "extraSections": [
+        {
+          "title": "",
+          "text": "vinconomy:handbooktext-tenretni"
+        }
+      ]
     }
+
   },
   "shape": { "base": "game:block/clutter/bookshelves/small-normal" },
+  "variantgroups": [
+    {
+      "code": "color",
+      "states": [ "brickred", "cherryred", "darkbeige", "darkgray", "darkgreen", "darkolive", "gray", "olive", "orange", "orangebrown", "purple", "purpleorange", "teal" ]
+    }
+  ],
   "textures": {
-    "cover": { "base": "game:item/lore/normal-brickred" }
+    "cover": { "base": "game:item/lore/normal-{color}" }
   },
   "creativeinventory": {
     "vinconomy": [ "*" ],

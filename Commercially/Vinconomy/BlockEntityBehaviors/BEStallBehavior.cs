@@ -14,7 +14,7 @@ using Vintagestory.API.MathTools;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
-    public class BEStallBehavior : BlockEntityBehavior, IStallComponent, IShapeTesselator
+    public class BEStallBehavior : BlockEntityBehavior, IStallComponent
     {
         protected VinconomyModSystem VinconomyCore;
         protected CommerciallyModSystem CommerciallyCore;
@@ -31,10 +31,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         protected bool DiscardProduct;
 
         public int StallCount => _InventoryProvider?.StallCount ?? 0;
-
-        public Size2i AtlasSize => throw new NotImplementedException();
-
-        public TextureAtlasPosition this[string textureCode] => throw new NotImplementedException();
 
         public BEStallBehavior(BlockEntity blockentity) : base(blockentity)
         {
@@ -53,13 +49,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             {
                 Dictionary<int, int> stallIndexObj = properties["stallSelectionIndexes"].AsObject<Dictionary<int, int>>();
                 _StallIndices = stallIndexObj;
-                /*
-                foreach (var slot in stallIndexObj)
-                {
-                    int index = stallIndexObj[slot].AsInt();
-                    _StallIndices[slot] = index;
-                }
-                */
             }
 
         }
@@ -104,17 +93,9 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             {
                 
                 // Does the shop have a Parent ID set if it needs one?
-                if (parent == null)
-                {
-                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.NOT_REGISTERED);
-                    return false;
-                }
-
-
-                // Is there a shop with the given Register ID?
                 if (parent == null && !_Ownable.IsAdminOwned)
                 {
-                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.COULDNT_GET_REGISTER);
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.NOT_REGISTERED);
                     return false;
                 }
 
@@ -358,16 +339,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             this.DiscardProduct = discard;
             Blockentity.MarkDirty();
 
-        }
-
-        public void SetNowTesselatingObj(CollectibleObject collectible)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetNowTesselatingShape(Shape shape)
-        {
-            throw new NotImplementedException();
         }
 
         public override void OnBlockBroken(IPlayer byPlayer = null)

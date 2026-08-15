@@ -55,7 +55,7 @@ namespace Commercially.Vinconomy.Trading
 
         public static AggregatedSlots GetAllValidSlotsFor(IPlayer customer, ItemStack desiredItem, bool isFuzzy = false)
         {
-            AggregatedSlots aggregatedSlots = new AggregatedSlots(customer.Entity.Api);
+            GenericAggregatedSlots aggregatedSlots = new GenericAggregatedSlots(customer.Entity.Api);
             if (desiredItem == null)
             {
                 return aggregatedSlots;
@@ -95,9 +95,9 @@ namespace Commercially.Vinconomy.Trading
             return aggregatedSlots;
         }
 
-        public static AggregatedSlots GetCouponsSlotsFor(IPlayer customer, ItemStack desiredItem, IShopComponent register)
+        public static GenericAggregatedSlots GetCouponsSlotsFor(IPlayer customer, ItemStack desiredItem, IShopComponent register)
         {
-            AggregatedSlots aggregatedSlots = new AggregatedSlots(customer.Entity.Api);
+            GenericAggregatedSlots aggregatedSlots = new GenericAggregatedSlots(customer.Entity.Api);
             
             if (desiredItem == null)
             {

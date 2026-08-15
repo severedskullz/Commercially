@@ -19,7 +19,7 @@ namespace Commercially.Common.Renderer
             return stack.Class == EnumItemClass.Item && stack.Item.Code.Domain.Equals("coinage") && stack.Item.Code.PathStartsWith("coin-");
         }
 
-        public MeshData CreateMesh(IShapeTesselator stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
         {
             MeshData modeldata = null;
             ItemStack stack = slot.Itemstack;
@@ -42,15 +42,15 @@ namespace Commercially.Common.Renderer
                 */
 
 
-                stall.SetNowTesselatingObj(stack.Collectible);
-                stall.SetNowTesselatingShape(null);
+                //stall.SetNowTesselatingObj(stack.Collectible);
+                //stall.SetNowTesselatingShape(null);
 
                 if (stack?.Item.Shape?.Base != null)
                 {
-                    stall.SetNowTesselatingShape(coreClientAPI.TesselatorManager.GetCachedShape(stack.Item.Shape.Base));
+                //    stall.SetNowTesselatingShape(coreClientAPI.TesselatorManager.GetCachedShape(stack.Item.Shape.Base));
                 }
 
-                coreClientAPI.Tesselator.TesselateItem(stack.Item, out modeldata, stall);
+                //coreClientAPI.Tesselator.TesselateItem(stack.Item, out modeldata, stall);
                 modeldata.RenderPassesAndExtraBits.Fill((short)2);
                 modeldata.Scale(new Vintagestory.API.MathTools.Vec3f(0.5f, 0, 0.5f), .4f, .4f, .4f);
             } catch (Exception e)

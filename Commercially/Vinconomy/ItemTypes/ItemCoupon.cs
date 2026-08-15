@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using Commercially.Common;
+using Commercially.Common.Interfaces;
+using Commercially.Common.Registry;
+using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -26,7 +29,7 @@ namespace Vinconomy.ItemTypes
         public const string BONUS_TYPE_DISCOUNT = "Discount";
         public const string BONUS_TYPE_PRODUCT = "Bonus";
 
-        /*
+        
         public override string GetHeldItemName(ItemStack itemStack)
         {
             return itemStack.Attributes.GetString(NAME, Lang.Get("vinconomy:item-coupon"));
@@ -54,8 +57,8 @@ namespace Vinconomy.ItemTypes
             dsc.AppendLine(Lang.Get("vinconomy:gui-f-coupon-text", [couponTypeStr, value, discountTypeStr, bonusTypeStr]));
             dsc.AppendLine();
 
-            VinconomyCoreSystem modSystem = world.Api.ModLoader.GetModSystem<VinconomyCoreSystem>();
-            ShopRegistry registry = modSystem.GetRegistry();
+            CommerciallyModSystem modSystem = world.Api.ModLoader.GetModSystem<CommerciallyModSystem>();
+            IOwnableRegistry registry = modSystem.OwnableRegistry;
 
             dsc.AppendLine("Valid Shops:");
             if (tree.HasAttribute(APPLIED_SHOPS))
@@ -68,7 +71,7 @@ namespace Vinconomy.ItemTypes
                         dsc.Append(", ");
 
                     int shopId = shopTree.GetInt("ID-" + i);
-                    ShopRegistration reg = registry.GetShop(shopId);
+                    OwnableRegistration reg = registry.GetOwnable(shopId);
                     if (reg != null)
                     {
                         dsc.Append( reg.Name);
@@ -132,6 +135,6 @@ namespace Vinconomy.ItemTypes
             dsc.AppendLine();
             base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
         }
-        */
+        
     }
 }

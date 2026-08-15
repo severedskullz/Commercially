@@ -19,7 +19,7 @@ namespace Commercially.Common.Renderer
             return stack.Block is BlockMicroBlock;
         }
 
-        public MeshData CreateMesh(IShapeTesselator stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
         {
             ICoreClientAPI coreClientAPI = stall.GetApi() as ICoreClientAPI;
 

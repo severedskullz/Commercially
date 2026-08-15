@@ -2,6 +2,9 @@
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using System;
+using System.IO;
+using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -55,6 +58,46 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             return null;
         }
 
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            base.OnReceivedClientPacket(player, packetid, data);
+            //TODO: Fix ordering for this. Need to be checking the owner UUID instead of land claim access and do our "kick if not owner and they modified the inventory" logic
+
+            if (packetid == VinConstants.SET_WEIGHT)
+            {
+                using (MemoryStream memoryStream = new MemoryStream(data))
+                {
+                    BinaryReader binaryReader = new BinaryReader(memoryStream);
+                    int stallSlot = binaryReader.ReadInt32();
+                    int weight = binaryReader.ReadInt32();
+
+                   _Inventory.GetStall<GachaStallSlot>(stallSlot).Weight = Math.Max(1, weight);
+                    Blockentity.MarkDirty();
+                }
+            }
+
+            if (packetid == VinConstants.SET_CONTENTS_QUANTITY)
+            {
+                using (MemoryStream memoryStream = new MemoryStream(data))
+                {
+                    BinaryReader binaryReader = new BinaryReader(memoryStream);
+                    int stallSlot = binaryReader.ReadInt32();
+                    int contentsSlot = binaryReader.ReadInt32();
+                    int amount = binaryReader.ReadInt32();
+
+                    ItemSlot slot = _Inventory.GetStall<GachaStallSlot>(stallSlot).GachaContents[contentsSlot];
+                    ItemStack stack = slot.Itemstack;
+
+                    if (stack != null)
+                    {
+                        stack.StackSize = amount;
+                        slot.MarkDirty();
+                    }
+                }
+            }
+
+
+        }
 
     }
 }

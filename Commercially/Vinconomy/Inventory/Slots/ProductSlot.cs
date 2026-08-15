@@ -1,5 +1,4 @@
-﻿using Commercially.Common.Inventory.Slots;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 
 namespace Vinconomy.Inventory.Slots
 {

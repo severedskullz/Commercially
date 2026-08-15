@@ -82,7 +82,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public override AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
-            AggregatedSlots slots = new AggregatedSlots(api);
+            AggregatedSlots slots = new GenericAggregatedSlots(api);
 
             if (MealSlot.Itemstack != null && TradingUtil.IsMatchingItem(Product.Itemstack, MealSlot.Itemstack, api.World))
             {

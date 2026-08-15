@@ -3,7 +3,6 @@ using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -462,10 +461,24 @@ namespace Commercially.Vinconomy.Inventory
         {
             if (Api.Side == EnumAppSide.Client) return;
 
-            if (slot is IStallProductStockSlot stallProductSlot)
+            if (slot is ITrackedItemSlot stallProductSlot)
             {
-                int stallSlot = stallProductSlot.GetStall();
+                int stallSlot = stallProductSlot.GetStallIndex();
                 StallSlotBase stall = this.GetStall(stallSlot);
+
+                // Make sure the slot isnt the Product slot, otherwise we will StackOverflow when we call UpdateProductSlot, which will call OnStockModified again
+                if (stall is IGeneratedProductStall generatedStall  && slot != stall.Product)
+                {
+                    generatedStall.RegenProduct();
+                } 
+                else if (stall is IProductUpdater productUpdater) {
+                    if (productUpdater.ShouldUpdateProductSlot(stall.Product) &&  productUpdater.ItemMatchesProduct(stall.Product))
+                    {
+                        productUpdater.UpdateProductSlot(stall);
+                    }
+
+                }
+
                 ItemStack product = stall.Product?.Itemstack?.Clone();
                 ItemStack currency = stall.Currency?.Itemstack?.Clone();
                 int stockCount = stall.GetProducts().TotalCount;
@@ -516,6 +529,8 @@ namespace Commercially.Vinconomy.Inventory
             {
                 GetStall(i).DropInventory(pos, maxStackSize);
             }
+            //TODO: I didnt mark the slots as dirty as to not trigger all of the Updater logic. It is also easier to clear the ownable inventory
+            // in one go rather than triggering the event for each slot dozens of times.
         }
     }
 }

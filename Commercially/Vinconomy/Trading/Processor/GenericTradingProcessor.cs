@@ -47,7 +47,8 @@ namespace Commercially.Vinconomy.Trading.Processor
         public static bool HasEnoughStock(TradeRequest request)
         {
             if (request.IsAdminShop) return true;
-            return (request.ProductSourceSlots.TotalCount / request.GetFinalProductNeededPerPurchase()) > 0;
+            int productQuantity = request.SellingEntity.GetStallSlot(request.StallSlot).GetProductQuantity();
+            return (productQuantity / request.GetFinalProductNeededPerPurchase()) > 0;
         }
 
         public static bool HasEnoughContainerCapacity(TradeRequest req)

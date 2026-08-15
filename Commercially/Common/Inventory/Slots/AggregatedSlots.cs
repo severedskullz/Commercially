@@ -7,25 +7,48 @@ using Vintagestory.GameContent;
 
 namespace Commercially.Common.Inventory.Slots
 {
-    public class AggregatedSlots : IEnumerable<ItemSlot>
+    public abstract class AggregatedSlots : IEnumerable<ItemSlot>
     {
+
+        public ICoreAPI Api; // This is rediculous Tyron - just to get meal contents?
+        public int TotalCount { get; set; }
+
         public AggregatedSlots(ICoreAPI api)
         {
             Api = api;
         }
 
-        public ICoreAPI Api; // This is rediculous Tyron - just to get meal contents?
+        public abstract IEnumerator<ItemSlot> GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public abstract void Add(ItemSlot item);
+
+    }
+
+    public class GenericAggregatedSlots : AggregatedSlots
+    {
+        public GenericAggregatedSlots(ICoreAPI api) : base(api)
+        {
+
+        }
+
+
 
         public List<ItemSlot> Slots { get; set; } = new List<ItemSlot>();
-        public int TotalCount { get; set; }
 
-        public virtual void Add(ItemSlot item)
+
+        public override void Add(ItemSlot item)
         {
             Slots.Add(item);
             TotalCount += item.StackSize;
         }
 
-        public virtual List<ItemStack> Remove(int num)
+        /*
+        public override List<ItemStack> Remove(int num)
         {
             int left = num;
             List<ItemStack> stacks = new List<ItemStack>();
@@ -48,17 +71,24 @@ namespace Commercially.Common.Inventory.Slots
 
             return stacks;
         }
+        */
 
         public ItemSlot this[int index] { get => Slots[index]; }
-        IEnumerator IEnumerable.GetEnumerator() => Slots.GetEnumerator();
 
-        public IEnumerator<ItemSlot> GetEnumerator()
+        public override IEnumerator<ItemSlot> GetEnumerator()
         {
             return Slots.GetEnumerator();
         }
     }
 
-    public class CapacityAggregatedSlots : AggregatedSlots
+    public class CompositeAggregatedSlots : GenericAggregatedSlots
+    {
+        public CompositeAggregatedSlots(ICoreAPI api) : base(api)
+        {
+        }
+    }
+
+    public abstract class CapacityAggregatedSlots : GenericAggregatedSlots
     {
         public float TotalCapacity { get; set; }
 
@@ -124,7 +154,7 @@ namespace Commercially.Common.Inventory.Slots
     }
 
     //TODO: Figure out how to get durabilty for tools. For now we can just manually set it
-    public class DurabilityAggregatedSlots : AggregatedSlots
+    public class DurabilityAggregatedSlots : GenericAggregatedSlots
     {
         public DurabilityAggregatedSlots(ICoreAPI api) : base(api)
         {

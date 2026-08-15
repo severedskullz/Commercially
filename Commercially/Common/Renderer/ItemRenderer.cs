@@ -19,7 +19,7 @@ namespace Commercially.Common.Renderer
             return stack.Class == EnumItemClass.Item;
         }
 
-        public MeshData CreateMesh(IShapeTesselator stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
         {
             ItemStack stack = slot.Itemstack;
             MeshData modeldata = null;
@@ -37,14 +37,14 @@ namespace Commercially.Common.Renderer
 
                 }
 
-                stall.SetNowTesselatingObj(stack.Collectible);
+               // stall.SetNowTesselatingObj(stack.Collectible);
 
                 if (stack.Item.Shape?.Base != null)
                 {
-                    stall.SetNowTesselatingShape(coreClientAPI.TesselatorManager.GetCachedShape(stack.Item.Shape.Base));
+                    //stall.SetNowTesselatingShape(coreClientAPI.TesselatorManager.GetCachedShape(stack.Item.Shape.Base));
                 }
 
-                coreClientAPI.Tesselator.TesselateItem(stack.Item, out modeldata, stall);
+                //coreClientAPI.Tesselator.TesselateItem(stack.Item, out modeldata, stall);
                 modeldata.RenderPassesAndExtraBits.Fill((short)2);
             } catch (Exception e)
             {

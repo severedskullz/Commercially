@@ -1,5 +1,6 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Registry;
 using Commercially.Common.Util;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         {
             if (slotId == 0)
             {
-                StockItemSlot slot = new StockItemSlot(self, 0, slotId);
+                FilteredItemSlot slot = new FilteredItemSlot(self);
                 slot.Filter = IsPaper;
                 slot.BackgroundIcon = "vicon-paper";
                 return slot;

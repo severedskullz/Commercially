@@ -136,15 +136,17 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(SculptureShopOwnerTab.CODE, typeof(SculptureShopOwnerTab));
             guiSystem.RegisterTabType(PurchaseStallOwnerTab.CODE, typeof(PurchaseStallOwnerTab));
             guiSystem.RegisterTabType(GachaStallOwnerTab.CODE, typeof(GachaStallOwnerTab));
+            guiSystem.RegisterTabType(GachaStallCustomerTab.CODE, typeof(GachaStallCustomerTab));
         }
 
         public void Lifecycle_RegisterItemClasses(ICoreAPI api)
         {
-            api.RegisterItemClass("VinconLedger", typeof(ItemLedger));
-            api.RegisterItemClass("VinconCatalog", typeof(ItemCatalog));
-            api.RegisterItemClass("VinconSculptureBundle", typeof(ItemSculptureBundle));
-            api.RegisterItemClass("VinconGachaBall", typeof(ItemGachaBall));
-            api.RegisterItemClass("VinconTenretni", typeof(ItemTenretniBook));
+            api.RegisterItemClass("Vinconomy.Ledger", typeof(ItemLedger));
+            api.RegisterItemClass("Vinconomy.Catalog", typeof(ItemCatalog));
+            api.RegisterItemClass("Vinconomy.SculptureBundle", typeof(ItemSculptureBundle));
+            api.RegisterItemClass("Vinconomy.GachaBall", typeof(ItemGachaBall));
+            api.RegisterItemClass("Vinconomy.TenretniBook", typeof(ItemTenretniBook));
+            api.RegisterItemClass("Vinconomy.Coupon", typeof(ItemCoupon));  
         }
 
         public void Lifecycle_RegisterBlockEntityBehaviors(ICoreAPI api)

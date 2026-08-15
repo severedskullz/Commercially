@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.Inventory.Slots
 {
-    public class SculptureAggregatedSlots : AggregatedSlots
+    public class SculptureAggregatedSlots : GenericAggregatedSlots
     {
         public SculptureAggregatedSlots(ICoreAPI api) : base(api)
         {

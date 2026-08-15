@@ -83,6 +83,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             tree.SetBool(FUZZY_MATCHING, IsFuzzyMatching);
 
         }
+
         public virtual void FromTreeAttributes(ITreeAttribute tree)
         {
 
@@ -185,7 +186,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public virtual AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
-            AggregatedSlots slots = new AggregatedSlots(api);
+            AggregatedSlots slots = new GenericAggregatedSlots(api);
             ItemSlot[] products = GetProductSlots();
 
             if (products.Length > 0)
@@ -306,7 +307,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             request.WithCurrency(currencyStack, TradingUtil.GetAllValidSlotsFor(player, currencyStack), currencyStack.StackSize);
             request.WithProduct(productStack, GetProducts(), productStack.StackSize);
 
-            AggregatedSlots coupons = TradingUtil.GetCouponsSlotsFor(player, request.ProductNeeded, shop);
+            GenericAggregatedSlots coupons = TradingUtil.GetCouponsSlotsFor(player, request.ProductNeeded, shop);
             if (coupons.Slots.Count > 0)
             {
                 request.WithCoupons(coupons.Slots[0]);
@@ -445,6 +446,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public virtual void DropInventory(Vec3d pos, int maxStackSize)
         {
+            int i = 0;
             ItemSlot[] slots = GetProductSlots();
             foreach (var slot in slots)
             {
@@ -461,7 +463,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                     this.Inventory.Api.World.SpawnItemEntity(slot.Itemstack, pos);
                 }
                 slot.Itemstack = null;
-                slot.MarkDirty();
+                i++;
             }
         }
 

@@ -46,6 +46,8 @@
         public const int SET_LIMITED_PURCHASES = 2019;
         public const int SET_FUZZY_MATCHING = 2020;
 
+        public const int SET_WEIGHT = 2021;
+        public const int SET_CONTENTS_QUANTITY = 2022;
 
 
         // Customer Packets [3000 - 3999]
@@ -60,5 +62,6 @@
         public const string TRADE_STATUS_FAILED = "FAILED";
         public const string TRADE_STATUS_LACKS_ITEMS = "LACKS_ITEMS";
         public const string TRADE_STATUS_CANCELED = "CANCELED";
+        
     }
 }

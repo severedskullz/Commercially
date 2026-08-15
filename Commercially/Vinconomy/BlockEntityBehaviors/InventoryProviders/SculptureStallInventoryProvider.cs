@@ -13,14 +13,14 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
     public class SculptureStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
     {
-        private SculptureShopInventory _Inventory;
+        private GenericShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
 
         public int StallCount => _Inventory.StallSlots?.Length ?? 0;
 
         public SculptureStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {
-            _Inventory = new SculptureShopInventory(blockentity, blockentity.Api);
+            _Inventory = new GenericShopInventory(blockentity, blockentity.Api);
         }
 
         public override void Initialize(ICoreAPI api, JsonObject properties)

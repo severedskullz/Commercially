@@ -88,7 +88,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     .AddButton(">", new ActionConsumable(this.NextPage), pageNext, EnumButtonStyle.Small, "nextPage")
 
                     .AddStaticText(Lang.Get("vinconomy:gui-quantity"), CairoFont.WhiteSmallText(), quantitySelectionLabel)
-                    .AddNumberInput(quantitySelectionBounds, null, CairoFont.WhiteSmallText(), "quantity")
+                    .AddNumberInput(quantitySelectionBounds, OnQuantityChanged, CairoFont.WhiteSmallText(), "quantity")
                     .AddButton(Lang.Get("vinconomy:gui-deal"), new ActionConsumable(this.OnPurchase), purchaseButtonBounds, EnumButtonStyle.Small, "save")
                     .AddStaticText(Lang.Get("vinconomy:gui-price"), CairoFont.WhiteSmallText(), currencyLabel)
                     //.AddPassiveItemSlot(currencySlotBounds, inv, currancySlot, true)
@@ -100,11 +100,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 .EndChildElements();
                 UpdatePurchaseInfo();
 
-
-                //Prevent stack overflow from OnQuantityChanged from getting fired when we call SetValue().
-                GuiElementNumberInput quantityInput = composer.GetNumberInput("quantity");
-                quantityInput.SetValue(Quantity);
-                quantityInput.OnTextChanged = new Action<string>(this.OnQuantityChanged); // NOW we can update the value without stack overflow.
+                composer.GetNumberInput("quantity").SetValue(Quantity);
 
             }
             else if (StallProvider == null)
@@ -123,6 +119,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         private void OnQuantityChanged(string amount)
         {
+            if (!Gui.Composer.Composed)
+                return;
+
             Int32.TryParse(amount, out int val);
             Quantity = Math.Max(1, val);
 
@@ -197,7 +196,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 BinaryWriter writer = new BinaryWriter(ms);
                 writer.Write(StallSlot);
                 writer.Write(Quantity);
-                writer.Write(true);
                 data = ms.ToArray();
 
                 Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);

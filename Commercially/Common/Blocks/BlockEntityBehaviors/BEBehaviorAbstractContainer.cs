@@ -59,7 +59,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
             if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
             {
-                Api.World.Logger.Audit("Player {0} sent an inventory packet to openable container at {1} but has no claim access. Rejected.", player.PlayerName, Pos);
+                Api.World.Logger.Audit("Player {0} sent an inventory packet to container at {1} but has no claim access. Rejected.", player.PlayerName, Pos);
                 return;
             }
 

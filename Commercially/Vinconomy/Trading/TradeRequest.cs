@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Vinconomy.ItemTypes;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Trading
 {
@@ -72,6 +71,7 @@ namespace Commercially.Vinconomy.Trading
     {
         public TradeType TradeType = TradeType.Generic;
         public AggregatedSlots ProductSourceSlots;
+        public bool IsProductGenerated = false;
         public AggregatedSlots CurrencySourceSlots;
         public AggregatedSlots TradePassSourceSlots;
         public AggregatedSlots CouponSourceSlots;
@@ -100,6 +100,13 @@ namespace Commercially.Vinconomy.Trading
             ProductNeeded = productNeeded;
             ProductSourceSlots = slots;
             //_ProductNeededPerPurchase = productPerPurchase;
+            return this;
+        }
+
+        public TradeRequest WithGeneratedProduct(ItemStack productNeeded)
+        {
+            ProductNeeded = productNeeded;
+            IsProductGenerated = true;
             return this;
         }
 
@@ -133,7 +140,7 @@ namespace Commercially.Vinconomy.Trading
                 {
                     CouponNeeded = couponSlot.Itemstack;
                     //TODO: Kinda pointless if we only want to ever have 1 coupon applied at at time. Should see about refactoring this.
-                    AggregatedSlots couponSlots = new AggregatedSlots(Api);
+                    GenericAggregatedSlots couponSlots = new GenericAggregatedSlots(Api);
                     couponSlots.Add(couponSlot);
                     CouponSourceSlots = couponSlots;
 
