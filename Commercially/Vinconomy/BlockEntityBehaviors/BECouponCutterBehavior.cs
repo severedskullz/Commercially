@@ -14,7 +14,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
-    public class BECouponCutterBehavior : BlockEntityBehavior, IComponent, IInventoryProvider
+    public class BECouponCutterBehavior : BlockEntityBehavior, IBlockEntityComponent, IInventoryProvider
     {
         private VinconGenericInventory inventory;
         public string BonusType { get; private set; } = ItemCoupon.BONUS_TYPE_DISCOUNT;
@@ -259,6 +259,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                     }
                     break;
             }
+        }
+
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
         }
     }
 }

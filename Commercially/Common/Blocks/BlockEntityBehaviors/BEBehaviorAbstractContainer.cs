@@ -99,5 +99,9 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
             this.Inventory.DropAll(this.Pos.ToVec3d());
         }
 
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
+        }
     }
 }

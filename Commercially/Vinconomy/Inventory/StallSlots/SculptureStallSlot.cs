@@ -10,7 +10,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class SculptureStallSlot : StallSlotBase
+    public class SculptureStallSlot : BaseStallSlot
     {
         ToggledStockItemSlot[] Slots;
         public int SculptureHorizontalSize = MaxSculptureSize;
@@ -48,12 +48,12 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override bool IsInitialized => true;
 
-        public override ItemSlot[] GetProductSlots()
+        public override ItemSlot[] GetStockSlots()
         { 
             return Slots;
         }
 
-        public override void TransferProdutToPlayer(TradeResult result)
+        public void TransferProdutToPlayer(TradeResult result)
         {
             if (result.ProductStacks.TotalCount == 0) return;
 
@@ -82,7 +82,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
-        public override AggregatedSlots GetProducts()
+        public  AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
             SculptureAggregatedSlots slots = new SculptureAggregatedSlots(api);
@@ -119,14 +119,15 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         }
 
 
-        public override void ExtractProductFromStall(TradeResult result)
+        public override AggregatedStacks ExtractProduct(int amount, bool isAdminShop)
         {
-            AggregatedSlots products = result.Request.ProductSourceSlots;
-            int numPurchases = result.TotalProductAmount;
 
-            if (!result.Request.IsAdminShop)
+            int numPurchases = amount;
+            ItemStack bundle = GenNewSculptureBundle();
+
+            if (!isAdminShop)
             {
-
+                ItemSlot[] products = GetStockSlots();
                 foreach (ItemSlot slot in products)
                 {
                     ItemStack takenStack = slot.TakeOut(numPurchases);
@@ -138,8 +139,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
 
-            AggregatedStacks productStacks = result.ProductStacks;
-            ItemStack bundle = GenNewSculptureBundle();
+            AggregatedStacks productStacks = new AggregatedStacks();
+            
             if (numPurchases == 1)
                 productStacks.Add(bundle);
             else
@@ -150,6 +151,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                     productStacks.Add(bundle.Clone());
                 }
             }
+            return productStacks;
         }
 
         public ItemStack GenStubbedBundle()
@@ -264,7 +266,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             this.Product.MarkDirty();
         }
 
-        public override int GetProductQuantity()
+        public int GetProductQuantity()
         {
             if (Product?.Itemstack == null) return 0;
 

@@ -1,6 +1,4 @@
-﻿using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory.StallSlots;
-using System;
+﻿using Commercially.Vinconomy.Inventory.StallSlots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -69,7 +67,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             {
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase stall = GetStall(i);
+                    BaseStallSlot stall = GetStall(i);
                     ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
                     stall.FromTreeAttributes(stallTree);
                 }

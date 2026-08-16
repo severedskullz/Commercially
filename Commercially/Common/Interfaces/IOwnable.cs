@@ -8,7 +8,7 @@ namespace Commercially.Common.Interfaces
     /// <summary>
     /// Represents an object that can be owned by a player or admin. This is used for shops, stalls, and potentially other objects in the future. It provides a common interface for checking ownership and retrieving owner information.
     /// </summary>
-    public interface IOwnable : IComponent
+    public interface IOwnable : IBlockEntityComponent
     {
         /// <summary>
         /// Gets or sets the name associated with this instance.

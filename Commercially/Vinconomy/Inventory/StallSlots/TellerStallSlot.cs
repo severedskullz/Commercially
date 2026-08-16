@@ -11,7 +11,7 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class TellerStallSlot : StallSlotBase
+    public class TellerStallSlot : BaseStallSlot
     {
         public TellerStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
@@ -34,7 +34,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override bool IsInitialized => Currency != null && Product != null;
 
-        public override void ExtractProductFromStall(TradeResult result)
+        public void ExtractProductFromStall(TradeResult result)
         {
             AggregatedSlots products = result.Request.ProductSourceSlots;
             int totalProductToMove = result.Request.GetFinalProductNeededPerPurchase() * result.Request.NumPurchases;
@@ -64,7 +64,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         }
 
 
-        public override ItemSlot[] GetProductSlots()
+        public ItemSlot[] GetProductSlots()
         {
             if (this.Inventory.Api.Side == EnumAppSide.Client) return [];
 
@@ -77,7 +77,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return [];
         }
 
-        public override void TransferProdutToPlayer(TradeResult result)
+        public void TransferProdutToPlayer(TradeResult result)
         {
             if (result.ProductStacks.TotalCount == 0) return;
 
@@ -106,10 +106,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
-        public override AggregatedSlots GetProducts()
+        public AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
-            AggregatedSlots slots = new AggregatedSlots(api);
+            GenericAggregatedSlots slots = new GenericAggregatedSlots(api);
             ItemSlot[] products = GetProductSlots();
 
             if (products.Length > 0)
@@ -123,6 +123,16 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
             return slots;
+        }
+
+        public override ItemSlot[] GetStockSlots()
+        {
+            return null;
+        }
+
+        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        {
+            throw new NotImplementedException();
         }
     }
 }

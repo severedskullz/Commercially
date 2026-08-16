@@ -29,12 +29,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             return _Inventory.GetStall(stallSlot).Product?.Itemstack?.Clone();
         }
 
-        public StallSlotBase GetStallSlot(int stallSlot)
+        public BaseStallSlot GetStallSlot(int stallSlot)
         {
             return _Inventory.GetStall(stallSlot);
         }
 
-        public T GetStallSlot<T>(int stallSlot) where T : StallSlotBase
+        public T GetStallSlot<T>(int stallSlot) where T : BaseStallSlot
         {
             return _Inventory.GetStall<T>(stallSlot);
         }

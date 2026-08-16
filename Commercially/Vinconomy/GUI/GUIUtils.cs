@@ -53,13 +53,13 @@ namespace Commercially.Vinconomy.GUI
         public static int[] GetSlotIDsForStall(IStallInventoryProvider stallProvider, int stallSlot)
         {
             // Figure out the slot indexes for SlotGrid
-            StallSlotBase stall = stallProvider.GetStallSlot(stallSlot);
+            BaseStallSlot stall = stallProvider.GetStallSlot(stallSlot);
 
-            int[] slotGridIDs = new int[stall.StallSlotCount];
+            int[] slotGridIDs = new int[stall.StockSlotCount];
             int stallSlotOffset = stall.Inventory.InternalSlots.Length;
             for (int i = 0; i < stallSlot; i++)
             {
-                stallSlotOffset += stallProvider.GetStallSlot(i).TotalSlotCount;
+                stallSlotOffset += stallProvider.GetStallSlot(i).TotalItemSlots;
             }
 
 
@@ -78,7 +78,7 @@ namespace Commercially.Vinconomy.GUI
             int offset = inv.InternalSlots?.Length ?? 0;
             for (int i = 0; i < stallSlot; i++)
             {
-                offset += inv.GetStall(i).TotalSlotCount;
+                offset += inv.GetStall(i).TotalItemSlots;
             }
             return offset;
         }

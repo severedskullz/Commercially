@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Common.Interfaces
 {
-    public interface IShapeTesselator : IComponent, ITexPositionSource
+    public interface IShapeTesselator : IBlockEntityComponent, ITexPositionSource
     {
         public void SetNowTesselatingObj(CollectibleObject collectible);
         public void SetNowTesselatingShape(Shape shape);

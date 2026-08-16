@@ -114,7 +114,7 @@ namespace Commercially.Vinconomy
 
         public void Lifecycle_RegisterStallTypes(ICoreAPI api)
         {
-            RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
+            RegisterStallType("GenericStallSlot", typeof(NewGenericStallSlot));
             RegisterStallType("MealStallSlot", typeof(MealStallSlot));
             RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
             RegisterStallType("TellerStallSlot", typeof(TellerStallSlot));
@@ -221,250 +221,7 @@ namespace Commercially.Vinconomy
         }
         
 
-        /// <summary>
-        /// Runs before ProcessTrade to manipulate any parameters of the trade request. As an example, modify the price per product to include taxes in the calculation
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns> should proceesing continue </returns>
-        private bool PreValidateTrade(TradeRequest request) {
-            EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PreValidateTradeHandlers)
-            {
-                handlers.Value.Invoke(request, ref handled);
-
-                if (handled == EnumHandling.PreventSubsequent) return true;
-                if (handled == EnumHandling.PreventDefault) return false;
-            }
-            return true; // Handled / PassThrough
-        }
-
-        /// <summary>
-        /// Processes the given Trade Request, converting it into a Trade Result after verification of general criteria such as the player having enough money for the trade, the shop having enough stock, etc.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="runProcessing"></param>
-        /// <returns></returns>
-        // TODO: this RunProcessing logic switch might not be very useful... I want to think of a way for PreProcessTrade to potentially do the logic instead, but that doesnt return a TradeResult.
-        // On the flip-side, I dont want PreProcessTrade to be required to create a new TradeResult as it should be BEFORE the processing occurs. The seperation of concerns here overlap, which is bad.
-        private static TradeResult ValidateTrade(TradeRequest request, bool runProcessing = true) {
-            TradeResult result = new TradeResult(request);
-
-            if (!runProcessing)
-            {
-                return result;
-            }
-
-            //There must be a ICurrencySinkProvider somewhere... Either we set it to the parent entity, or itself.
-            if (!request.IsAdminShop && request.GetCurrencySink() == null)
-                return SetErrorAndReturn(result, TradingConstants.NOT_REGISTERED);
-
-            if (request.CurrencyNeeded == null)
-                return SetErrorAndReturn(result, TradingConstants.NO_PRICE);
-
-            if (request.ProductNeeded == null)
-                return SetErrorAndReturn(result, TradingConstants.NO_PRODUCT);
-
-            if (!GenericTradingProcessor.HasEnoughStock(request))
-                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_STOCK);
-
-            if (!GenericTradingProcessor.CanPlayerAfford(request))
-                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_MONEY);
-
-            if (request.NumPurchases <= 0)
-                return SetErrorAndReturn(result, TradingConstants.PURCHASED_ZERO);
-
-            if (!GenericTradingProcessor.HasEnoughContainerCapacity(request))
-                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_CAPACITY);
-
-            if (!GenericTradingProcessor.HasEnoughDurability(request))
-                return SetErrorAndReturn(result, TradingConstants.NO_TOOL);
-
-            if (!GenericTradingProcessor.HasRequiredTradePass(request))
-                return SetErrorAndReturn(result, TradingConstants.NO_PASS);
-
-            if (!GenericTradingProcessor.CanFitPaymentIntoParent(request))
-                return SetErrorAndReturn(result, TradingConstants.NO_REGISTER_SPACE);
-
-            return result;
-        }
-
-        private void PostValidateTrade(TradeResult result)
-        {
-            EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PostValidateTradeHandlers)
-            {
-                handlers.Value.Invoke(result, ref handled);
-
-                if (handled == EnumHandling.PreventSubsequent) return;
-                if (handled == EnumHandling.PreventDefault) return;
-            }
-            return; // Handled / PassThrough
-        }
-
-        private void PreProcessTrade(TradeResult result) {
-            EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PreProcessTradeHandlers)
-            {
-                handlers.Value.Invoke(result, ref handled);
-
-                if (handled == EnumHandling.PreventSubsequent) return;
-                if (handled == EnumHandling.PreventDefault) return;
-            }
-            return; // Handled / PassThrough
-        }
-
-        private void ProcessTrade(TradeResult result) {
-
-            // Defer processing logic to the stall. This way I can abstract that mess between buying/selling.
-            // Purchase Crates for instance deposit the purchased goods into the stall itself, and not the register.
-            result.Stall.TransferProdutToPlayer(result);
-            result.Stall.TransferCurrencyToOwnable(result);
-            result.Stall.TransferCouponsToOwnable(result);
-            result.Request.SellingEntity.GetBlockEntity().MarkDirty();
-        }
-
-        private void PostProcessTrade(TradeResult result) {
-            EnumHandling handled = EnumHandling.PassThrough;
-            foreach (var handlers in PostProcessTradeHandlers)
-            {
-                handlers.Value.Invoke(result, ref handled);
-
-                if (handled == EnumHandling.PreventSubsequent) return;
-                if (handled == EnumHandling.PreventDefault) return;
-            }
-            return; // Handled / PassThrough
-        }
-
-        public static TradeResult SetErrorAndReturn(TradeResult result, string error)
-        {
-            result.ErrorMsg = error;
-            result.Request.NumPurchases = 0;
-            return result;
-        }
-
-        public TradeResult TryValidateTrade(TradeRequest request)
-        {
-            if (request == null) return new TradeResult(null) { ErrorMsg = TradingConstants.PURCHASED_ZERO };
-
-            bool runProcessing = PreValidateTrade(request);
-            TradeResult result = ValidateTrade(request, runProcessing); //TODO: Pointless runProcessing variable passing?
-            if (result.ErrorMsg != null) return result;
-            PostValidateTrade(result);
-
-            return result;
-        }
-
-        public TradeResult TryPurchaseItem(TradeRequest request)
-        {
-            // Dev Note: I tried to make this as flexible as possible. If there are not enough "hook" spots, at the very least you can Harmony Patch the individual methods
-            // Im hoping it won't come to that, and this should be enough for just about every use case I can think if, but if you need more then feel free to let me know!
-
-            // Anything related to permissions should be in the Pre/Post Process step - some things I can think of are villages/cities where you need to be a member of that
-            // village or city to be able to buy things from there, modifying the cost per purchase number to include taxes which will be sent to a city "vault" or something
-            // in the PreFinalizeTrade hook before we send the rest to the Register, or if you wanted to have some sort of general whitelist/blacklist.
-
-            // Anything related to recording sales like the Ledger system, modifying where payment/product goes, sending off ingame messages to the seller, or interacting with
-            // an external API like the cross-server-trading server should go in the Pre/Post Finalize steps. At this point the trade is valid, the items have been removed from
-            // the source slots and its just a matter of sending things where they should go
-
-            // Step 1: Validate the trade by checking if we have enough currency, enough stock, permissions to trade, etc.
-            TradeResult result = TryValidateTrade(request);
-            if (result.ErrorMsg != null) return result;
-
-            // Step 2: At this point the trade is "Valid" and we can commit to the trade.
-            // Extract all the items from the Source Slots into the TradeResult's aggregated item stacks
-            ExtractItems(result);
-
-            //Step 3: Log the sale to the ledger before the items are removed from the aggregates or processed by other mods
-            LogPurchase(result);
-
-            //Step 4: Now that we have taken the currency from the player, product from the shop, etc. we need to put the items in their proper places
-            CommitTrade(result);
-
-            return result;
-        }
-
-        private void CommitTrade(TradeResult result)
-        {
-            CommerciallyModSystem.PrintClientMessage(result.Request.Customer, TradingConstants.PURCHASED_ITEMS, new object[] {
-                result.ProductStacks.TotalCount,
-                result.Request.ProductNeeded.GetName(),
-                result.CurrencyStacks.TotalCount,
-                result.Request.CurrencyNeeded.GetName()
-            });
-
-            PreProcessTrade(result);
-            ProcessTrade(result);
-            PostProcessTrade(result);
-        }
-
-        private void LogPurchase(TradeResult result)
-        {
-            DB.SavePurchase(result);
-        }
-
-        /// <summary>
-        /// Extracts the Product, Currency, and Coupons out of the shop and players inventory and places the raw stacks into the TradeResult to be distributed by
-        /// the FinalizeTrade step.
-        /// </summary>
-        /// <param name="result"></param>
-        private void ExtractItems(TradeResult result)
-        {
-            //Defer extraction logic to the stall. This way I can abstract that mess between liquids, meals, gachaballs, sculptures and items.
-            result.Stall.ExtractProductFromStall(result);
-
-            AggregatedSlots currency = result.Request.CurrencySourceSlots;
-            int totalCurrencyToMove = result.Request.GetFinalCurrencyNeededPerPurchase() * result.Request.NumPurchases;
-            AggregatedStacks currencyStacks = result.CurrencyStacks;
-            foreach (ItemSlot slot in currency)
-            {
-                ItemStack takenStack = slot.TakeOut(totalCurrencyToMove);
-                if (takenStack != null)
-                {
-                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Currency Stacks");
-                    totalCurrencyToMove -= takenStack.StackSize;
-                    currencyStacks.Add(takenStack);
-                    slot.MarkDirty();
-                }
-
-                if (totalCurrencyToMove <= 0)
-                {
-                    if (totalCurrencyToMove < 0)
-                    {
-                        this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCurrencyToMove)} extra items from Currency");
-                    }
-                    break;
-                }
-
-            }
-
-            AggregatedSlots coupons = result.Request.CouponSourceSlots;
-            if (coupons != null)
-            {
-                int totalCouponsToMove = result.Request.NumPurchases;
-                AggregatedStacks couponStacks = result.CouponStacks;
-                foreach (ItemSlot slot in coupons)
-                {
-                    ItemStack takenStack = slot.TakeOut(totalCouponsToMove);
-                    if (takenStack != null)
-                    {
-                        this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Coupon Stacks");
-                        totalCouponsToMove -= takenStack.StackSize;
-                        couponStacks.Add(takenStack);
-                        slot.MarkDirty();
-                    }
-
-                    if (totalCouponsToMove <= 0)
-                    {
-                        if (totalCouponsToMove < 0)
-                        {
-                            this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCouponsToMove)} extra items from Coupons");
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+        
 
         private SortedList<int, PreProcessTrade> PreValidateTradeHandlers = new SortedList<int, PreProcessTrade>();
         public void RegisterPreValidateTradeHandler(int priority, PreProcessTrade hook)
@@ -502,23 +259,261 @@ namespace Commercially.Vinconomy
             DB.SaveProductListing(shop, stallSlot, product, stockCount, currency);
         }
 
-
-
-        //TODO: Shit not being used below:
-
-        public bool OnBlockBroken(AssetLocation code, IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier)
+        public PurchaseResult TryPurchaseItem(PurchaseRequest request)
         {
-            return true;
+            // Dev Note: I tried to make this as flexible as possible. If there are not enough "hook" spots, at the very least you can Harmony Patch the individual methods
+            // Im hoping it won't come to that, and this should be enough for just about every use case I can think if, but if you need more then feel free to let me know!
+
+            // Anything related to permissions should be in the Pre/Post Process step - some things I can think of are villages/cities where you need to be a member of that
+            // village or city to be able to buy things from there, modifying the cost per purchase number to include taxes which will be sent to a city "vault" or something
+            // in the PreFinalizeTrade hook before we send the rest to the Register, or if you wanted to have some sort of general whitelist/blacklist.
+
+            // Anything related to recording sales like the Ledger system, modifying where payment/product goes, sending off ingame messages to the seller, or interacting with
+            // an external API like the cross-server-trading server should go in the Pre/Post Finalize steps. At this point the trade is valid, the items have been removed from
+            // the source slots and its just a matter of sending things where they should go
+
+            // Step 1: Validate the trade by checking if we have enough currency, enough stock, permissions to trade, etc.
+            PurchaseResult result = ValidateTrade(request);
+            if (result.ErrorMsg != null) return result;
+
+            // Step 2: At this point the trade is "Valid" and we can commit to the trade.
+            // Extract all the items from the Source Slots into the TradeResult's aggregated item stacks
+            ExtractItems(result);
+
+            //Step 3: Log the sale to the ledger before the items are removed from the aggregates or processed by other mods
+            LogPurchase(result);
+
+            //Step 4: Now that we have taken the currency from the player, product from the shop, etc. we need to put the items in their proper places
+            CommitTrade(result);
+
+            return result;
         }
 
-        public void OnBlockPlaced(AssetLocation code, IWorldAccessor world, BlockPos blockPos, ItemStack byItemStack)
+        public static PurchaseResult ValidateTrade(PurchaseRequest request, bool runProcessing = true)
         {
+            PurchaseResult result = new PurchaseResult(request);
 
+            //There must be a ICurrencySinkProvider somewhere... Either we set it to the parent entity, or itself.
+            if (!request.IsAdminShop && request.StallSlot.GetCurrencySink(request) == null)
+                return SetErrorAndReturn(result, TradingConstants.NOT_REGISTERED);
+
+            if (request.CurrencyNeeded == null)
+                return SetErrorAndReturn(result, TradingConstants.NO_PRICE);
+
+            if (request.ProductNeeded == null)
+                return SetErrorAndReturn(result, TradingConstants.NO_PRODUCT);
+
+            if (!GenericPurchaseProcessor.HasEnoughStock(request))
+                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_STOCK);
+
+            if (!GenericPurchaseProcessor.CanPlayerAfford(request))
+                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_MONEY);
+
+            if (request.NumPurchases <= 0)
+                return SetErrorAndReturn(result, TradingConstants.PURCHASED_ZERO);
+
+            if (!GenericPurchaseProcessor.HasEnoughContainerCapacity(request))
+                return SetErrorAndReturn(result, TradingConstants.NOT_ENOUGH_CAPACITY);
+
+            if (!GenericPurchaseProcessor.HasEnoughDurability(request))
+                return SetErrorAndReturn(result, TradingConstants.NO_TOOL);
+
+            if (!GenericPurchaseProcessor.HasRequiredTradePass(request))
+                return SetErrorAndReturn(result, TradingConstants.NO_PASS);
+
+            if (!GenericPurchaseProcessor.CanFitPaymentIntoParent(request))
+                return SetErrorAndReturn(result, TradingConstants.NO_REGISTER_SPACE);
+
+            return result;
         }
 
-        public bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel)
+        private void ExtractItems(PurchaseResult result)
         {
-            return true;
+            PurchaseRequest req = result.Request;
+            // Defer processing logic to the stall. This way I can abstract that mess between buying/selling.
+            // Purchase Crates for instance deposit the purchased goods into the stall itself, and not the register.
+            IStallSlot stall = req.StallSlot;
+
+
+            /// Products
+            int totalProductNeeded = req.GetFinalProductNeeded();
+            if (stall is IContainedStallSlot container)
+            {
+                result.ProductStacks = container.ExtractProduct(totalProductNeeded, req.ContainerSourceSlots, req.IsAdminShop);
+            }
+            else
+            {
+                result.ProductStacks = stall.ExtractProduct(totalProductNeeded, req.IsAdminShop);
+            }
+
+            if (stall is ITooledStallSlot tooled)
+            {
+                tooled.ExtractDurability(req.NumPurchases, req.IsAdminShop);
+            }
+
+            /// Currency
+            int totalCurrencyToMove = req.GetFinalCurrencyNeeded();
+            AggregatedSlots currency = result.Request.CurrencySourceSlots;
+            foreach (ItemSlot slot in currency)
+            {
+                ItemStack takenStack = slot.TakeOut(totalCurrencyToMove);
+                if (takenStack != null)
+                {
+                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Currency Stacks");
+                    totalCurrencyToMove -= takenStack.StackSize;
+                    result.CurrencyStacks.Add(takenStack);
+                    slot.MarkDirty();
+                }
+
+                if (totalCurrencyToMove <= 0)
+                {
+                    if (totalCurrencyToMove < 0)
+                    {
+                        this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCurrencyToMove)} extra items from Currency");
+                    }
+                    break;
+                }
+
+            }
+
+            /// Coupons
+            ItemSlot coupons = result.Request.CouponSourceSlots;
+            if (coupons != null)
+            {
+                int totalCouponsToMove = result.Request.NumPurchases;
+                AggregatedStacks couponStacks = result.CouponStacks;
+
+                ItemStack takenStack = coupons.TakeOut(totalCouponsToMove);
+                if (takenStack != null)
+                {
+                    this.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Coupon Stacks");
+                    totalCouponsToMove -= takenStack.StackSize;
+                    couponStacks.Add(takenStack);
+                    coupons.MarkDirty();
+                }
+
+                if (totalCouponsToMove != 0)
+                {
+                    if (totalCouponsToMove < 0)
+                    {
+                        this.Mod.Logger.Error($"Somehow removed {Math.Abs(totalCouponsToMove)} extra items from Coupons");
+                    }
+                    else
+                    {
+                        this.Mod.Logger.Error($"Somehow missing {totalCouponsToMove} items from Coupons");
+                    }
+                }
+
+            }
+            result.Request.SellingEntity.GetBlockEntity().MarkDirty();
+        }
+
+        private void LogPurchase(PurchaseResult result)
+        {
+            DB.SavePurchase(result);
+        }
+
+        private void CommitTrade(PurchaseResult result)
+        {
+            CommerciallyModSystem.PrintClientMessage(result.Request.Customer, TradingConstants.PURCHASED_ITEMS, new object[] {
+                result.ProductStacks.TotalCount,
+                result.Request.ProductNeeded.GetName(),
+                result.CurrencyStacks.TotalCount,
+                result.Request.CurrencyNeeded.GetName()
+            });
+
+            //PreProcessTrade(result);
+            ProcessTrade(result);
+            //PostProcessTrade(result);
+        }
+
+        private void ProcessTrade(PurchaseResult result)
+        {
+            /// Give Player Product
+            AssetLocation sound = null;
+            AggregatedStacks products = result.ProductStacks;
+            IPlayer player = result.Request.Customer;
+            while (products.CanRemoveStack())
+            {
+                ItemStack stack = products.RemoveStack();
+
+                if (stack != null)
+                {
+                    this.Mod.Logger.Debug($"Adding {stack.StackSize}x {stack} product to Parent");
+                    if (stack.Block?.Sounds?.Place.Location != null)
+                    {
+                        sound = stack.Block?.Sounds?.Place.Location;
+                    }
+
+                    player.InventoryManager.TryGiveItemstack(stack, true);
+                    if (stack.StackSize > 0)
+                    {
+                        result.Request.Api.World.SpawnItemEntity(stack, player.Entity.Pos.XYZ.Add(0.5), null);
+                    }
+                }
+            }
+            result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), player.Entity, player, true, 16f, 1f);
+
+
+            /// Give Ownable Currency
+            ICurrencySinkProvider currencyProvider = result.Request.StallSlot.GetCurrencySink(result.Request);
+            if (currencyProvider != null)
+            {
+                ItemSlot[] slots = currencyProvider.CurrencySlots;
+                while (result.CurrencyStacks.CanRemoveStack())
+                {
+                    ItemStack nextStack = result.CurrencyStacks.RemoveStack();
+                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
+                }
+                currencyProvider.GetBlockEntity().MarkDirty();
+            }
+
+            /// Give Ownable Coupons
+            ICouponSinkProvider couponProvider = result.Request.StallSlot.GetCouponSink(result.Request);
+            if (couponProvider != null)
+            {
+                ItemSlot[] slots = couponProvider.CouponSlots;
+                while (result.CouponStacks.CanRemoveStack())
+                {
+                    ItemStack nextStack = result.CouponStacks.RemoveStack();
+                    this.Mod.Logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
+                    AddItemToSlots(result.Request.Api, nextStack, slots);
+                }
+                couponProvider.GetBlockEntity().MarkDirty();
+            }
+        }
+
+        public static PurchaseResult SetErrorAndReturn(PurchaseResult result, string error)
+        {
+            result.ErrorMsg = error;
+            result.Request.NumPurchases = 0;
+            return result;
+        }
+
+        public static bool AddItemToSlots(ICoreAPI api, ItemStack stack, ItemSlot[] slots)
+        {
+            if (stack == null || stack.StackSize == 0) return false;
+
+            ItemSlot dslot = new ItemSlot(null);
+            dslot.Itemstack = stack;
+
+            int amountLeft = stack.StackSize;
+
+            foreach (ItemSlot slot in slots)
+            {
+                if (slot.CanHold(dslot))
+                {
+                    amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
+                    slot.MarkDirty();
+                }
+
+                if (amountLeft <= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }    

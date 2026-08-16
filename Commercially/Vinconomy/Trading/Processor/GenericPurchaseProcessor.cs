@@ -7,12 +7,12 @@ using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Trading.Processor
 {
-    public class GenericTradingProcessor
+    public class GenericPurchaseProcessor
     {
 
-        public static bool CanFitPaymentIntoParent(TradeRequest request)
+        public static bool CanFitPaymentIntoParent(PurchaseRequest request)
         {
-            ICurrencySinkProvider currencySinkProvider = request.GetCurrencySink();;
+            ICurrencySinkProvider currencySinkProvider = request.StallSlot.GetCurrencySink(request);
             if (currencySinkProvider == null)
             {
                 return false;
@@ -44,16 +44,14 @@ namespace Commercially.Vinconomy.Trading.Processor
             return (qntyLeft <= 0);
         }
 
-        /*
-        public static bool HasEnoughStock(TradeRequest request)
+        public static bool HasEnoughStock(PurchaseRequest request)
         {
             if (request.IsAdminShop) return true;
-            int productQuantity = request.SellingEntity.GetStallSlot(request.StallSlot).GetProductQuantity();
+            int productQuantity = request.StallSlot.GetTotalProductAvailable();
             return (productQuantity / request.GetFinalProductNeededPerPurchase()) > 0;
         }
-        */
 
-        public static bool HasEnoughContainerCapacity(TradeRequest req)
+        public static bool HasEnoughContainerCapacity(PurchaseRequest req)
         {
             if (req.ContainerSourceSlots == null)
             {
@@ -73,13 +71,7 @@ namespace Commercially.Vinconomy.Trading.Processor
             return true;
         }
 
-        public static int GetNumTradesForStock(TradeRequest request)
-        {
-            if (request.IsAdminShop) return request.NumPurchases;
-            return Math.Min(request.NumPurchases, request.ProductSourceSlots.TotalCount / request.GetFinalProductNeededPerPurchase());
-        }
-
-        public static bool CanPlayerAfford(TradeRequest request)
+        public static bool CanPlayerAfford(PurchaseRequest request)
         {
             int currencyRequired = request.GetFinalCurrencyNeededPerPurchase();
             int totalCurrecny = request.CurrencySourceSlots.TotalCount;
@@ -90,7 +82,7 @@ namespace Commercially.Vinconomy.Trading.Processor
 
 
 
-        public static bool HasEnoughDurability(TradeRequest request)
+        public static bool HasEnoughDurability(PurchaseRequest request)
         {
             if (request.ToolSourceSlots == null)
             {
@@ -109,7 +101,7 @@ namespace Commercially.Vinconomy.Trading.Processor
             return true;
         }
 
-        public static bool HasRequiredTradePass(TradeRequest req)
+        public static bool HasRequiredTradePass(PurchaseRequest req)
         {
             return !(req.TradePassNeeded != null && req.TradePassSourceSlots.TotalCount <= 0);
         }
@@ -124,11 +116,11 @@ namespace Commercially.Vinconomy.Trading.Processor
             return amount / contentProps.ItemsPerLitre;
         }
 
-        public static void AuditLogError(TradeResult res, string message)
+        public static void AuditLogError(PurchaseResult res, string message)
         {
             res.Request.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Error(message);
         }
-        public static void AuditLogDebug(TradeResult res, string message)
+        public static void AuditLogDebug(PurchaseResult res, string message)
         {
             res.Request.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Debug(message);
         }

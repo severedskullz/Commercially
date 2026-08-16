@@ -53,6 +53,20 @@ namespace Commercially.Vinconomy.Trading
             return stack;
         }
 
+        public static GenericAggregatedSlots GetAllValidSlotsFor(ICoreAPI api, ItemStack desiredItem, ItemSlot[] slots, bool isFuzzy = false)
+        {
+            GenericAggregatedSlots aggregatedSlots = new GenericAggregatedSlots(api);
+            foreach (ItemSlot itemSlot in slots)
+            {
+                if (IsMatchingItem(desiredItem, itemSlot.Itemstack, api.World, isFuzzy))
+                {
+                    aggregatedSlots.Add(itemSlot);
+                }
+            }
+
+            return aggregatedSlots;
+        }
+
         public static AggregatedSlots GetAllValidSlotsFor(IPlayer customer, ItemStack desiredItem, bool isFuzzy = false)
         {
             GenericAggregatedSlots aggregatedSlots = new GenericAggregatedSlots(customer.Entity.Api);
@@ -121,6 +135,25 @@ namespace Commercially.Vinconomy.Trading
             return aggregatedSlots;
         }
 
+        public static ItemSlot GetCouponsSlotsForShop(IPlayer customer, ItemStack desiredItem, IShopComponent register)
+        {
+            IOwnableReference ownable = register.GetComponent<IOwnableReference>();
+
+            ItemSlot handItem = customer.InventoryManager.ActiveHotbarSlot;
+            if (IsValidCoupon(handItem, desiredItem, ownable))
+            {
+                return handItem;
+            }
+
+            ItemSlot offhandItem = customer.InventoryManager.OffhandHotbarSlot;
+            if (IsValidCoupon(offhandItem, desiredItem, ownable))
+            {
+                return offhandItem;
+            }
+
+            return null; ;
+        }
+
         private static bool IsValidCoupon(ItemSlot itemSlot, ItemStack desiredItem, IOwnableReference register)
         {
             if (register == null) return false;
@@ -129,15 +162,15 @@ namespace Commercially.Vinconomy.Trading
             {
                 if (itemSlot.Itemstack.Item.Code == "vinconomy:coupon")
                 {
-                    string desiredCode = null;
-                    if (desiredItem.Class == EnumItemClass.Item)
-                        desiredCode = desiredItem.Item?.Code;
-                    else
-                        desiredCode = desiredItem.Block.Code;
-
                     ITreeAttribute attrs = itemSlot.Itemstack.Attributes;
                     if (attrs.HasAttribute(ItemCoupon.ITEM_LIST))
                     {
+                        string desiredCode = null;
+                        if (desiredItem.Class == EnumItemClass.Item)
+                            desiredCode = desiredItem.Item?.Code;
+                        else
+                            desiredCode = desiredItem.Block.Code;
+
                         bool isBlacklist = attrs.GetBool(ItemCoupon.IS_BLACKLIST);
                         ITreeAttribute itemList = attrs.GetTreeAttribute(ItemCoupon.ITEM_LIST);
                         int length = attrs.GetInt(ItemCoupon.ITEM_LIST_COUNT);

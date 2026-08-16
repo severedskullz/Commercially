@@ -63,12 +63,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             return _InventoryProvider.GetStallSlot(stallSlot).Product.Itemstack?.Clone();
         }
 
-        public StallSlotBase GetStallSlot(int stallSlot)
+        public BaseStallSlot GetStallSlot(int stallSlot)
         {
             return _InventoryProvider.GetStallSlot(stallSlot);
         }
 
-        public T GetStallSlot<T>(int stallSlot) where T : StallSlotBase
+        public T GetStallSlot<T>(int stallSlot) where T : BaseStallSlot
         {
             return _InventoryProvider.GetStallSlot<T>(stallSlot);
         }
@@ -122,18 +122,18 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
             if (CanPurchaseItem(player, shop, stallSlot, numPurchases))
             {
-                TradeResult result = PurchaseItem(player, stallSlot, numPurchases, shop);
+                PurchaseResult result = PurchaseItem(player, stallSlot, numPurchases, shop);
                 return result.ErrorMsg != null;
             }
 
             return false;
         }
 
-        public virtual TradeResult PurchaseItem(IPlayer player, int stallSlot, int numPurchases, IShopComponent shopRegister)
+        public virtual PurchaseResult PurchaseItem(IPlayer player, int stallSlot, int numPurchases, IShopComponent shopRegister)
         {
-            TradeRequest request = GetStallSlot(stallSlot).CreateTradeRequest(player, numPurchases, shopRegister, this);
+            PurchaseRequest request = GetStallSlot(stallSlot).CreatePurchaseRequest(player, numPurchases, shopRegister, this);
 
-            TradeResult result = VinconomyCore.TryPurchaseItem(request);
+            PurchaseResult result = VinconomyCore.TryPurchaseItem(request);
             if (result.ErrorMsg != null)
             {
                 CommerciallyModSystem.PrintClientMessage(player, result.ErrorMsg);
@@ -149,7 +149,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         public int GetRemainingProductForStallSlot(int stallSlot)
         {
-            return _InventoryProvider.GetStallSlot(stallSlot).GetProducts().TotalCount;
+            return _InventoryProvider.GetStallSlot(stallSlot).GetTotalProductAvailable();
         }
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
@@ -353,6 +353,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 return stallIndex;
             }
             return 0;
+        }
+
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
         }
     }
 }

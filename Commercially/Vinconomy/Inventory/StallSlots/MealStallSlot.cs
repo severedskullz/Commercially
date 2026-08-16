@@ -1,9 +1,5 @@
-﻿using Commercially.Common;
-using Commercially.Common.Interfaces;
-using Commercially.Common.Inventory.Slots;
-using Commercially.Common.Util;
+﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
@@ -17,9 +13,9 @@ using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class MealStallSlot : StallSlotBase
+    public class MealStallSlot : BaseStallSlot, IContainedStallSlot
     {
-        public override int StallSlotCount => 1;
+        public override int StockSlotCount => 1;
 
         public override bool IsInitialized => MealSlot != null;
 
@@ -47,7 +43,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             MealSlot = new StockItemSlot(inventory, stallSlot, 0);
         }
 
-        public override ItemSlot[] GetProductSlots()
+        public override ItemSlot[] GetStockSlots()
         {
             return [MealSlot];
         }
@@ -72,14 +68,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override ItemSlot GetProductSlot(int itemSlot)
-        {
-            return MealSlot;
-        }
-
-
-
-        public override AggregatedSlots GetProducts()
+        public AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
             AggregatedSlots slots = new GenericAggregatedSlots(api);
@@ -92,19 +81,19 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return slots;
         }
 
-        public override int GetProductQuantity()
+        public int GetProductQuantity()
         {
             if (Product?.Itemstack == null) return 0;
 
             return (int)VinUtils.GetMealContainerServings(MealSlot.Itemstack, Inventory.Api);
         }
 
-        public override int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, bool bulk)
+        public int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, bool bulk)
         {
             return AddProductToSlot(byPlayer, sourceSlot, bulk ? sourceSlot.StackSize : 1);
         }
 
-        public override int AddProductToSlot(IPlayer byPlayer, ItemSlot source, int amount)
+        public int AddProductToSlot(IPlayer byPlayer, ItemSlot source, int amount)
         {
             /*
             if (!CanAcceptFrom(source)) return 0;
@@ -130,7 +119,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return AddMeal(source, amount) ? amount : 0;
         }
 
-        public override int TakeProductFromSlot(int amount, out AggregatedStacks returnedItems, ItemSlot outputSlot, bool allowExcess = false)
+        public int TakeProductFromSlot(int amount, out AggregatedStacks returnedItems, ItemSlot outputSlot, bool allowExcess = false)
         {
             returnedItems = null;
             /*
@@ -509,7 +498,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return CanMergeMeal(itemStack, MealSlot.Itemstack);
         }
 
-        public override void TransferProdutToPlayer(TradeResult result)
+        public void TransferProdutToPlayer(TradeResult result)
         {
             if (result.ProductStacks.TotalCount == 0) return;
 
@@ -646,7 +635,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
    
 
-        public override CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
+        public CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
         {
             ServingCapacityAggregatedSlots aggregatedSlots = new ServingCapacityAggregatedSlots(Inventory.Api);
             ItemStack[] mealStacks = GetProductContents();
@@ -686,35 +675,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 && VinUtils.IsMergableContents(Inventory.Api.World, mealStacks, VinUtils.GetContainerContents(dest, Inventory.Api));
         }
 
-        public override void ExtractProductFromStall(TradeResult result)
-        {
-            AggregatedSlots products = result.Request.ProductSourceSlots;
-            int totalProductToMove = result.Request.GetFinalProductNeededPerPurchase() * result.Request.NumPurchases;
-            AggregatedStacks productStacks = result.ProductStacks;
-
-            foreach (ItemSlot slot in products)
-            {
-                ItemStack takenStack = slot.TakeOut(totalProductToMove);
-                if (takenStack != null)
-                {
-                    GenericTradingProcessor.AuditLogDebug(result, $"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                    totalProductToMove -= takenStack.StackSize;
-                    productStacks.Add(takenStack);
-                    slot.MarkDirty();
-                }
-
-                if (totalProductToMove <= 0)
-                {
-                    if (totalProductToMove < 0)
-                    {
-                        GenericTradingProcessor.AuditLogError(result, $"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
-                    }
-                    break;
-                }
-
-            }
-        }
-
         public string GetRecipeCode()
         {
             return VinUtils.GetRecipeCode(Product.Itemstack, Inventory.Api);
@@ -723,6 +683,109 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public override void DropInventory(Vec3d pos, int maxStackSize)
         {
             // DO NOTHING. Meals go bye-bye! Dont wanna duplicate the cooking pots I use to hold the ingredients. Pretend they spilled on the floor and got dirty or something, I don't care.
+        }
+
+        public ItemStack TransferToItemStack(ItemSlot containerSlot, string recipe, ItemStack[] mealStacks, int servings, out int moved)
+        {
+            int capacity = 0;
+            moved = 0;
+
+            ICoreAPI api = Inventory.Api;
+
+            // Why the fuck isnt the servingCapacity also on the meal block code?
+            // I have to be missing something here.
+            JsonObject attr = containerSlot.Itemstack.Block.Attributes;
+            if (attr.KeyExists("servingCapacity"))
+            {
+                capacity = attr["servingCapacity"].AsInt();
+            }
+            if (capacity <= 0)
+            {
+                return null;
+            }
+
+            if (containerSlot.Itemstack.Block is IBlockMealContainer meal)
+            {
+                int currentServings = (int)Math.Ceiling(meal.GetQuantityServings(api.World, containerSlot.Itemstack));
+                if (currentServings >= capacity)
+                    return null;
+
+                moved = Math.Min(servings, capacity - currentServings);
+                meal.SetContents(recipe, containerSlot.Itemstack, mealStacks, currentServings + moved);
+                containerSlot.Itemstack.Attributes.RemoveAttribute("sealed");
+                containerSlot.MarkDirty();
+                return containerSlot.TakeOut(1);
+            }
+            else
+            {
+                ItemStack mealStack = ConvertToMealContainer(api, containerSlot.Itemstack);
+                if (mealStack != null)
+                {
+                    if (mealStack.Block is not IBlockMealContainer mealBlock)
+                    {
+                        throw new Exception("Somehow got a meal stack that wasn't a meal container");
+                    }
+
+                    moved = Math.Min(servings, capacity);
+                    mealBlock.SetContents(recipe, mealStack, mealStacks, moved);
+                    containerSlot.TakeOut(1);
+                    containerSlot.MarkDirty();
+                    return mealStack;
+                    
+                }
+            }
+
+            return null;
+        }
+
+        //TODO: I know this is wrong, but I just want it to compile with this major refactor. Doesnt currently honor AdminShop
+        public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
+        {
+            AggregatedStacks result = new AggregatedStacks();
+
+            IBlockMealContainer mealContainer = Product.Itemstack.Block as IBlockMealContainer;
+            if (mealContainer == null)
+                return result;
+
+
+
+            string recipeCode = mealContainer.GetRecipeCode(Inventory.Api.World, Product.Itemstack);
+            ItemStack[] mealStacks = mealContainer.GetContents(Inventory.Api.World, Product.Itemstack);
+
+            int totalServingsLeftToTransfer = Product.StackSize;
+            // loop through player's containers and convert to meal blocks
+            foreach (ItemSlot containerSlot in containerSourceSlots)
+            {
+                // Save stacksize as variable. We will be taking items OUT of this stack, so it would exit the loop early.
+                // Eg. Had 2 bowls, loop ran, took one out, 'i' is now 1, and stack size is 1, so loop terminates and doesnt run on second bowl.
+                int numAttempts = containerSlot.StackSize;
+                for (int i = 0; i < numAttempts; i++)
+                {
+                    int capacity = containerSlot.Itemstack.Block.Attributes["servingCapacity"].AsInt();
+                    int servingsToTransfer = Math.Min(totalServingsLeftToTransfer, capacity);
+                    ItemStack mealStack = TransferToItemStack(containerSlot, recipeCode, mealStacks, totalServingsLeftToTransfer, out int moved);
+                    totalServingsLeftToTransfer -= moved;
+
+                    result.Add(mealStack);
+                    if (totalServingsLeftToTransfer <= 0)
+                        break;
+                }
+
+                if (totalServingsLeftToTransfer <= 0)
+                    return result;
+
+            }
+
+            if (totalServingsLeftToTransfer > 0)
+            {
+                GenericTradingProcessor.AuditLogError(null, "Somehow allowed purchase of " + totalServingsLeftToTransfer + " extra servings even though we didnt have enough containers");
+            }
+            return result;
+        }
+
+        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        {
+            throw new NotSupportedException();
         }
     }
 }

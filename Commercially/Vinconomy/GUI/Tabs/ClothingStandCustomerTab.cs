@@ -39,7 +39,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         {
             for (int i = 0; i < 15; i++)
             {
-                StallSlotBase slot = StallProvider.GetStallSlot(i);
+                BaseStallSlot slot = StallProvider.GetStallSlot(i);
                 ItemStack currency = slot.Currency.Itemstack?.Clone();
                 ItemStack product = slot.Product.Itemstack?.Clone();
 

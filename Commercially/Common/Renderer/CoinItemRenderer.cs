@@ -19,7 +19,7 @@ namespace Commercially.Common.Renderer
             return stack.Class == EnumItemClass.Item && stack.Item.Code.Domain.Equals("coinage") && stack.Item.Code.PathStartsWith("coin-");
         }
 
-        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IBlockEntityComponent stall, ItemSlot slot, int index)
         {
             MeshData modeldata = null;
             ItemStack stack = slot.Itemstack;

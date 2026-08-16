@@ -34,7 +34,6 @@ namespace Commercially.Vinconomy.Trading
         public string CouponDiscountType;
         public int NumPurchases;
         public int RequestedPurchases;
-        public int DiscountedPrice;
         public bool IsAdminShop;
         public int StallSlot;
         public int CurrencyNeededPerPurchase => GetFinalCurrencyNeededPerPurchase();
@@ -271,7 +270,7 @@ namespace Commercially.Vinconomy.Trading
         public int TotalCurrencyAmount => Request.GetFinalCurrencyNeededPerPurchase() * Request.NumPurchases;
         public int FinalPurchases => Request.NumPurchases;
 
-        public StallSlotBase Stall => Request.SellingEntity.GetStallSlot(Request.StallSlot);
+        public BaseStallSlot Stall => Request.SellingEntity.GetStallSlot(Request.StallSlot);
 
         public TradeResult(TradeRequest req)
         {

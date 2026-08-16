@@ -2,7 +2,7 @@
 
 namespace Commercially.Common
 {
-    public interface IService : IComponent
+    public interface IService : IBlockEntityComponent
     {
 
     }

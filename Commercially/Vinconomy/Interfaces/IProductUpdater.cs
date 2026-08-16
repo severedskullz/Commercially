@@ -13,6 +13,6 @@ namespace Commercially.Vinconomy.Interfaces
     {
         bool ItemMatchesProduct(ProductSlot product);
         bool ShouldUpdateProductSlot(ProductSlot product);
-        void UpdateProductSlot(StallSlotBase stall);
+        void UpdateProductSlot(BaseStallSlot stall);
     }
 }

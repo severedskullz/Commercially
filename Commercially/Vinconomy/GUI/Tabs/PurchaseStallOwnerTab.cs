@@ -49,8 +49,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 PurchaseStallSlot stall = StallProvider.GetStallSlot<PurchaseStallSlot>(StallSlot);
 
 
-                int currencySlotLength = stall.GetProductSlots().Length;
-                int productSlotLength = stall.GetPurchasedProducts().Length;
+                int currencySlotLength = stall.GetStockSlots().Length;
+                int productSlotLength = stall.GetInternalSlots().Length;
 
                 int[] currencySlotIds = new int[currencySlotLength];
                 int[] purchasedProductsSlotIds = new int[productSlotLength];
@@ -243,7 +243,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             Int32.TryParse(amount, out int val);
 
-            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
 
             if (val > 0 && val <= 1024 && val != stall.ProductPerPurchase)
             {
@@ -345,7 +345,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         private void SetProductSlot(object obj)
         {
-            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
             Gui.Composer.GetTextInput("sellQuantity").SetValue(stall.ProductPerPurchase);
             Gui.SendPacket(obj);
             Api.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
@@ -353,7 +353,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         private void SetCurrencySlot(object obj)
         {
-            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
             Gui.Composer.GetTextInput("costQuantity").SetValue(stall.CurrencyPerPurchase);
             Api.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
@@ -365,7 +365,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             Int32.TryParse(amount, out int val);
 
-            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
 
             if (val > 0 && val <= 1024 && val != stall.ProductPerPurchase)
             {
@@ -389,7 +389,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             Int32.TryParse(amount, out int val);
 
-            StallSlotBase stall = StallProvider.GetStallSlot(StallSlot);
+            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
 
             if (val > 0 && val <= 1024 && val != stall.CurrencyPerPurchase)
             {

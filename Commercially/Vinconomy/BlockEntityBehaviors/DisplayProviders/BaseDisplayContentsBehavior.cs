@@ -348,7 +348,9 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
             }
         }
 
-
-
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
+        }
     }
 }

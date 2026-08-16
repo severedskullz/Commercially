@@ -11,11 +11,9 @@ using Vintagestory.API.Util;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class PurchaseStallSlot : StallSlotBase, ICurrencySinkProvider
+    public class PurchaseStallSlot : NewGenericStallSlot, ICurrencySinkProvider
     {
-        public override int StallSlotCount => (PurchasedProduct?.Length ?? 0) + (ProvidedCurrency?.Length ?? 0);
-
-        public override bool IsInitialized => PurchasedProduct != null && ProvidedCurrency != null;
+        public override bool IsInitialized => PurchasedProduct != null && Stock != null;
 
         public bool RegisterFallback { get; set; }
 
@@ -23,7 +21,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         InventoryBase IInventoryProvider.Inventory => Inventory;
 
-        public StockItemSlot[] ProvidedCurrency;
         public FilteredItemSlot[] PurchasedProduct;
         public bool IsLimited;
         public int NumPurchasesRemaining;
@@ -35,10 +32,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public PurchaseStallSlot(VinconBaseInventory inventory, int stallSlot, int currencySlotsPerStall, int purchasedStockPerStall) : base(inventory, stallSlot)
         {
             Product.BackgroundIcon = "commercially-payment";
-            ProvidedCurrency = new StockItemSlot[currencySlotsPerStall];
+            Stock = new StockItemSlot[currencySlotsPerStall];
             for (int i = 0; i < currencySlotsPerStall; i++)
             {
-                ProvidedCurrency[i] = new StockItemSlot(inventory, StallSlot, i)
+                Stock[i] = new StockItemSlot(inventory, StallSlot, i)
                 {
                     BackgroundIcon = "commercially-payment"
                 };
@@ -60,25 +57,25 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 if (slotId == 0) return Currency;
                 else if (slotId == 1) return Product;
-                else if (slotId - 2 < ProvidedCurrency.Length) return ProvidedCurrency[slotId - 2];
-                else return PurchasedProduct[slotId - ProvidedCurrency.Length - 2];
+                else if (slotId - 2 < Stock.Length) return Stock[slotId - 2];
+                else return PurchasedProduct[slotId - Stock.Length - 2];
             }
             set {
                 if (slotId == 0) Currency = (CurrencySlot) value;
                 else if (slotId == 1) Product = (ProductSlot) value;
-                else if (slotId - 2 < ProvidedCurrency.Length) ProvidedCurrency[slotId - 2] = (StockItemSlot)value;
-                else PurchasedProduct[slotId - ProvidedCurrency.Length - 2] = (FilteredItemSlot)value;
+                else if (slotId - 2 < Stock.Length) Stock[slotId - 2] = (StockItemSlot)value;
+                else PurchasedProduct[slotId - Stock.Length - 2] = (FilteredItemSlot)value;
             } 
         }
 
-        public override ItemSlot[] GetProductSlots()
+        public override ItemSlot[] GetInternalSlots()
         {
-            return ProvidedCurrency;
+            return PurchasedProduct;
         }
 
         public ItemSlot[] GetProductAndParentSlots()
         {
-            ItemSlot[] currency = GetProductSlots();
+            ItemSlot[] currency = GetStockSlots();
             if (this.RegisterFallback && this.Inventory.StallComponent.Ownable.HasParent())
             {
                 ItemSlot[] parentCurrency = GetParentCurrencySlots();
@@ -97,20 +94,17 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return [];
         }
 
-        public ItemSlot[] GetPurchasedProducts()
-        {
-            return PurchasedProduct;
-        }
+
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            tree.SetInt("numSlots", ProvidedCurrency.Length);
-            for (int i = 0; i < ProvidedCurrency.Length; i++)
+            tree.SetInt("numSlots", Stock.Length);
+            for (int i = 0; i < Stock.Length; i++)
             {
-                if (ProvidedCurrency[i].Itemstack != null)
+                if (Stock[i].Itemstack != null)
                 {
-                    tree.SetItemstack("slot" + i, ProvidedCurrency[i].Itemstack);
+                    tree.SetItemstack("slot" + i, Stock[i].Itemstack);
                 }
             }
 
@@ -138,14 +132,14 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             if (!IsInitialized)
             {
-                ProvidedCurrency = new StockItemSlot[numCurrencySlots];
+                Stock = new StockItemSlot[numCurrencySlots];
                 for (int i = 0; i < numCurrencySlots; i++)
                 {
                     StockItemSlot slot = new StockItemSlot(Inventory, StallSlot, i);
                     ItemStack itemStack = tree.GetItemstack("slot" + i);
                     slot.Itemstack = itemStack;
                     slot.BackgroundIcon = "commercially-payment";
-                    ProvidedCurrency[i] = slot;
+                    Stock[i] = slot;
                     
                     
                     if (Inventory.Api?.World != null)
@@ -172,7 +166,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 for (int i = 0; i < numCurrencySlots; i++)
                 {
                     ItemStack itemStack = tree.GetItemstack("slot" + i);
-                    ProvidedCurrency[i].Itemstack = itemStack;
+                    Stock[i].Itemstack = itemStack;
                     if (Inventory.Api?.World != null)
                     {
                         itemStack?.ResolveBlockOrItem(Inventory.Api.World);
@@ -201,10 +195,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             if (!IsInitialized)
             {
-                ProvidedCurrency = new StockItemSlot[numSlotsPerStall];
+                Stock = new StockItemSlot[numSlotsPerStall];
                 for (int i = 0; i < numSlotsPerStall; i++)
                 {
-                    ProvidedCurrency[i] = new StockItemSlot(inventory, StallSlot, i);
+                    Stock[i] = new StockItemSlot(inventory, StallSlot, i);
                 }
 
                 //TODO: This count will be wrong. How can we add another "numSlotsPerStall" for the purchased product slots?
@@ -216,7 +210,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override void TransferProdutToPlayer(TradeResult result)
+        public void TransferProdutToPlayer(TradeResult result)
         {
             if (result.ProductStacks.TotalCount == 0) return;
 
@@ -245,7 +239,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
-        public override void ExtractProductFromStall(TradeResult result)
+        public void ExtractProductFromStall(TradeResult result)
         {
             if (IsLimited)
             {
@@ -301,29 +295,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        /// <summary>
-        /// Reminder that in the case of Purchase Stalls, Currency here is the purchased item.
-        /// </summary>
-        /// <param name="result"></param>
-        public override void TransferCurrencyToOwnable(TradeResult result)
+        public BlockEntity GetBlockEntity()
         {
-            if (result.CurrencyStacks.TotalCount == 0) return;
-
-            ILogger logger = this.Inventory.modSystem.Mod.Logger;
-            while (result.CurrencyStacks.CanRemoveStack())
-            {
-                ItemStack nextStack = result.CurrencyStacks.RemoveStack();
-                logger.Debug($"Adding {nextStack.StackSize}x {nextStack} currency to Parent");
-                AddItemToSlots(result.Request.Api, nextStack, PurchasedProduct);
-            }
-            this.Inventory.BlockEntity.MarkDirty();
-        }
-
-        public override int GetNumPurchasesRemaining()
-        {
-            int numPurchasesRemaining = GetProductQuantity() / ProductPerPurchase;
-            if (!IsLimited) return numPurchasesRemaining;
-            return Math.Min(NumPurchasesRemaining, numPurchasesRemaining);
+            return this.Inventory.BlockEntity;
         }
     }
 }

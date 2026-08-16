@@ -3,7 +3,7 @@ using Vintagestory.API.Common;
 
 namespace Commercially.Common.Interfaces
 {
-    public interface IInventoryProvider : IComponent
+    public interface IInventoryProvider : IBlockEntityComponent
     {
         public InventoryBase Inventory { get; }
     }

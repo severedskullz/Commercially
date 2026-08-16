@@ -18,7 +18,7 @@ namespace Commercially.Common.Renderer
             return stack.Class == EnumItemClass.Block;
         }
 
-        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IBlockEntityComponent stall, ItemSlot slot, int index)
         {
             ItemStack stack = slot.Itemstack;
             ICoreClientAPI coreClientAPI = stall.GetApi() as ICoreClientAPI;

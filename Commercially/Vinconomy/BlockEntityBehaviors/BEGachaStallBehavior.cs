@@ -60,7 +60,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
             if (CanPurchaseItem(player, shop, stallSlot, numPurchases))
             {
-                TradeResult result = PurchaseItem(player, stallSlot, numPurchases, shop);
+                PurchaseResult result = PurchaseItem(player, stallSlot, numPurchases, shop);
                 return result.ErrorMsg != null;
             }
 

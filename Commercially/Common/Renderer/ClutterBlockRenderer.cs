@@ -18,7 +18,7 @@ namespace Commercially.Common.Renderer
             return stack.Block is BlockClutter;
         }
 
-        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index)
+        public MeshData CreateMesh(IBlockEntityComponent stall, ItemSlot slot, int index)
         {
             //ICoreClientAPI coreClientAPI = (ICoreClientAPI)stall.Api;
 

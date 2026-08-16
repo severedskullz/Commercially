@@ -34,7 +34,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
         protected override MeshData GenMesh(ItemSlot stack, int stallSlot)
         {
             Block block = stack.Itemstack?.Block;
-            StallSlotBase stall = _InventoryProvider.GetStallSlot(stallSlot);
+            BaseStallSlot stall = _InventoryProvider.GetStallSlot(stallSlot);
             ItemStack liquidStack = stall.Product.Itemstack;
           
             return GenMesh(null, liquidStack, false, Blockentity.Pos);

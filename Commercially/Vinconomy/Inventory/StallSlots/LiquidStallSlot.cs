@@ -1,5 +1,6 @@
 ﻿
 using Commercially.Common.Inventory.Slots;
+using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
@@ -12,11 +13,11 @@ using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class LiquidStallSlot : StallSlotBase
+    public class LiquidStallSlot : BaseStallSlot, IContainedStallSlot
     {
         public static AssetLocation fillSound = new AssetLocation("sounds/effect/water-fill.ogg");
 
-        public override int StallSlotCount => 1;
+        public override int StockSlotCount => 1;
 
         public override bool IsInitialized => Liquid != null;
 
@@ -49,7 +50,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             Liquid = new StockItemSlot(inventory, stallSlot, 0);
         }
 
-        public override ItemSlot[] GetProductSlots()
+        public override ItemSlot[] GetStockSlots()
         {
             return [Liquid];
         }
@@ -75,7 +76,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         }
 
-        public override ItemSlot GetProductSlot(int itemSlot)
+        public ItemSlot GetProductSlot(int itemSlot)
         {
             return Liquid;
         }
@@ -90,10 +91,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override AggregatedSlots GetProducts()
+        public AggregatedSlots GetProducts()
         {
             ICoreAPI api = Inventory.Api;
-            AggregatedSlots slots = new AggregatedSlots(api);
+            GenericAggregatedSlots slots = new GenericAggregatedSlots(api);
             
             if (Liquid.Itemstack != null && TradingUtil.IsMatchingItem(Product.Itemstack, Liquid.Itemstack, api.World))
             {
@@ -104,7 +105,52 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return slots;
         }
 
-        public override void ExtractProductFromStall(TradeResult result)
+        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        {
+            AggregatedStacks result = new AggregatedStacks();
+            int totalProductToMove = amount;
+            if (isAdminOwned)
+            {
+                ItemStack productStack = GetOfferedProduct();
+                int maxStackSize = productStack.Collectible.MaxStackSize;
+                while (totalProductToMove > 0)
+                {
+                    ItemStack transferStack = productStack.Clone();
+                    int stackSize = Math.Min(totalProductToMove, maxStackSize);
+                    transferStack.StackSize = stackSize;
+                    result.Add(transferStack);
+                    totalProductToMove -= stackSize;
+                }
+            }
+            else
+            {
+                ItemSlot[] slots = GetStockSlots();
+                foreach (ItemSlot slot in slots)
+                {
+                    ItemStack takenStack = slot.TakeOut(totalProductToMove);
+                    if (takenStack != null)
+                    {
+                        this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                        totalProductToMove -= takenStack.StackSize;
+                        result.Add(takenStack);
+                        slot.MarkDirty();
+                    }
+
+                    if (totalProductToMove <= 0)
+                    {
+                        if (totalProductToMove < 0)
+                        {
+                            this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(totalProductToMove)} extra items from Product");
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public void ExtractProductFromStall(TradeResult result)
         {
             int totalProductToMove = result.TotalProductAmount;
             AggregatedStacks productStacks = result.ProductStacks;
@@ -152,7 +198,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override void TransferProdutToPlayer(TradeResult result)
+        public void TransferProdutToPlayer(TradeResult result)
         {
             if (result.ProductStacks.TotalCount == 0)
             {
@@ -189,7 +235,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             result.Request.Api.World.PlaySoundAt(fillSound, player.Entity, player, true, 16f, 1f);
         }
 
-        public override CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
+        public CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
         {
             ItemStack desiredStack = Product.Itemstack;
             LiquidCapacityAggregatedSlots aggregatedSlots = new LiquidCapacityAggregatedSlots(Inventory.Api);
@@ -333,5 +379,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             // DO NOTHING. Liquids go bye-bye! Needs a container since liquid-portion isnt an actual obtainable item. Pretend they spilled on the floor, I don't care.
         }
 
+        public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

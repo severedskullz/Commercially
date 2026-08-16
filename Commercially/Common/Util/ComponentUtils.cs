@@ -6,7 +6,7 @@ namespace Commercially.Common.Util
 {
     public static class ComponentUtils
     {
-        public static T GetComponent<T>(this IComponent component) where T : class
+        public static T GetComponent<T>(this IBlockEntityComponent component) where T : class
         {
             if (component is BlockEntityBehavior blockEntityBehavior)
             {
@@ -18,26 +18,12 @@ namespace Commercially.Common.Util
                 return blockEntity.GetBehavior<T>();
             }
 
-            return null;
+            return component.GetBlockEntity().GetBehavior<T>();
         }
 
-        public static BlockEntity GetBlockEntity(this IComponent component)
-        {
-            if (component is BlockEntityBehavior blockEntityBehavior)
-            {
-                return blockEntityBehavior.Blockentity;
-            }
-
-            if (component is BlockEntity blockEntity)
-            {
-                return blockEntity;
-            }
-
-            return null;
-        }
 
         //TODO: Not really what I wanna require. Was hoping to use this in some sort of GetRequiredComponents() method where all we know is Type, but getting entity.Behaviour correctly casted OUT seems impossible
-        public static IComponent GetComponent(this IComponent component, Type type)
+        public static IBlockEntityComponent GetComponent(this IBlockEntityComponent component, Type type)
         {
             BlockEntity entity = component.GetBlockEntity();
             for (int i = 0; i < entity.Behaviors.Count; i++)
@@ -46,14 +32,14 @@ namespace Commercially.Common.Util
 
                 if (beType.IsAssignableFrom(type))
                 {
-                    return entity.Behaviors[i] as IComponent;
+                    return entity.Behaviors[i] as IBlockEntityComponent;
                 }
             }
 
             return null;
         }
 
-        public static ICoreAPI GetApi(this IComponent component)
+        public static ICoreAPI GetApi(this IBlockEntityComponent component)
         {
             if (component is BlockEntityBehavior blockEntityBehavior)
             {
@@ -65,16 +51,17 @@ namespace Commercially.Common.Util
                 return blockEntity.Api;
             }
 
-            return null;
+            return component.GetBlockEntity().Api;
         }
 
-        public static BlockPos GetPos(this IComponent component)
+        public static BlockPos GetPos(this IBlockEntityComponent component)
         {
             return component.GetBlockEntity().Pos;
         }
     }
 
-    public interface IComponent
+    public interface IBlockEntityComponent
     {
+        public BlockEntity GetBlockEntity();
     }
 }

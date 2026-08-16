@@ -14,7 +14,6 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public bool IsAdminOwned { get; set; }
         public string OwnerUID { get; set; }
         public string OwnerName { get; set; }
-        public BlockEntity Entity => Blockentity;
         protected CommerciallyModSystem ModSystem;
 
         public BEBehaviorOwnable(BlockEntity blockentity) : base(blockentity)
@@ -55,24 +54,24 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         {
             OwnerUID = byPlayer.PlayerUID;
             OwnerName = byPlayer.PlayerName;
-            this.Entity.MarkDirty();
+            this.GetBlockEntity().MarkDirty();
         }
         public void SetOwner(string ownerUID, string ownerName)
         {
             OwnerUID = ownerUID;
             OwnerName = ownerName;
-            this.Entity.MarkDirty();
+            this.GetBlockEntity().MarkDirty();
         }
         public void SetIsAdminOwned(bool isAdminOwned)
         {
             this.IsAdminOwned = isAdminOwned;
-            this.Entity.MarkDirty();
+            this.GetBlockEntity().MarkDirty();
         }
 
         public void SetName(string name)
         {
             this.Name = name;
-            this.Entity.MarkDirty();
+            this.GetBlockEntity().MarkDirty();
         }
 
         public virtual void UpdateOwnership(string ownerUID, string ownerName, string name, bool isAdminOwned)
@@ -140,6 +139,11 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
                 default:
                     break;
             }
+        }
+
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
         }
     }
 }

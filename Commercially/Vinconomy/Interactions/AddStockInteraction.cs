@@ -95,7 +95,7 @@ namespace Commercially.Vinconomy.Interactions
 
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
             int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
-            StallSlotBase stallSlot = stallComponent?.GetStallSlot(index);
+            BaseStallSlot stallSlot = stallComponent?.GetStallSlot(index);
 
 
             bool didAdd = stallSlot.AddProductToSlot(byPlayer, byPlayer.InventoryManager.ActiveHotbarSlot, ctrlMod) > 0;

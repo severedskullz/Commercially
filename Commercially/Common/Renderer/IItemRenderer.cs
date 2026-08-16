@@ -7,7 +7,7 @@ namespace Commercially.Common.Renderer
 {
     public interface IItemRenderer
     {
-        public MeshData CreateMesh(IComponent stall, ItemSlot slot, int index);
+        public MeshData CreateMesh(IBlockEntityComponent stall, ItemSlot slot, int index);
 
         public bool CanHandle(ItemStack stack);
         public int GetPriority();

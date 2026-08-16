@@ -9,7 +9,7 @@ namespace Commercially.Vinconomy.Interfaces
         public int StallCount { get; }
         public ItemStack GetCurrencyForStallSlot(int stallSlot);
         public ItemStack GetProductForStallSlot(int stallSlot);
-        public StallSlotBase GetStallSlot(int stallSlot);
-        public T GetStallSlot<T>(int stallSlot) where T : StallSlotBase;
+        public BaseStallSlot GetStallSlot(int stallSlot);
+        public T GetStallSlot<T>(int stallSlot) where T : BaseStallSlot;
     }
 }

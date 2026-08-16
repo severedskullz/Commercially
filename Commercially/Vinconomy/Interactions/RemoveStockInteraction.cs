@@ -96,10 +96,9 @@ namespace Commercially.Vinconomy.Interactions
 
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
             int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
-            StallSlotBase stallSlot = stallComponent?.GetStallSlot(index);
+            BaseStallSlot stallSlot = stallComponent?.GetStallSlot(index);
 
-
-            int moved = stallSlot.TakeProductFromSlot(1, out AggregatedStacks returnedStacks, null);
+            AggregatedStacks returnedStacks = stallSlot.ExtractProduct(1, false);
             while (returnedStacks.CanRemoveStack()) 
             {
                 ItemStack stack = returnedStacks.RemoveStack();
@@ -110,7 +109,7 @@ namespace Commercially.Vinconomy.Interactions
                     world.SpawnItemEntity(stack, blockEntity.Pos.AddCopy(0.0f, 0.5f, 0.0f), null);
                 }
             }
-            return moved > 0;
+            return returnedStacks.TotalCount > 0;
         }
     }
 }

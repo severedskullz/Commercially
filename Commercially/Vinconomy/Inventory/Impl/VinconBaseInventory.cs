@@ -14,7 +14,7 @@ namespace Commercially.Vinconomy.Inventory
     {
         public BlockEntity BlockEntity { get; protected set; }
         public ItemSlot[] InternalSlots { get; protected set; }
-        public StallSlotBase[] StallSlots { get; protected set; }
+        public BaseStallSlot[] StallSlots { get; protected set; }
         public Type StallType { get; protected set; }
         public int SlotsPerStall {  get; protected set; }
 
@@ -36,9 +36,9 @@ namespace Commercially.Vinconomy.Inventory
                 if (StallSlots == null)
                     return i;
 
-                foreach (StallSlotBase stall in StallSlots)
+                foreach (BaseStallSlot stall in StallSlots)
                 {
-                    i += stall.TotalSlotCount;
+                    i += stall.TotalItemSlots;
                 }
 
                 return i;
@@ -57,12 +57,12 @@ namespace Commercially.Vinconomy.Inventory
         }
 
 
-        public T GetStall<T>(int slot) where T : StallSlotBase
+        public T GetStall<T>(int slot) where T : BaseStallSlot
         {
             return (T)GetStall(slot);
         }
 
-        public StallSlotBase GetStall(int slot)
+        public BaseStallSlot GetStall(int slot)
         {
             if (slot >= StallSlots.Length || slot < 0)
             {
@@ -94,9 +94,9 @@ namespace Commercially.Vinconomy.Inventory
             return VinconomyModSystem.GetStallType(className);
         }
 
-        protected StallSlotBase InstantiateStallType(Type type, int stallSlot)
+        protected BaseStallSlot InstantiateStallType(Type type, int stallSlot)
         {
-            StallSlotBase instance = (StallSlotBase)Activator.CreateInstance(type, [this, stallSlot]);
+            BaseStallSlot instance = (BaseStallSlot)Activator.CreateInstance(type, [this, stallSlot]);
             return instance;
         }
 
@@ -183,7 +183,7 @@ namespace Commercially.Vinconomy.Inventory
             string[] stallBackgrounds = properties["stallBackgrounds"].AsArray<string>(null);
             if (stallBackground != null)
             {
-                foreach (StallSlotBase stall in StallSlots)
+                foreach (BaseStallSlot stall in StallSlots)
                 {
                     stall.SetStallBackground(stallBackground);
                 }
@@ -219,7 +219,7 @@ namespace Commercially.Vinconomy.Inventory
             if (stallFilter != null)
             {
                 Vintagestory.API.Common.Func<ItemSlot, bool> filter = modSystem.CommerciallySystem.GetFilter(stallFilter);
-                foreach (StallSlotBase stall in StallSlots)
+                foreach (BaseStallSlot stall in StallSlots)
                 {
 
                     stall.SetStallFilter(filter);
@@ -274,10 +274,10 @@ namespace Commercially.Vinconomy.Inventory
 
             if (!IsSlotsInitialized)
             {
-                StallSlots = new StallSlotBase[numStalls];
+                StallSlots = new BaseStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase instance =  InstantiateStallType(StallType, i);
+                    BaseStallSlot instance =  InstantiateStallType(StallType, i);
                     instance.Initialize(this, i, numSlotsPerStall);
                     StallSlots[i] = instance;
                 }
@@ -301,7 +301,7 @@ namespace Commercially.Vinconomy.Inventory
         {
             while (amount-- > 0)
             {
-                StallSlotBase instance = InstantiateStallType(type, StallSlots.Length);
+                BaseStallSlot instance = InstantiateStallType(type, StallSlots.Length);
                 instance.Initialize(this, StallSlots.Length, numSlotsPerStall);
 
                 //TODO: Inneffecient - Store to list and add the whole thing in one pass instead of allocating new array and copying over each time
@@ -332,15 +332,15 @@ namespace Commercially.Vinconomy.Inventory
                 i -= InternalSlots.Length;
             }
 
-            foreach (StallSlotBase stall in StallSlots)
+            foreach (BaseStallSlot stall in StallSlots)
             {
-                if (i < stall.TotalSlotCount)
+                if (i < stall.TotalItemSlots)
                 {
                     return stall[i];
                 }
                 else
                 {
-                    i -= stall.TotalSlotCount;
+                    i -= stall.TotalItemSlots;
                 }
             }
 
@@ -360,15 +360,15 @@ namespace Commercially.Vinconomy.Inventory
                     i -= InternalSlots.Length;
                 }
 
-                foreach (StallSlotBase stall in StallSlots)
+                foreach (BaseStallSlot stall in StallSlots)
                 {
-                    if (i < stall.TotalSlotCount)
+                    if (i < stall.TotalItemSlots)
                     {
                         stall[i] = value;
                     }
                     else
                     {
-                        i -= stall.TotalSlotCount;
+                        i -= stall.TotalItemSlots;
                     }
                 }
 
@@ -385,10 +385,10 @@ namespace Commercially.Vinconomy.Inventory
                 SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
                 StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
 
-                StallSlots = new StallSlotBase[numStalls];
+                StallSlots = new BaseStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase stall = InstantiateStallType(StallType, i);
+                    BaseStallSlot stall = InstantiateStallType(StallType, i);
                     ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
                     stall.PreInitialize(this, i);
                     stall.FromTreeAttributes(stallTree);
@@ -414,7 +414,7 @@ namespace Commercially.Vinconomy.Inventory
             {
                 for (int i = 0; i < numStalls; i++)
                 {
-                    StallSlotBase stall = GetStall(i);
+                    BaseStallSlot stall = GetStall(i);
                     ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
                     stall.FromTreeAttributes(stallTree);
                 }
@@ -464,7 +464,7 @@ namespace Commercially.Vinconomy.Inventory
             if (slot is ITrackedItemSlot stallProductSlot)
             {
                 int stallSlot = stallProductSlot.GetStallIndex();
-                StallSlotBase stall = this.GetStall(stallSlot);
+                BaseStallSlot stall = this.GetStall(stallSlot);
 
                 // Make sure the slot isnt the Product slot, otherwise we will StackOverflow when we call UpdateProductSlot, which will call OnStockModified again
                 if (stall is IGeneratedProductStall generatedStall  && slot != stall.Product)
@@ -481,7 +481,7 @@ namespace Commercially.Vinconomy.Inventory
 
                 ItemStack product = stall.Product?.Itemstack?.Clone();
                 ItemStack currency = stall.Currency?.Itemstack?.Clone();
-                int stockCount = stall.GetProducts().TotalCount;
+                int stockCount = stall.GetTotalProductAvailable();
 
                 UpdateStockForSlot(StallComponent, stallSlot, product, stockCount, currency);
             }
@@ -504,7 +504,7 @@ namespace Commercially.Vinconomy.Inventory
         {
             // Clones should never transition.
             // Tyron, it would be fucking GREAT if you gave us the ItemSlot instead!!! That way I can check the class, damnit!
-            foreach (StallSlotBase stall in StallSlots)
+            foreach (BaseStallSlot stall in StallSlots)
             {
                 if (stall.Currency.Itemstack == stack || stall.Product.Itemstack == stack) return 0;
             }

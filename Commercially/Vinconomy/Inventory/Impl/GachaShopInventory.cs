@@ -94,7 +94,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             int totalWeight = 0;
             foreach (GachaStallSlot stall in StallSlots)
             {
-                int quanitty = stall.GetProductQuantity();
+                int quanitty = stall.GetTotalProductAvailable();
                 if (quanitty > 0)
                     totalWeight += stall.Weight;
             }

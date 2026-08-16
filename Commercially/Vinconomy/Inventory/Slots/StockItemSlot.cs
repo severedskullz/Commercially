@@ -110,7 +110,7 @@ namespace Vinconomy.Inventory.Slots
         /// </summary>
         /// <param name="sourceSlot"></param>
         /// <returns></returns>
-        public virtual void UpdateProductSlot(StallSlotBase stall)
+        public virtual void UpdateProductSlot(BaseStallSlot stall)
         {
             ItemSlot productSlot = stall.Product;
 

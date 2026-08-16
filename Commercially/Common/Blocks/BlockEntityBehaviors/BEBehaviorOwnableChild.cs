@@ -60,7 +60,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public void SetParent(long parentId)
         {
             this.ParentID = parentId;
-            this.Entity.MarkDirty();
+            this.GetBlockEntity().MarkDirty();
         }
 
         public string[] GetAllowedParentTypes()

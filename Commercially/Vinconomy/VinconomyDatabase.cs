@@ -51,28 +51,58 @@ namespace Commercially.Vinconomy
             }
         }
 
-        public void SavePurchase(TradeResult purchaseResult)
-        {
-            if (purchaseResult.ProductStacks.StackCount == 0 || purchaseResult.CurrencyStacks.StackCount == 0) {
-                throw new ArgumentException("Could not persist purchase with no stock or currency");
-            };
+                
 
-            ItemStack product = purchaseResult.ProductStacks[0].Clone();
-            ItemStack currency = purchaseResult.CurrencyStacks[0].Clone();
+        public void SavePurchase(TradeResult purchaseResult) {
+            TradeRequest req = purchaseResult.Request;
+            SavePurchase(
+                   req.ParentEntity.Ownable.ID,
+                   req.Customer.PlayerUID,
+                   req.ProductNeeded,
+                   purchaseResult.TotalProductAmount,
+                   req.CurrencyNeeded,
+                   purchaseResult.TotalCurrencyAmount,
+                   req.Api.World.Calendar.Month,
+                   req.Api.World.Calendar.Year
+               );
+        
+        }
+        public void SavePurchase(PurchaseResult purchaseResult)
+        {
+            PurchaseRequest req = purchaseResult.Request;
+            SavePurchase(
+                req.ParentEntity.Ownable.ID,
+                req.Customer.PlayerUID,
+                req.ProductNeeded,
+                purchaseResult.TotalProductAmount,
+                req.CurrencyNeeded,
+                purchaseResult.TotalCurrencyAmount,
+                req.Api.World.Calendar.Month,
+                req.Api.World.Calendar.Year
+            );
+
+        }
+
+        public void SavePurchase(long ownableId, string customerUID, ItemStack product, int productAmount, ItemStack currency, int currencyAmount, int month, int year)
+        {
+            if (product == null || currency == null)
+            {
+                throw new ArgumentException("Could not persist purchase with no stock or currency");
+            }
 
             using (SqliteConnection connection = GetConnection())
             {
                 connection.Open();
                 SqliteCommand cmd = connection.CreateCommand();
-                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = purchaseResult.Request.ParentEntity.Ownable.ID;
-                cmd.Parameters.Add("@Customer", SqliteType.Text).Value = purchaseResult.Request.Customer.PlayerUID;
-                cmd.Parameters.Add("@Month", SqliteType.Integer).Value = purchaseResult.Request.Api.World.Calendar.Month;
-                cmd.Parameters.Add("@Year", SqliteType.Integer).Value = purchaseResult.Request.Api.World.Calendar.Year;
+                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = ownableId;
+                cmd.Parameters.Add("@Customer", SqliteType.Text).Value = customerUID;
+                cmd.Parameters.Add("@Month", SqliteType.Integer).Value = month;
+                cmd.Parameters.Add("@Year", SqliteType.Integer).Value = year;
                 cmd.Parameters.Add("@ProductCode", SqliteType.Text).Value = product.Collectible.Code.ToString();
-                cmd.Parameters.Add("@ProductQuantity", SqliteType.Text).Value = purchaseResult.ProductStacks.TotalCount;
+                cmd.Parameters.Add("@ProductQuantity", SqliteType.Text).Value = productAmount;
                 cmd.Parameters.Add("@ProductAttributes", SqliteType.Text).Value = product.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
                 cmd.Parameters.Add("@CurrencyCode", SqliteType.Text).Value = currency.Collectible.Code.ToString();
-                cmd.Parameters.Add("@CurrencyQuantity", SqliteType.Text).Value = purchaseResult.CurrencyStacks.TotalCount;
+                cmd.Parameters.Add("@CurrencyQuantity", SqliteType.Text).Value = currencyAmount;
                 cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Text).Value = currency.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
 
                 cmd.CommandText = @"SELECT Count(*) FROM Sales 
