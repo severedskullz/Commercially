@@ -57,15 +57,29 @@
       "name": "Vinconomy.Stall",
       "properties": {
         "stallSelectionIndexes": {
-          "2": 0,
-          "3": 1
+          "1": 0,
+          "2": 1
         }
-
       }
     },
     {
       "name": "Commercially.InteractionManager",
-      "properties": {}
+      "properties": {
+        "interactions": [
+          {
+            "code": "Vinconomy.AddStock",
+            "priority": 10
+          },
+          {
+            "code": "Vinconomy.PurchaseItem",
+            "priority": 5
+          },
+          {
+            "code": "Vinconomy.OpenStall",
+            "priority": 0
+          }
+        ]
+      }
     },
     {
       "name": "Commercially.GuiManager",
@@ -166,13 +180,12 @@
 
   "selectionBoxes": [
     {
-
       "x1": 0,
-      "y1": 0.5625,
+      "y1": 0,
       "z1": 0,
-      "x2": 1,
-      "y2": 0.6253,
-      "z2": 0.5,
+      "x2": 0,
+      "y2": 0,
+      "z2": 0,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -180,72 +193,27 @@
         "*-south": 180
       }
     },
-
     {
       "x1": 0,
-      "y1": 0.0625,
+      "y1": 0,
+      "z1": 0,
+      "x2": 0.5,
+      "y2": 1,
+      "z2": 1,
+      "rotateYByType": {
+        "*-north": 0,
+        "*-east": 270,
+        "*-west": 90,
+        "*-south": 180
+      }
+    },
+    {
+      "x1": 0.5,
+      "y1": 0,
       "z1": 0,
       "x2": 1,
-      "y2": 0.125,
-      "z2": 0.5,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0.05,
-      "y1": 0.6253,
-      "z1": 0.05,
-      "x2": 0.45,
       "y2": 1,
-      "z2": 0.45,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0.55,
-      "y1": 0.6253,
-      "z1": 0.05,
-      "x2": 0.95,
-      "y2": 1,
-      "z2": 0.45,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-
-      "x1": 0.55,
-      "y1": 0.13,
-      "z1": 0.05,
-      "x2": 0.95,
-      "y2": 0.5,
-      "z2": 0.45,
-
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0.05,
-      "y1": 0.13,
-      "z1": 0.05,
-      "x2": 0.45,
-      "y2": 0.5,
-      "z2": 0.45,
+      "z2": 1,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -253,7 +221,6 @@
         "*-south": 180
       }
     }
-
   ],
   "guiTransform": {
     "rotation": {

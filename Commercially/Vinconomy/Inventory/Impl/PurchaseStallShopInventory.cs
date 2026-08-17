@@ -4,8 +4,10 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.Impl
 {
-    internal class PurchaseStallShopInventory : VinconBaseInventory
+    public class PurchaseStallShopInventory : VinconBaseInventory
     {
+        public bool IsDiscardProduct;
+
         public PurchaseStallShopInventory(BlockEntity entity, ICoreAPI api) : base(entity, api)
         {
         }
@@ -16,7 +18,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             int currencySlotsPerStall = properties["currencySlotsPerStall"].AsInt(20);
             int purchasedStockPerStall = properties["stockSlotsPerStall"].AsInt(30);
 
-            StallType = typeof(PurchaseStallSlot);
+            StallType = typeof(PurchaseStallSlot).Name; //TODO: Might need some sort of "lookup" of the class to registred name. This should work for now though
 
             if (!IsSlotsInitialized)
             {
@@ -35,7 +37,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             if (!IsSlotsInitialized)
             {
                 SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
-                StallType = typeof(PurchaseStallSlot);
+                StallType = typeof(PurchaseStallSlot).Name; //TODO: Might need some sort of "lookup" of the class to registred name. This should work for now though
 
                 StallSlots = new PurchaseStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)

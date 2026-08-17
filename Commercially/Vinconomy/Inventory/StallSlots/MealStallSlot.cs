@@ -40,7 +40,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public MealStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
-            MealSlot = new StockItemSlot(inventory, stallSlot, 0);
+            StockItemSlot meal = new StockItemSlot(inventory, stallSlot, 0);
+            meal.IsLocked = true;
+            MealSlot = meal;
         }
 
         public override ItemSlot[] GetStockSlots()
@@ -88,12 +90,12 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return (int)VinUtils.GetMealContainerServings(MealSlot.Itemstack, Inventory.Api);
         }
 
-        public int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, bool bulk)
+        public override int AddProductToSlot(IPlayer byPlayer, ItemSlot sourceSlot, bool bulk)
         {
             return AddProductToSlot(byPlayer, sourceSlot, bulk ? sourceSlot.StackSize : 1);
         }
 
-        public int AddProductToSlot(IPlayer byPlayer, ItemSlot source, int amount)
+        public override int AddProductToSlot(IPlayer byPlayer, ItemSlot source, int amount)
         {
             /*
             if (!CanAcceptFrom(source)) return 0;
@@ -116,7 +118,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
             */
             //TODO: Figure out how to convert this to an Int later on.
-            return AddMeal(source, amount) ? amount : 0;
+            return AddContents(source, amount) ? amount : 0;
         }
 
         public int TakeProductFromSlot(int amount, out AggregatedStacks returnedItems, ItemSlot outputSlot, bool allowExcess = false)
@@ -132,7 +134,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 RecipeCode = null;
             }
             */
-            return RemoveMeal(outputSlot, amount) ? amount : 0;
+            return RemoveContents(outputSlot, amount) ? amount : 0;
         }
         
         
@@ -277,7 +279,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         }
 
 
-        public bool AddMeal(ItemSlot sourceSlot, int amount)
+        public bool AddContents(ItemSlot sourceSlot, int amount)
         {
             ItemStack sourceMeal = sourceSlot.Itemstack;
             if (sourceMeal == null)
@@ -365,7 +367,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return true;
         }
 
-        public bool RemoveMeal(ItemSlot targetSlot, int amount)
+        public bool RemoveContents(ItemSlot targetSlot, int amount)
         {
             if (MealSlot.Itemstack == null)
             {
@@ -498,49 +500,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return CanMergeMeal(itemStack, MealSlot.Itemstack);
         }
 
-        public void TransferProdutToPlayer(TradeResult result)
-        {
-            if (result.ProductStacks.TotalCount == 0) return;
-
-            IBlockMealContainer mealContainer = result.Request.ProductNeeded.Block as IBlockMealContainer;
-            if (mealContainer == null)
-                return;
-
-            string recipeCode = mealContainer.GetRecipeCode(result.Request.Api.World, result.Request.ProductNeeded);
-            ItemStack[] mealStacks = mealContainer.GetContents(result.Request.Api.World, result.Request.ProductNeeded);
-
-            int totalServingsLeftToTransfer = result.ProductStacks.TotalCount;
-            // loop through player's containers and convert to meal blocks
-            foreach (ItemSlot containerSlot in result.Request.ContainerSourceSlots.Slots)
-            {
-                // Save stacksize as variable. We will be taking items OUT of this stack, so it would exit the loop early.
-                // Eg. Had 2 bowls, loop ran, took one out, 'i' is now 1, and stack size is 1, so loop terminates and doesnt run on second bowl.
-                int numAttempts = containerSlot.StackSize;
-                for (int i = 0; i < numAttempts; i++)
-                {
-                    int capacity = containerSlot.Itemstack.Block.Attributes["servingCapacity"].AsInt();
-                    int servingsToTransfer = Math.Min(totalServingsLeftToTransfer, capacity);
-                    int moved = TransferToMealBlock(result.Request.Customer, containerSlot, recipeCode, mealStacks, totalServingsLeftToTransfer);
-                    totalServingsLeftToTransfer -= moved;
-
-                    //TODO: ProductStacks is was not modified in old Vinconomy Code. I retrofitted it here, but need to ensure its working properly
-                    result.ProductStacks.Remove(moved);
-
-
-                    if (totalServingsLeftToTransfer <= 0)
-                        break;
-                }
-
-                if (totalServingsLeftToTransfer <= 0)
-                    return;
-
-            }
-
-            if (totalServingsLeftToTransfer > 0)
-            {
-                GenericTradingProcessor.AuditLogError(result, "Somehow allowed purchase of " + totalServingsLeftToTransfer + " extra servings even though we didnt have enough containers");
-            }
-        }
 
         public static int TransferToMealBlock(IPlayer player, ItemSlot containerSlot, string recipe, ItemStack[] mealStacks, int servings)
         {
@@ -632,8 +591,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             return new ItemStack(mealblock);
         }
-
-   
 
         public CapacityAggregatedSlots GetRequiredContainers(IPlayer player)
         {
@@ -738,7 +695,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return null;
         }
 
-        //TODO: I know this is wrong, but I just want it to compile with this major refactor. Doesnt currently honor AdminShop
         public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
         {
             AggregatedStacks result = new AggregatedStacks();
@@ -764,7 +720,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                     int capacity = containerSlot.Itemstack.Block.Attributes["servingCapacity"].AsInt();
                     int servingsToTransfer = Math.Min(totalServingsLeftToTransfer, capacity);
                     ItemStack mealStack = TransferToItemStack(containerSlot, recipeCode, mealStacks, totalServingsLeftToTransfer, out int moved);
+                    ExtractProduct(moved, isAdminShop);
                     totalServingsLeftToTransfer -= moved;
+
+
 
                     result.Add(mealStack);
                     if (totalServingsLeftToTransfer <= 0)
@@ -785,7 +744,58 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
         {
-            throw new NotSupportedException();
+            AggregatedStacks result = new AggregatedStacks();
+            if (!isAdminOwned)
+            {
+                ItemStack taken = MealSlot.TakeOut(amount);
+                if (taken != null)
+                    result.Add(taken);
+            }
+            return result;
+        }
+
+        public void TransferProdutToPlayer(TradeResult result)
+        {
+            if (result.ProductStacks.TotalCount == 0) return;
+
+            IBlockMealContainer mealContainer = result.Request.ProductNeeded.Block as IBlockMealContainer;
+            if (mealContainer == null)
+                return;
+
+            string recipeCode = mealContainer.GetRecipeCode(result.Request.Api.World, result.Request.ProductNeeded);
+            ItemStack[] mealStacks = mealContainer.GetContents(result.Request.Api.World, result.Request.ProductNeeded);
+
+            int totalServingsLeftToTransfer = result.ProductStacks.TotalCount;
+            // loop through player's containers and convert to meal blocks
+            foreach (ItemSlot containerSlot in result.Request.ContainerSourceSlots.Slots)
+            {
+                // Save stacksize as variable. We will be taking items OUT of this stack, so it would exit the loop early.
+                // Eg. Had 2 bowls, loop ran, took one out, 'i' is now 1, and stack size is 1, so loop terminates and doesnt run on second bowl.
+                int numAttempts = containerSlot.StackSize;
+                for (int i = 0; i < numAttempts; i++)
+                {
+                    int capacity = containerSlot.Itemstack.Block.Attributes["servingCapacity"].AsInt();
+                    int servingsToTransfer = Math.Min(totalServingsLeftToTransfer, capacity);
+                    int moved = TransferToMealBlock(result.Request.Customer, containerSlot, recipeCode, mealStacks, totalServingsLeftToTransfer);
+                    totalServingsLeftToTransfer -= moved;
+
+                    //TODO: ProductStacks is was not modified in old Vinconomy Code. I retrofitted it here, but need to ensure its working properly
+                    result.ProductStacks.Remove(moved);
+
+
+                    if (totalServingsLeftToTransfer <= 0)
+                        break;
+                }
+
+                if (totalServingsLeftToTransfer <= 0)
+                    return;
+
+            }
+
+            if (totalServingsLeftToTransfer > 0)
+            {
+                GenericTradingProcessor.AuditLogError(result, "Somehow allowed purchase of " + totalServingsLeftToTransfer + " extra servings even though we didnt have enough containers");
+            }
         }
     }
 }

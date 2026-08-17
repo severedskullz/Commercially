@@ -12,12 +12,12 @@ namespace Commercially.Vinconomy.Inventory.Impl
         public override bool TransferToStall(int stallSlot, ItemSlot sourceSlot, int amount)
         {
             MealStallSlot stall = GetStall<MealStallSlot>(stallSlot);
-            return stall.AddMeal(sourceSlot, amount); ;
+            return stall.AddContents(sourceSlot, amount); ;
         }
         public override bool TransferFromStall(int stallSlot, ItemSlot destSlot, int amount)
         {
             MealStallSlot stall = GetStall<MealStallSlot>(stallSlot);
-            return stall.RemoveMeal(destSlot, amount);
+            return stall.RemoveContents(destSlot, amount);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Registry;
 using System.IO;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -48,7 +49,13 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public IOwnable GetParent()
         {
             //TODO: This will be very expensive. Lets figure out if we actually want to implement this or not.
-            throw new System.NotImplementedException();
+            if (ParentID.HasValue)
+            {
+                OwnableRegistration reg = Api.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry.GetOwnable(ParentID.Value);
+                return Api.World.BlockAccessor.GetBlockEntity(reg.Position)?.GetBehavior<IOwnable>();
+            }
+
+            return null;
         }
 
 

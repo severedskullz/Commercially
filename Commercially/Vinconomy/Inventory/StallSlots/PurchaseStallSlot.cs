@@ -11,7 +11,7 @@ using Vintagestory.API.Util;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class PurchaseStallSlot : NewGenericStallSlot, ICurrencySinkProvider
+    public class PurchaseStallSlot : GenericStallSlot, ICurrencySinkProvider
     {
         public override bool IsInitialized => PurchasedProduct != null && Stock != null;
 
@@ -57,14 +57,14 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 if (slotId == 0) return Currency;
                 else if (slotId == 1) return Product;
-                else if (slotId - 2 < Stock.Length) return Stock[slotId - 2];
-                else return PurchasedProduct[slotId - Stock.Length - 2];
+                else if (slotId - 2 < PurchasedProduct.Length) return PurchasedProduct[slotId - 2];
+                else return Stock[slotId - PurchasedProduct.Length - 2];
             }
             set {
-                if (slotId == 0) Currency = (CurrencySlot) value;
-                else if (slotId == 1) Product = (ProductSlot) value;
-                else if (slotId - 2 < Stock.Length) Stock[slotId - 2] = (StockItemSlot)value;
-                else PurchasedProduct[slotId - Stock.Length - 2] = (FilteredItemSlot)value;
+                if (slotId == 0) Currency = (CurrencySlot)value;
+                else if (slotId == 1) Product = (ProductSlot)value;
+                else if (slotId - 2 < PurchasedProduct.Length) PurchasedProduct[slotId - 2] = (FilteredItemSlot)value;
+                else Stock[slotId - PurchasedProduct.Length - 2] = (StockItemSlot)value;
             } 
         }
 

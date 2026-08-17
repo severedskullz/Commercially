@@ -16,7 +16,7 @@
 	},
 	"entityBehaviors": [
 		{
-			"name": "Vinconomy.StallInventory",
+			"name": "Vinconomy.LiquidInventory",
 			"properties": {
 				"numStalls": 2,
 				"numSlotsPerStall": 1,
@@ -52,7 +52,7 @@
 		{
 			"name": "Commercially.GuiManager",
 			"properties": {
-				"tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+				"tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.LiquidOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
 			}
 		},
 		{
@@ -89,11 +89,11 @@
 		{
 			"name": "Commercially.TextureSwappable",
 			"properties": {
-				"BaseBlock": "liquidbarrel-north",
+				"BaseBlock": "liquiddispenser-north",
 				"CreativeTabs": [ "vinconomy", "general" ],
 				"PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ],
 				"SecondaryMaterials": [ "bismuth", "bismuthbronze", "blackbronze", "brass", "copper", "silver", "gold", "iron", "lead", "meteoriciron", "tinbronze", "steel", "tin", "uranium", "zinc" ],
-				"DecoMaterial": [ "blue", "brown", "green", "pink", "plain", "quartz", "red", "violet", "yellow" ]
+				"DecoMaterials": [ "blue", "brown", "green", "pink", "plain", "quartz", "red", "violet", "yellow" ]
 			}
 		},
 		{ "name": "HorizontalOrientable" }

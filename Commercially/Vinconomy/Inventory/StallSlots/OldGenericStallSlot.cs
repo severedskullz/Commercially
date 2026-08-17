@@ -7,10 +7,8 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
 {
-    public class NewGenericStallSlot : BaseStallSlot
+    public class OldGenericStallSlot : BaseStallSlot
     {
-        public override int StockSlotCount => Stock?.Length ?? 0;
-
         public override bool IsInitialized => Stock != null;
 
         public ItemSlot[] Stock;
@@ -35,13 +33,18 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             } 
         }
 
-        public NewGenericStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot) { 
+        public OldGenericStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot) { 
         }
 
 
         public override ItemSlot[] GetStockSlots()
         {
             return Stock;
+        }
+
+        public override ItemSlot[] GetInternalSlots()
+        {
+            return null;
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -107,34 +110,32 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
         {
+            AggregatedStacks result = new AggregatedStacks();
             int totalProductToMove = amount;
-            AggregatedStacks productStacks = new AggregatedStacks();
-            ItemStack product = GetOfferedProduct();
-
             if (isAdminOwned)
             {
-
-                int maxStackSize = product.Collectible.MaxStackSize;
+                ItemStack productStack = GetOfferedProduct();
+                int maxStackSize = productStack.Collectible.MaxStackSize;
                 while (totalProductToMove > 0)
                 {
-                    ItemStack transferStack = product.Clone();
+                    ItemStack transferStack = productStack.Clone();
                     int stackSize = Math.Min(totalProductToMove, maxStackSize);
                     transferStack.StackSize = stackSize;
-                    productStacks.Add(transferStack);
+                    result.Add(transferStack);
                     totalProductToMove -= stackSize;
                 }
             }
             else
             {
-                AggregatedSlots products = TradingUtil.GetAllValidSlotsFor(this.Inventory.Api, product, Stock, IsFuzzyMatching);
-                foreach (ItemSlot slot in products)
+                ItemSlot[] slots = GetStockSlots();
+                foreach (ItemSlot slot in slots)
                 {
                     ItemStack takenStack = slot.TakeOut(totalProductToMove);
                     if (takenStack != null)
                     {
                         this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
                         totalProductToMove -= takenStack.StackSize;
-                        productStacks.Add(takenStack);
+                        result.Add(takenStack);
                         slot.MarkDirty();
                     }
 
@@ -149,12 +150,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
 
-            if (totalProductToMove > 0)
-            {
-                this.Inventory.modSystem.Mod.Logger.Error($"Somehow missing {totalProductToMove}  items from Product");
-            }
-
-            return productStacks;
+            return result;
         }
     }
 }

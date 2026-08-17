@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
 namespace Commercially.Vinconomy.GUI
@@ -88,17 +89,27 @@ namespace Commercially.Vinconomy.GUI
             int offset = GetOffsetForStall(stallProvider, stallSlot);
             return offset;
         }
-
         public static int GetProductSlotIdForStall(IStallInventoryProvider stallProvider, int stallSlot)
         {
             int offset = GetOffsetForStall(stallProvider, stallSlot);
-            return offset + 1;
+            return offset+1;
+        }
+
+        public static int GetInternalOffsetForStall(IStallInventoryProvider stallProvider, int stallSlot)
+        {
+            int offset = GetOffsetForStall(stallProvider, stallSlot);
+            return offset + 2;
         }
 
         public static int GetProductOffsetForStall(IStallInventoryProvider stallProvider, int stallSlot)
         {
             int offset = GetOffsetForStall(stallProvider, stallSlot);
             return offset + stallProvider.GetStallSlot(stallSlot).InternalSlotCount;
+        }
+
+        public static bool IsCreativePlayer(IPlayer player)
+        {
+            return player.WorldData.CurrentGameMode == EnumGameMode.Creative && player.HasPrivilege("gamemode");
         }
     }
 }

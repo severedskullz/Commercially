@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using Vintagestory.API.Common;
@@ -11,8 +10,7 @@ namespace Vinconomy.Inventory.Slots
     {
         public int StallIndex { get; private set; } = 0;
         public int SlotIndex { get; private set; } = 0;
-
-
+        public bool IsLocked { get; set; }
 
         public StockItemSlot(InventoryBase inventory, int stallSlot, int itemSlot) : base(inventory)
         {
@@ -38,39 +36,19 @@ namespace Vinconomy.Inventory.Slots
             return SlotIndex;
         }
 
-        /**
+
         public override bool CanHold(ItemSlot sourceSlot)
         {
-            if (inventory is VinconBaseInventory vinconInventory)
-            {
-                ItemSlot productSlot = vinconInventory.GetStall(StallIndex).Product;
+            if (IsLocked) return false;
 
-                if ( ShouldUpdateProductSlot(productSlot, sourceSlot) )
-                {
-                    UpdateProductSlot(productSlot, sourceSlot);
-                }
-
-                if (ItemMatchesProduct(productSlot.Itemstack, sourceSlot))
-                {
-                    //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot satisfied, so we called Base");
-                    return base.CanHold(sourceSlot);
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-
-            //Console.WriteLine("Stall Slot " + stallSlot + ":First Non-Empty Slot was not satisfied, so we return false");
             return base.CanHold(sourceSlot);
         }
-        */
-
 
 
         public override bool CanTakeFrom(ItemSlot sourceSlot, EnumMergePriority priority = EnumMergePriority.AutoMerge)
         {
+            if (IsLocked) return false;
+
             //Console.WriteLine("Can Take From " + stallSlot + " called...");
             if (CanHold(sourceSlot))
             {

@@ -114,7 +114,7 @@ namespace Commercially.Vinconomy
 
         public void Lifecycle_RegisterStallTypes(ICoreAPI api)
         {
-            RegisterStallType("GenericStallSlot", typeof(NewGenericStallSlot));
+            RegisterStallType("GenericStallSlot", typeof(GenericStallSlot));
             RegisterStallType("MealStallSlot", typeof(MealStallSlot));
             RegisterStallType("LiquidStallSlot", typeof(LiquidStallSlot));
             RegisterStallType("TellerStallSlot", typeof(TellerStallSlot));
@@ -137,6 +137,7 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(PurchaseStallOwnerTab.CODE, typeof(PurchaseStallOwnerTab));
             guiSystem.RegisterTabType(GachaStallOwnerTab.CODE, typeof(GachaStallOwnerTab));
             guiSystem.RegisterTabType(GachaStallCustomerTab.CODE, typeof(GachaStallCustomerTab));
+            guiSystem.RegisterTabType(LiquidShopOwnerTab.CODE, typeof(LiquidShopOwnerTab));
         }
 
         public void Lifecycle_RegisterItemClasses(ICoreAPI api)
@@ -145,7 +146,7 @@ namespace Commercially.Vinconomy
             api.RegisterItemClass("Vinconomy.Catalog", typeof(ItemCatalog));
             api.RegisterItemClass("Vinconomy.SculptureBundle", typeof(ItemSculptureBundle));
             api.RegisterItemClass("Vinconomy.GachaBall", typeof(ItemGachaBall));
-            api.RegisterItemClass("Vinconomy.TenretniBook", typeof(ItemTenretniBook));
+            api.RegisterItemClass("Vinconomy.Tenretni", typeof(ItemTenretniBook));
             api.RegisterItemClass("Vinconomy.Coupon", typeof(ItemCoupon));  
         }
 

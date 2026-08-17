@@ -21,7 +21,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override bool IsInitialized => Liquid != null;
 
-        public ItemSlot Liquid;
+        public StockItemSlot Liquid;
 
         private float LiterCapacity = 500;
 
@@ -40,14 +40,16 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 else if (slotId == 1) Product = (ProductSlot) value;
                 else
                 {
-                    Liquid = value;
+                    Liquid = (StockItemSlot)value;
                 }
             } 
         }
 
         public LiquidStallSlot(VinconBaseInventory inventory, int stallSlot) : base(inventory, stallSlot)
         {
-            Liquid = new StockItemSlot(inventory, stallSlot, 0);
+            StockItemSlot liquid = new StockItemSlot(inventory, stallSlot, 0);
+            liquid.IsLocked = true;
+            Liquid = liquid;
         }
 
         public override ItemSlot[] GetStockSlots()
@@ -341,7 +343,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             ItemStack? taken = container.TryTakeContent(sourceStack, numItemsFromLiters);
             DummySlot slot = new DummySlot(taken);
-            return slot.TryPutInto(Inventory.Api.World, Liquid, slot.StackSize);
+            Liquid.IsLocked = false;
+            int takenAmt = slot.TryPutInto(Inventory.Api.World, Liquid, slot.StackSize);
+            Liquid.IsLocked = true;
+            return takenAmt;
         }
 
         public int RemoveContentsFromStall(ItemStack destContainer, int liters)
@@ -368,9 +373,12 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             int actualItemsToTransfer = Math.Min(desiredItemsToTransfer, capacityItemsToTransfer);
             float actualLitersToTransfer = LiquidUtils.GetLitersFromStackSize(Liquid.Itemstack, actualItemsToTransfer);
 
+            Liquid.IsLocked = false;
             int moved = container.TryPutLiquid(destContainer, Liquid.Itemstack, actualLitersToTransfer);
-            Liquid.Itemstack.StackSize -= moved;
-
+            Liquid.TakeOut(moved);
+            Liquid.IsLocked = true;
+            //Liquid.Itemstack.StackSize -= moved;
+            Liquid.MarkDirty();
             return moved;
         }
 
@@ -382,6 +390,16 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
         {
             throw new NotImplementedException();
+        }
+
+        public bool AddContents(ItemSlot sourceSlot, int amount)
+        {
+            return AddContentsToStall(sourceSlot.Itemstack, amount) > 0;
+        }
+
+        public bool RemoveContents(ItemSlot sourceSlot, int amount)
+        {
+            return RemoveContentsFromStall(sourceSlot.Itemstack, amount) > 0;
         }
     }
 }

@@ -125,10 +125,11 @@ namespace Commercially.Common.Blocks.BlockTypes
             return i != 0;
         }
 
+        /*
         public override Cuboidf[] GetSelectionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
         {
             return base.GetSelectionBoxes(blockAccessor, pos);
-            /*
+            
             if (RandomDrawOffset != 0 && SelectionBoxes?.Length >= 1)
             {
                 float x = (GameMath.oaatHash(pos.X, 0, pos.Z) % 12) / (24f + 12f * RandomDrawOffset);
@@ -143,7 +144,7 @@ namespace Commercially.Common.Blocks.BlockTypes
             if (chunk == null) return SelectionBoxes;
 
             return chunk.AdjustSelectionBoxForDecor(blockAccessor, pos, SelectionBoxes);
-            */
-        }
+           
+        } */
     }
 }

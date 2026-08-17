@@ -1,16 +1,12 @@
-﻿using Commercially.Common.Interfaces;
-using Commercially.Common.Inventory.Slots;
-using Commercially.Common.Util;
+﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.Slots;
 using Commercially.Vinconomy.Trading;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Vinconomy.Inventory.Slots;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.Inventory.StallSlots
@@ -64,10 +60,10 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 GachaContents[i] = new GachaProductSlot(inventory, stallSlot, i);
             }
-            Stock = new ItemSlot[stockSlots];
+            Stock = new StockItemSlot[stockSlots];
             for (int i = 0; i < stockSlots; i++)
             {
-                Stock[i] = new ItemSlot(inventory);
+                Stock[i] = new GachaStockItemSlot(inventory, stallSlot, i);
             }
 
         }
@@ -90,8 +86,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
-            // We do NOT want Currency / Product to tree, as these are generated or come from the Inventory itself.
-            //base.ToTreeAttributes(tree);
+            // We do NOT want Currency to tree, as these come from the Inventory itself.
+            tree.SetItemstack(PRODUCT, Product.Itemstack);
 
             tree.SetInt("weight", Weight);
             tree.SetInt("numSlots", Stock.Length);
@@ -115,8 +111,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
-            // We do NOT want Currency / Product from tree, as these are generated or come from the Inventory itself.
-            //base.FromTreeAttributes(tree);
+            // We do NOT want Currency from tree, as these come from the Inventory itself.
+            ItemStack productStack = tree.GetItemstack(PRODUCT);
+            Product.Itemstack = productStack;
+            if (Inventory.Api?.World != null)
+            {
+                productStack?.ResolveBlockOrItem(Inventory.Api.World);
+            }
 
             int numSlots = tree.GetInt("numSlots");
             int numGachaSlots = tree.GetInt("numGachaSlots");
@@ -247,7 +248,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
 
             ItemStack ball = GenStubbedProduct();
-            ball.Attributes = SetGachaContents(removedItems);
+            ball.Attributes["Contents"] = SetGachaContents(removedItems);
             return ball;
         }
 

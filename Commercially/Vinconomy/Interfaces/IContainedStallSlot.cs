@@ -7,5 +7,9 @@ namespace Commercially.Vinconomy.Interfaces
     {
         public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop);
         public CapacityAggregatedSlots GetRequiredContainers(IPlayer player);
+
+        public bool AddContents(ItemSlot sourceSlot, int amount);
+
+        public bool RemoveContents(ItemSlot sourceSlot, int amount);
     }
 }

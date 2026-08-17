@@ -16,6 +16,8 @@ namespace Commercially.Common.Inventory.Slots
 
         public virtual void Add(ItemStack item)
         {
+            if (item == null) return;
+
             Slots.Add(item);
             TotalCount += item.StackSize;
         }

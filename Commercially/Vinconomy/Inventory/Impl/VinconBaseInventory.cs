@@ -15,7 +15,7 @@ namespace Commercially.Vinconomy.Inventory
         public BlockEntity BlockEntity { get; protected set; }
         public ItemSlot[] InternalSlots { get; protected set; }
         public BaseStallSlot[] StallSlots { get; protected set; }
-        public Type StallType { get; protected set; }
+        public string StallType { get; protected set; }
         public int SlotsPerStall {  get; protected set; }
 
         public bool IsInternalSlotsInitialized => InternalSlots != null;
@@ -24,8 +24,8 @@ namespace Commercially.Vinconomy.Inventory
         public VinconomyModSystem modSystem { get; protected set; }
         public event OnStockUpdatedDelegate OnStockUpdated;
 
-        public IStallComponent StallComponent;
-
+        public IStallComponent StallComponent { get; protected set; }
+        public bool DiscardCurrency;
 
         public override int Count
         {
@@ -260,14 +260,14 @@ namespace Commercially.Vinconomy.Inventory
         /// </summary>
         public virtual void InitializeStallSlots(JsonObject properties)
         {
-            string stallType = properties["stallType"].AsString("GenericStallSlot");
+            StallType = properties["stallType"]?.AsString("GenericStallSlot");
 
 
 
-            if (stallType == null)
+            if (StallType == null)
                 return;
 
-            StallType = GetStallType(stallType);
+             Type stallType = GetStallType(StallType);
 
             int numStalls = properties["numStalls"].AsInt(4);
             int numSlotsPerStall = properties["numSlotsPerStall"].AsInt(16);
@@ -277,7 +277,7 @@ namespace Commercially.Vinconomy.Inventory
                 StallSlots = new BaseStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    BaseStallSlot instance =  InstantiateStallType(StallType, i);
+                    BaseStallSlot instance =  InstantiateStallType(stallType, i);
                     instance.Initialize(this, i, numSlotsPerStall);
                     StallSlots[i] = instance;
                 }
@@ -290,7 +290,7 @@ namespace Commercially.Vinconomy.Inventory
                 if (StallSlots.Length < numStalls)
                 {
                     int amount = numStalls - StallSlots.Length;
-                    AddStallSlots(StallType, amount, numSlotsPerStall);
+                    AddStallSlots(stallType, amount, numSlotsPerStall);
                 }
 
                 //TODO: Figure out how to grow individual stall's product slot size for numSlotsPerStall
@@ -378,17 +378,19 @@ namespace Commercially.Vinconomy.Inventory
 
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
+            DiscardCurrency = tree.GetBool("discardCurrency");
             int numStalls = tree.GetInt("numStalls");
             if (!IsSlotsInitialized)
             {
 
                 SlotsPerStall = tree.GetInt("numSlotsPerStall", 9);
-                StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
+                StallType = tree.GetString("stallType");
+                Type stallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
 
                 StallSlots = new BaseStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)
                 {
-                    BaseStallSlot stall = InstantiateStallType(StallType, i);
+                    BaseStallSlot stall = InstantiateStallType(stallType, i);
                     ITreeAttribute stallTree = tree.GetOrAddTreeAttribute("stall" + i);
                     stall.PreInitialize(this, i);
                     stall.FromTreeAttributes(stallTree);
@@ -439,8 +441,9 @@ namespace Commercially.Vinconomy.Inventory
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             tree.SetInt("numStalls", StallSlots.Length);
-            tree.SetString("stallType", StallType?.Name);
+            tree.SetString("stallType", StallType);
             tree.SetInt("numSlotsPerStall", SlotsPerStall);
+            tree.SetBool("discardCurrency", DiscardCurrency);
 
             for (int i = 0; i < StallSlots.Length; i++)
             {

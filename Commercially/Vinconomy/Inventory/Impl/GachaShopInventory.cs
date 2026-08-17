@@ -37,7 +37,8 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
                 SlotsPerStall = tree.GetInt("numSlotsPerStall", 20);
                 ContentSlotsPerStall = tree.GetInt("contentsPerStall", 5);
-                StallType = GetStallType(tree.GetString("stallType", "GenericStallSlot"));
+                StallType = tree.GetString("stallType", "GenericStallSlot");
+                Type stallType = GetStallType(StallType);
 
                 StallSlots = new GachaStallSlot[numStalls];
                 for (int i = 0; i < numStalls; i++)
@@ -96,7 +97,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
             {
                 int quanitty = stall.GetTotalProductAvailable();
                 if (quanitty > 0)
-                    totalWeight += stall.Weight;
+                    totalWeight += stall.GetStallWeight();
             }
             return Math.Max(1, totalWeight); // Prevent divide by 0 by having the lowest possible weight as 1
         }
@@ -104,7 +105,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             tree.SetInt("numStalls", StallSlots.Length);
-            tree.SetString("stallType", StallType?.Name);
+            tree.SetString("stallType", StallType);
             tree.SetInt("numSlotsPerStall", SlotsPerStall);
             tree.SetInt("contentsPerStall", ContentSlotsPerStall);
             tree.SetBool("isCountBasedRandomizer", IsCountBasedRandomizer);
@@ -126,7 +127,7 @@ namespace Commercially.Vinconomy.Inventory.Impl
 
         public override void InitializeStallSlots(JsonObject properties)
         {
-            StallType = typeof(GachaStallSlot);
+            StallType = typeof(GachaStallSlot).Name; //TODO: Might need some sort of "lookup" of the class to registred name. This should work for now though
 
             int numStalls = properties["numStalls"].AsInt(6);
             SlotsPerStall = properties["numSlotsPerStall"].AsInt(20);

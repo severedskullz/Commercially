@@ -223,7 +223,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 if (MatchesProduct(item.Itemstack))
                 {
-                    amount += item.Itemstack.StackSize;
+                    amount += item.StackSize;
                 }
             }
 
@@ -292,6 +292,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             request.WithCurrencyFromCustomer();
             request.WithCouponsFromCustomer();
             request.WithRequiredTradePass();
+            request.WithRequiredContainersFromCustomer();
 
 
             return request.Build();

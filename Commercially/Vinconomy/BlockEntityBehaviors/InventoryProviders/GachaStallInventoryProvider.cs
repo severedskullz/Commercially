@@ -76,6 +76,18 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
                 }
             }
 
+            if (packetid == VinConstants.SET_TOTAL_RANDOMIZER)
+            {
+                using (MemoryStream memoryStream = new MemoryStream(data))
+                {
+                    BinaryReader binaryReader = new BinaryReader(memoryStream);
+                    bool value = binaryReader.ReadBoolean();
+
+                    _Inventory.IsCountBasedRandomizer = value;
+                    Blockentity.MarkDirty();
+                }
+            }
+
             if (packetid == VinConstants.SET_CONTENTS_QUANTITY)
             {
                 using (MemoryStream memoryStream = new MemoryStream(data))

@@ -1,10 +1,7 @@
 ﻿using Commercially.Common;
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Registry;
-using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
@@ -21,7 +18,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override string Code => CODE;
         public override string TabName => Lang.Get("vinconomy:tabname-generic-customer");
 
-
+        DummyInventory DisplayInv;
         GachaShopInventory Inventory;
         IStallInventoryProvider StallProvider;
         IOwnableChild Ownable;
@@ -32,6 +29,10 @@ namespace Commercially.Vinconomy.GUI.Tabs
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as GachaShopInventory;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Ownable = entity?.GetBehavior<IOwnableChild>();
+            DisplayInv = new DummyInventory(Inventory.Api, Inventory.StallSlots.Length+1);
+            DisplayInv.TakeLocked = true;
+            DisplayInv.PutLocked = true;
+            
         }
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)
@@ -54,7 +55,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 ElementBounds lastUnder = possibleProductLabel;
                 ElementBounds lastRightOf = null;
 
-
+                // Currency Item
+                DisplayInv[0].Itemstack = Inventory.InternalSlots[0].Itemstack?.Clone();
 
 
                 for (int i = 0; i < StallProvider.StallCount; i++)
@@ -108,8 +110,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                         lastUnder = weightLabelBounds;
                     }
                     rootBounds.WithChildren(itemSlotBounds, weightLabelBounds);
-                    int ivnId = GUIUtils.GetProductOffsetForStall(StallProvider, i);
-                    composer.AddItemSlotGrid(Inventory, null, 1, new int[] { ivnId }, itemSlotBounds);
+                    DisplayInv[i+1].Itemstack = Inventory.GetStall(i).Product.Itemstack?.Clone();
+                    composer.AddItemSlotGrid(DisplayInv, null, 1, new int[] { i +1}, itemSlotBounds);
                     composer.AddDynamicText(Lang.Get("vinconomy:gui-price"), labelTextFont, weightLabelBounds, "weight" + i);
 
 
@@ -122,7 +124,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 ElementBounds currencySlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).FixedUnder(currencyLabel).WithFixedOffset(35, 0);
                 rootBounds.WithChild(currencySlotBounds);
-                composer.AddItemSlotGrid(Inventory, null, 1, new int[] { 0 }, currencySlotBounds);
+                composer.AddItemSlotGrid(DisplayInv, null, 1, new int[] { 0 }, currencySlotBounds);
 
                 ElementBounds purchaseButtonBounds = ElementBounds.FixedSize(120, 40).FixedRightOf(currencySlotBounds).FixedUnder(currencyLabel).WithFixedOffset(40, 0);
                 rootBounds.WithChild(purchaseButtonBounds);
@@ -175,6 +177,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
+            this.Gui.FullRecompose();
             return true;
         }
 
@@ -195,7 +198,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         public override void OnRecievedData(byte[] data)
         {
-            
+            //TODO: Need a way to notify the UI that a purchase was completed and the weights should update
+            // for now, we will just recompose the view.
         }
 
         public override byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key)

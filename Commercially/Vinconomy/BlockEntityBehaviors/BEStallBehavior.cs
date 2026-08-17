@@ -2,6 +2,7 @@
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
 using System;
@@ -27,8 +28,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         IOwnableChild IStallComponent.Ownable => _Ownable;
         protected IOwnableChild _Ownable;
 
-        protected bool RequiresParent = true;
-        protected bool DiscardProduct;
+        public bool RequiresParent { get; protected set; } = true;
+
 
         public int StallCount => _InventoryProvider?.StallCount ?? 0;
 
@@ -253,6 +254,8 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         amount = reader.ReadInt32();
                     }
                     _InventoryProvider.GetStallSlot(stallSlot).CurrencyPerPurchase = amount;
+                    _InventoryProvider.GetStallSlot(stallSlot).Currency.MarkDirty();
+
                     break;
 
                 case CommerciallyConstants.SET_PARENT_ID:
@@ -274,7 +277,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         BinaryReader reader = new BinaryReader(ms);
                         isAdmin = reader.ReadBoolean();
                     }
-                    SetDiscardProduct(player, isAdmin);
+                    SetDiscardCurrency(player, isAdmin);
                     break;
                 default:
                     break;
@@ -322,7 +325,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             Blockentity.MarkDirty();
         }
 
-        public virtual void SetDiscardProduct(IPlayer byPlayer, bool discard)
+        public virtual void SetDiscardCurrency(IPlayer byPlayer, bool discard)
         {
             if (_Ownable != null && !_Ownable.IsOwner(byPlayer))
             {
@@ -336,7 +339,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                 return;
             }
 
-            this.DiscardProduct = discard;
+            (_InventoryProvider.Inventory as VinconBaseInventory).DiscardCurrency = discard;
             Blockentity.MarkDirty();
 
         }
