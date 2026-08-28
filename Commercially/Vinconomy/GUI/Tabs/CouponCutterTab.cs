@@ -2,6 +2,7 @@
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.Inventory;
 using System;
@@ -128,7 +129,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(val);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_ITEM_PRICE, data);
+            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_VALUE, data);
         }
 
         private void OnToggleConsumeCoupon(bool consume)
@@ -284,9 +285,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
             
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
         }
 
         public override void OnRecievedData(byte[] data)

@@ -4,13 +4,14 @@ using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.Trading;
 using System.IO;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class LiquidStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
+    public class LiquidStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
     {
         private LiquidShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
@@ -62,6 +63,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
         {
             if (packetid == CommerciallyConstants.TRANSFER_CONTENTS)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);

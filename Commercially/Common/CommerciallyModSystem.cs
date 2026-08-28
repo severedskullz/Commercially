@@ -11,6 +11,8 @@ using Commercially.Common.Registry.Packets;
 using Commercially.Common.Renderer;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Reflection;
 using Vinconomy.Delegates;
 using Vinconomy.Filters;
 using Vintagestory.API.Client;
@@ -652,5 +654,24 @@ namespace Commercially.Common
             this.Mod.Logger.Warning("Slot filter {0} not found. Returning null.", key);
             return null;
         }
+
+
+        // https://discord.com/channels/302152934249070593/351624415039193098/1541960464026697788
+        public static void DisconnectWithReason(IServerPlayer player, string msgToOthers, string msgToKicked)
+        {
+            var t = player.GetType();
+            var client = t.GetField("client", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(player);
+            var server = t.GetField("server", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(player);
+            if (client == null || server == null)
+            {
+                player.Disconnect(msgToOthers); // fallback, still shows "unknown" to him tho
+                return;
+            }
+
+            var m = server.GetType().GetMethod("DisconnectPlayer",
+                new[] { client.GetType(), typeof(string), typeof(string) });
+            m?.Invoke(server, new object[] { client, msgToOthers, msgToKicked });
+        }
+
     }
 }

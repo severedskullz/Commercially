@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.Blocks.BlockBehaviors;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -8,7 +9,7 @@ using Vintagestory.API.Util;
 
 namespace Commercially.Common.Blocks.BlockEntityBehaviors
 {
-    public class BEBehaviorTextureSwappable : BlockEntityBehavior, IPersistableStackAttributes
+    public class BEBehaviorTextureSwappable : BlockEntityBehavior, IPersistableStackAttributes, IBlockEntityComponent
     {
         private BehaviorTextureSwappable behavior;
 
@@ -27,21 +28,39 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
         public override void OnBlockPlaced(ItemStack byItemStack = null)
         {
-            PrimaryMaterial = byItemStack.Attributes.GetString("PrimaryMaterial", "default");
-            SecondaryMaterial = byItemStack.Attributes.GetString("SecondaryMaterial", "default");
-            DecoMaterial = byItemStack.Attributes.GetString("DecoMaterial", "default");
+            if (Api.Side == EnumAppSide.Client)
+            {
+                // For some reason byItemStack is null on other clients. It is only non-null for the person placing it (since they have the item attributes locally.
+                // Therefore, let the server send the update and retesselate the model in the FromAttributes step. Results in a "blinking" block with missing textures, but nothing I can do about it.
+                return; 
+            }
+
+            PrimaryMaterial = byItemStack?.Attributes?.GetString("PrimaryMaterial", "default");
+            SecondaryMaterial = byItemStack?.Attributes?.GetString("SecondaryMaterial", "default");
+            DecoMaterial = byItemStack?.Attributes?.GetString("DecoMaterial", "default");
         }
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tesselator)
         {
             if (Api != null)
             {
-                MeshData mesh = GetMesh(tesselator);
-                if (mesh == null)
+                bool drawBase = true;
+                IInventoryProvider provider = this.GetComponent<IInventoryProvider>();
+                if (provider is IDecocratedBlock deco)
                 {
-                    return false;
+                    drawBase = deco.GetDecorationBlock() == null;
                 }
-                mesher.AddMeshData(mesh, 1);
+
+                if (drawBase)
+                {
+                    MeshData mesh = GetMesh(tesselator);
+                    if (mesh == null)
+                    {
+                        return false;
+                    }
+                    mesher.AddMeshData(mesh, 1);
+                }
+
             }
             return true;
         }
@@ -89,6 +108,11 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public void AddAttributes(ItemStack stack)
         {
             ToTreeAttributes(stack.Attributes);
+        }
+
+        public BlockEntity GetBlockEntity()
+        {
+            return this.Blockentity;
         }
     }
 }

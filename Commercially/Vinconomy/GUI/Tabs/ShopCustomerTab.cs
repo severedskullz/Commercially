@@ -171,7 +171,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             Gui.Composer.GetButton("nextPage").Enabled = StallSlot != StallProvider.StallCount - 1;
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
             return true;
         }

@@ -1,16 +1,19 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
+using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.Trading;
 using System.IO;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class MealStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
+    public class MealStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
     {
         private MealShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
@@ -62,6 +65,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
         {
             if (packetid == CommerciallyConstants.TRANSFER_CONTENTS)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);

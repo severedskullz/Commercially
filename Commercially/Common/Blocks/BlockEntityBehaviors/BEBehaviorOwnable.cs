@@ -1,4 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using System.IO;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -144,6 +145,11 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public BlockEntity GetBlockEntity()
         {
             return this.Blockentity;
+        }
+
+        public bool CanAccess(IPlayer player)
+        {
+            return player.PlayerUID == OwnerUID || CommUtils.IsCreativePlayer(player);
         }
     }
 }

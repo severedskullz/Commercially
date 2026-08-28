@@ -1,6 +1,8 @@
 ﻿using Commercially.Common;
 using Commercially.Common.Interactions;
 using Commercially.Common.Inventory.Slots;
+using Commercially.Common.Registry;
+using Commercially.Common.Registry.Packets;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
@@ -9,23 +11,31 @@ using Commercially.Vinconomy.GUI.Tabs;
 using Commercially.Vinconomy.Interactions;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.Network.Packets;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
+using Vinconomy.GUI;
 using Vinconomy.ItemTypes;
+using Vinconomy.Map;
 using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy
 {
     public class VinconomyModSystem : ModSystem
     {
         private ICoreServerAPI _CoreServerAPI;
+        private ICoreClientAPI _CoreClientAPI;
+        private IServerNetworkChannel _ServerChannel;
+        private IClientNetworkChannel _ClientChannel;
+
         public CommerciallyModSystem CommerciallySystem { get; private set; }
 
         private static Dictionary<string, Type> StallTypes;
@@ -33,6 +43,9 @@ namespace Commercially.Vinconomy
         private readonly string CONFIG_NAME = "vinconomy.json";
         public VinconomyConfig Config;
         public VinconomyDatabase DB { get; private set; }
+        public ShopMapLayer ShopMapLayer { get; internal set; }
+
+        private GuiDialogGeneric ShopCatalogGui;
 
         public override double ExecuteOrder() => 1.1;
 
@@ -84,11 +97,11 @@ namespace Commercially.Vinconomy
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
 
-            api.Network.RegisterChannel(VinConstants.VINCONOMY_CHANNEL);
+            api.Network.RegisterChannel(VinConstants.VINCONOMY_CHANNEL)
                 //.RegisterMessageType(typeof(RegistryUpdatePacket))
                 //.RegisterMessageType(typeof(ShopUpdatePacket))
-                //.RegisterMessageType(typeof(ShopCatalogRequestPacket))
-                //.RegisterMessageType(typeof(ShopCatalogResponsePacket));
+                .RegisterMessageType(typeof(CatalogRequestPacket))
+                .RegisterMessageType(typeof(CatalogResponsePacket));
 
            // api.Event.OnTestBlockAccess += TestAccess;
             
@@ -110,6 +123,8 @@ namespace Commercially.Vinconomy
             CommerciallySystem.RegisterInteraction(AddMealInteraction.Key, new AddMealInteraction());
             CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
             CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
+            CommerciallySystem.RegisterInteraction(BindLedgerInteraction.Key, new BindLedgerInteraction());
+            
         }
 
         public void Lifecycle_RegisterStallTypes(ICoreAPI api)
@@ -167,6 +182,7 @@ namespace Commercially.Vinconomy
             api.RegisterBlockEntityBehaviorClass("Vinconomy.PurchaseInventory", typeof(PurchaseStallInventoryProvider));
 
             api.RegisterBlockEntityBehaviorClass("Vinconomy.MealDisplay", typeof(DisplayMealContentsBehavior));
+            api.RegisterBlockEntityBehaviorClass("Vinconomy.LiquidDisplay", typeof(DisplayLiquidContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.StallDisplay", typeof(DisplayContentsBehavior));
             api.RegisterBlockEntityBehaviorClass("Vinconomy.SculptureDisplay", typeof(DisplaySculptureBehavior));
         }
@@ -174,33 +190,120 @@ namespace Commercially.Vinconomy
         public override void StartServerSide(ICoreServerAPI api)
         {
             _CoreServerAPI = api;
-            /*
-            _serverChannel = api.Network.GetChannel(CommConstants.COMM_CHANNEL);
-            _serverChannel.SetMessageHandler(new NetworkClientMessageHandler<ShopCatalogRequestPacket>(OnRecieveShopCatalogRequest));
-            api.Event.SaveGameLoaded += OnSaveGameLoading;
-            api.Event.PlayerNowPlaying += SendAllPublicShops;
-            */
+            
+            _ServerChannel = api.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL);
+            _ServerChannel.SetMessageHandler(new NetworkClientMessageHandler<CatalogRequestPacket>(OnRecieveCatalogRequest));            
 
             DB.InitializeDB();
 
         }
 
-
         public override void StartClientSide(ICoreClientAPI api)
         {
-            /*
-            _clientChannel = api.Network.GetChannel(CommConstants.COMM_CHANNEL);
-            _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<RegistryUpdatePacket>(OnRecieveRegistry));
-            _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<ShopUpdatePacket>(OnRecieveRegistryUpdate));
-            _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<ShopCatalogResponsePacket>(OnRecieveShopCatalogResponse));
+            _CoreClientAPI = api;
+            _ClientChannel = api.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL);
+            _ClientChannel.SetMessageHandler(new NetworkServerMessageHandler<CatalogResponsePacket>(this.OnRecieveCatalogResponse));
 
             api.RegisterLinkProtocol("viewmap", OnMapLinkClicked);
             api.ModLoader.GetModSystem<WorldMapManager>().RegisterMapLayer<ShopMapLayer>("vinconomyShop", 20);
-            */
+        }
+
+        private void OnMapLinkClicked(LinkTextComponent component)
+        {
+
+            string[] array = component.Href.Substring("viewmap://".Length).Split('=');
+            int x = int.Parse(array[0]);
+            int y = int.Parse(array[1]);
+            int z = int.Parse(array[2]);
+            WorldMapManager mapMan = _CoreClientAPI.ModLoader.GetModSystem<WorldMapManager>();
+            if (!mapMan.worldMapDlg.IsOpened() || mapMan.worldMapDlg.DialogType != EnumDialogType.Dialog)
+            {
+
+                mapMan.ToggleMap(EnumDialogType.Dialog);
+                //mapMan.worldMapDlg.TryOpen();
+            }
+            if (ShopCatalogGui != null && ShopCatalogGui.IsOpened())
+            {
+                ShopCatalogGui.TryClose();
+            }
+            (mapMan.worldMapDlg.SingleComposer.GetElement("mapElem") as GuiElementMap).CenterMapTo(new BlockPos(x, y, z, 1));
+        }
+
+        private void OnRecieveCatalogRequest(IServerPlayer fromPlayer, CatalogRequestPacket request)
+        {
+            CatalogResponsePacket response = new CatalogResponsePacket();
+            long shopId = request.ShopId;
+            if (shopId > 0)
+            {
+                OwnableRegistration reg = CommerciallySystem.OwnableRegistry.GetOwnable(shopId);
+                if (reg != null)
+                {
+                    response.ShopCatalog = RequestShopCatalog(reg, true);
+                }
+            }
+
+            if (shopId <= 0 || request.IncludeShopList)
+            {
+                List<OwnableRegistration> regs = CommerciallySystem.OwnableRegistry.GetAllOwnables();
+                response.ShopList = new List<ShopCatalog>();
+                foreach (OwnableRegistration reg in regs)
+                {
+                    response.ShopList.Add(RequestShopCatalog(reg, false));
+                }
+            }
+
+            _ServerChannel.SendPacket(response, fromPlayer);
+        }
+
+        public ShopCatalog RequestShopCatalog(OwnableRegistration shop, bool includeProductList)
+        {
+            ShopCatalog catalog = new ShopCatalog();
+
+            OwnableEntry entry = new OwnableEntry
+            {
+                Name = shop.Name,
+                OwnerName = shop.OwnerName,
+                ID = shop.ID,
+            };
+
+            if (shop.BroadcastWaypoint)
+            {
+                entry.IsWaypointBroadcasted = true;
+                entry.X = shop.X - _CoreServerAPI.WorldManager.MapSizeX / 2;
+                entry.Y = shop.Y;
+                entry.Z = shop.Z - _CoreServerAPI.WorldManager.MapSizeZ / 2;
+                entry.WorldX = shop.X;
+                entry.WorldZ = shop.Z;
+            }
+            catalog.Ownable = entry;
+
+            //catalog.Description = shop.Description;
+            //catalog.ShortDescription = shop.ShortDescription;
+
+            if (includeProductList)
+            {
+                ShopProductList products = DB.GetShopProducts(shop.ID);
+                catalog.ProductList = products;
+            }
+            return catalog;
 
         }
 
+        private void OnRecieveCatalogResponse(CatalogResponsePacket response)
+        {
+            if (response.ShopCatalog != null)
+            {
+                ShopCatalogGui = new GuiVinconShopCatalog("Shop Catalog", response.ShopCatalog, response.ShopList, _CoreClientAPI);
 
+            }
+            else
+            {
+                ShopCatalogGui = new GuiVinconCatalog("Shop Catalog", response.ShopList, _CoreClientAPI);
+            }
+
+
+            ShopCatalogGui.TryOpen();
+        }
 
         public static void RegisterStallType(string className, Type type) {
             StallTypes.Add(className, type);
@@ -243,6 +346,7 @@ namespace Commercially.Vinconomy
         }
 
         private SortedList<int, PostFinalizeTrade> PostProcessTradeHandlers = new SortedList<int, PostFinalizeTrade>();
+
         public void RegisterPostProcessTradeHandler(int priority, PostFinalizeTrade hook)
         {
             PostProcessTradeHandlers.Add(priority, hook);
@@ -501,20 +605,17 @@ namespace Commercially.Vinconomy
 
             int amountLeft = stack.StackSize;
 
-            foreach (ItemSlot slot in slots)
+            foreach (var slot in slots)
             {
-                if (slot.CanHold(dslot))
-                {
-                    amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
-                    slot.MarkDirty();
-                }
+                if (!slot.CanHold(dslot)) continue;
 
-                if (amountLeft <= 0)
-                {
-                    return true;
-                }
+                amountLeft -= dslot.TryPutInto(api.World, slot, amountLeft);
+                slot.MarkDirty();
+
+                if (amountLeft <= 0) break;
             }
-            return false;
+
+            return amountLeft <= 0;
         }
 
     }    

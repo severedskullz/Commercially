@@ -1,6 +1,8 @@
-﻿using Commercially.Common.GUI;
+﻿using Commercially.Common;
+using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
+using Commercially.Common.Util;
 using System;
 using System.IO;
 using Vinconomy.Util;
@@ -134,9 +136,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
         }
 
         public override void OnGuiClosed()
@@ -170,7 +172,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(Gui.Composer.GetTextInput("webhook").GetText());
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_SHOP_NAME, data);
+            Api.Network.SendBlockEntityPacket(BlockEntityPosition, CommerciallyConstants.SET_NAME, data);
             return true;
         }
 

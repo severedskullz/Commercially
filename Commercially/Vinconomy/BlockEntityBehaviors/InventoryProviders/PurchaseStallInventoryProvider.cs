@@ -1,7 +1,9 @@
-﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+﻿using Commercially.Common;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.Trading;
 using System.IO;
 using Vinconomy.Util;
 using Vintagestory.API.Common;
@@ -9,7 +11,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class PurchaseStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
+    public class PurchaseStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider
     {
         private PurchaseStallShopInventory _Inventory;
 
@@ -53,6 +55,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
             if (packetid == VinConstants.SET_FUZZY_MATCHING)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);
@@ -67,6 +75,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             }
             else if(packetid == VinConstants.SET_REGISTER_FALLBACK)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);
@@ -80,6 +94,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             }
             else if (packetid == VinConstants.SET_LIMITED_PURCHASES)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);
@@ -92,6 +112,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             }
             else if (packetid == VinConstants.SET_PURCHASES_REMAINING)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);

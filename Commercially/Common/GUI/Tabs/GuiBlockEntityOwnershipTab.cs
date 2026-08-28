@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
+using Commercially.Common.Util;
 using System;
 using System.IO;
 using Vintagestory.API.Client;
@@ -62,20 +63,25 @@ namespace Commercially.Common.GUI.Tabs
                 composer.AddDropDown(ParentIDs, ParentNames, SelectedIndex, new SelectionChangedDelegate(this.OnSelectionChanged), parentSelectBounds, "parentSelection");
             }
 
+            if ((Ownable != null && Ownable.IsAdminOwned) || CommUtils.IsCreativePlayer(Api.World.Player))
+            {
+                composer.AddStaticText(Lang.Get("commercially:label-admin-owned"), smallText, adminShopLabel);
+                composer.AddHoverText(Lang.Get("commercially:tooltip-admin-owned"), hoverText, 500, adminShopLabel);
+                composer.AddSwitch(OnToggleAdminShop, adminShopBounds, "adminOwned");
 
-            composer.AddIf((Ownable != null && Ownable.IsAdminOwned) || IOwnable.IsCreativePlayer(Api.World.Player))
-                       .AddStaticText(Lang.Get("commercially:label-admin-owned"), smallText, adminShopLabel)
-                       .AddHoverText(Lang.Get("commercially:tooltip-admin-owned"), hoverText, 500, adminShopLabel)
-                       .AddSwitch(OnToggleAdminShop, adminShopBounds, "adminOwned")
-                   .EndIf();
+
+                //GuiElementDropDown parentComponent = composer.GetDropDown("parentSelection");
+                GuiElementSwitch isAdminComponent = composer.GetSwitch("adminOwned");
+                isAdminComponent.SetValue(Ownable?.IsAdminOwned ?? false);
+            }
+
+                       
 
             GuiElementTextInput textComponent = composer.GetTextInput("shopName");
             textComponent.SetValue(Ownable?.Name);
             textComponent.OnTextChanged = OnTextChanged; // Fuck you Tyron, Give me a way to set the text WITHOUT firing the delegate.
 
-            //GuiElementDropDown parentComponent = composer.GetDropDown("parentSelection");
-            GuiElementSwitch isAdminComponent = composer.GetSwitch("adminOwned");
-            isAdminComponent.SetValue(Ownable?.IsAdminOwned ?? false);
+
 
         }
 
@@ -164,9 +170,9 @@ namespace Commercially.Common.GUI.Tabs
 
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsLocalPlayerOwner(BlockEntity, Api);
         }
 
         public override void OnGuiClosed()

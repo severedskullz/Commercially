@@ -42,7 +42,7 @@ namespace Commercially.Common.GUI.Tabs
 
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
             return true;
         }

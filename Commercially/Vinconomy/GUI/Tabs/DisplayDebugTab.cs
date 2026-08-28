@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using System;
 using Vintagestory.API.Client;
@@ -177,9 +178,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
         }
 
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsCreativePlayer(Api.World.Player);
         }
 
         public override void OnGuiClosed()

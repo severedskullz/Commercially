@@ -1,7 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using Commercially.Common.Interfaces;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -112,6 +114,23 @@ namespace Commercially.Common.Util
                 value = reader.ReadInt32();
             }
             return value;
+        }
+
+        public static bool IsLocalPlayerOwner(BlockEntity blockEntity, ICoreClientAPI api)
+        {
+            if (blockEntity is IOwnable ownable)
+            {
+                return ownable.IsOwner(api.World.Player);
+            }
+
+            return blockEntity.GetBehavior<IOwnable>()?.IsOwner(api.World.Player) ?? false;
+        }
+
+        public static bool IsCreativePlayer(IPlayer player)
+        {
+            if (player == null) return false;
+
+            return player.WorldData.CurrentGameMode == EnumGameMode.Creative && player.HasPrivilege("gamemode");
         }
     }
 }

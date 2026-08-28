@@ -60,28 +60,37 @@
         }
     },
 
-    "entityBehaviors": [
-        { "name": "Vinconomy.RegisterInventory" },
-        {
-            "name": "Vinconomy.Register",
-            "properties": {
-                "ownableType": "ShopRegister"
-            }
-        },
-        {
-            "name": "Commercially.GuiManager",
-            "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.RegisterConfig", "Commercially.Waypoint", "Commercially.BlockEntityDebug" ]
-            }
-        },
-        {
-            "name": "Commercially.InteractionManager",
-            "properties": {
-                "default": ""
-            }
-        },
-        { "name": "Commercially.TextureSwappable" }
-    ],
+  "entityBehaviors": [
+    { "name": "Vinconomy.RegisterInventory" },
+    {
+      "name": "Vinconomy.Register",
+      "properties": {
+        "ownableType": "ShopRegister"
+      }
+    },
+    {
+      "name": "Commercially.InteractionManager",
+      "properties": {
+        "interactions": [
+          {
+            "code": "Vinconomy.BindLedger",
+            "priority": 10
+          },
+          {
+            "code": "Commercially.OpenRegister",
+            "priority": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Commercially.GuiManager",
+      "properties": {
+        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.RegisterConfig", "Commercially.Waypoint", "Commercially.BlockEntityDebug" ]
+      }
+    },
+    { "name": "Commercially.TextureSwappable" }
+  ],
 
     "behaviors": [
         {

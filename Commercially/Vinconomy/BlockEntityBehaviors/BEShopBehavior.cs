@@ -34,5 +34,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             _ShopInventoryProvider = this.GetComponent<IShopInventoryProvider>();
             _Ownable = this.GetComponent<IOwnableRoot>();
         }
+
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            base.OnReceivedClientPacket(player, packetid, data);
+        }
     }
 }

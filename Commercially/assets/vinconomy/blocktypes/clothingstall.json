@@ -72,7 +72,7 @@
         {
             "name": "Commercially.GuiManager",
             "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ClothingStandCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+              "tabs": [ "Vinconomy.ShopOwner", "Vinconomy.ClothingStandCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
             }
         },
         {
@@ -87,10 +87,14 @@
                         "code": "Vinconomy.PurchaseItem",
                         "priority": 10
                     },
-                    {
-                        "code": "Vinconomy.OpenStall",
-                        "priority": 0
+                  {
+                    "code": "Vinconomy.OpenStall",
+                    "priority": 0,
+                    "properties": {
+                      "ownerTab": "Vinconomy.LiquidOwner",
+                      "customerTab": "Vinconomy.ClothingStandCustomer"
                     }
+                  }
                 ]
             }
         },

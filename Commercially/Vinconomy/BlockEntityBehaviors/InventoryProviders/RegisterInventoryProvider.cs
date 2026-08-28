@@ -6,7 +6,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class RegisterInventoryProvider : BEBehaviorAbstractContainer, IShopInventoryProvider
+    public class RegisterInventoryProvider : BEBehaviorOwnableContainer, IShopInventoryProvider
     {
         private RegisterInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

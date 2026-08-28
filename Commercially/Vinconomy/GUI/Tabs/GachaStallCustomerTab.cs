@@ -181,7 +181,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             return true;
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
             return true;
         }

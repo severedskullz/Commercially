@@ -27,7 +27,7 @@ namespace Commercially.Common.Registry
 
         public void Initialize()
         {
-            Logger.Debug("+============== Loading Vinconomy ==============+");
+            Logger.Debug("+============== Loading Commercially ==============+");
 
             // TODO: I am still not sure re-doing what I did in 1.X - 5.X where we just load everything into memory is the best idea. At the same time, Im not sure if having to block
             // for I/O and hit the DB is good either. Atleast chunk loading and world is saved off-thread. Im probably severely overthinking it, but we will stick with it for now.
@@ -46,7 +46,7 @@ namespace Commercially.Common.Registry
                 Logger.VerboseDebug($"Loaded Ownable: {item.Name} with ID: {item.ID} and Owner: {item.OwnerName} ({item.OwnerUID})");
             }
             Logger.Debug($"Loaded {ownables.Count} Ownables" );
-            Logger.Debug("=============== Loaded Vinconomy ================");
+            Logger.Debug("=============== Loaded Commercially ================");
         }
 
         public string[] GetAllOwners()
@@ -57,6 +57,32 @@ namespace Commercially.Common.Registry
         public List<OwnableRegistration> GetAllOwnables()
         {
             return [.. Ownables.Values];
+        }
+
+        public List<OwnableRegistration> GetAllOwnablesForType(string type)
+        {
+            List<OwnableRegistration> results = new List<OwnableRegistration>(Ownables.Values.Count); // Might be a bit of an over optimization
+            foreach (OwnableRegistration ownable in Ownables.Values)
+            {
+                if (ownable.Type == type)
+                {
+                    results.Add(ownable);
+                }
+            }
+            return results;
+        }
+
+        public List<T> GetAllOwnablesForType<T>(string type) where T : OwnableRegistration
+        {
+            List<T> results = new List<T>(Ownables.Values.Count); // Might be a bit of an over optimization
+            foreach (OwnableRegistration ownable in Ownables.Values)
+            {
+                if (ownable.Type == type)
+                {
+                    results.Add((T)ownable);
+                }
+            }
+            return results;
         }
 
         public void ClearOwnable(long registerID)

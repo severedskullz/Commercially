@@ -14,16 +14,15 @@ namespace Commercially.Vinconomy.Interactions
     {
         public const string Key = "Vinconomy.BindLedger";
 
-        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type != EnumCallerType.Player) return false;
-            
-            IPlayer byPlayer = caller.Entity as IPlayer;
-            ItemStack? itemStack = byPlayer.InventoryManager.ActiveHotbarSlot.Itemstack;
+
+            ItemStack? itemStack = caller.Player.InventoryManager.ActiveHotbarSlot.Itemstack;
             return itemStack?.Collectible.Code == "vinconomy:ledger";
         }
 
-        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type != EnumCallerType.Player) return false;
 
@@ -35,12 +34,12 @@ namespace Commercially.Vinconomy.Interactions
             return true;
         }
 
-        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             return 1;
         }
 
-        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             ItemStack ledger = new ItemStack(world.GetItem(new AssetLocation("vinconomy:ledger")), 1);
 
@@ -59,7 +58,7 @@ namespace Commercially.Vinconomy.Interactions
 
         }
 
-        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type != EnumCallerType.Player) return false;
    

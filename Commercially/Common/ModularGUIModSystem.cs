@@ -26,6 +26,7 @@ namespace Commercially.Common
             RegisterTabType(GuiBlockEntityOwnershipTab.CODE, typeof(GuiBlockEntityOwnershipTab));
             RegisterTabType(GuiBlockEntityWaypointTab.CODE, typeof(GuiBlockEntityWaypointTab));
             RegisterTabType(GuiBlockEntityDebugTab.CODE, typeof(GuiBlockEntityDebugTab));
+            RegisterTabType(GuiBlockEntityContainerDebugTab.CODE, typeof(GuiBlockEntityContainerDebugTab));
         }
 
         public void RegisterGUIType(string guiType, Type tab)

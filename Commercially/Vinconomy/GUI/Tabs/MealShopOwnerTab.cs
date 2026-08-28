@@ -141,9 +141,15 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddStaticText(Lang.Get("vinconomy:gui-product"), labelTextFont, stockLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-product"), hoverText, 500, stockLabel);
 
+                int[] ingredientArray = new int[NumIngredients];
+                for (int i = 0; i < NumIngredients; i++)
+                {
+                    ingredientArray[i] = i;
+                }
+
                 ElementBounds slotGrid = ElementStdBounds.SlotGrid(EnumDialogArea.CenterTop, 0, 20, NumIngredients, 1).FixedUnder(stockLabel,-20);
                 stallBounds.WithChild(slotGrid);
-                composer.AddItemSlotGrid(ProductInv, (Gui as GUIModularBlockEntity).SendPacket, NumIngredients, slotGrid, "inventory");
+                composer.AddItemSlotGrid(ProductInv, null, NumIngredients, ingredientArray, slotGrid, "inventory");
 
                 ElementBounds transferLabel = ElementBounds.FixedSize(sectionFullHeaderWidth, 25).FixedUnder(slotGrid, 15);
                 stallBounds.WithChildren(transferLabel);
@@ -200,23 +206,24 @@ namespace Commercially.Vinconomy.GUI.Tabs
         private void UpdateContents()
         {
             MealStallSlot stall = StallProvider.GetStallSlot<MealStallSlot>(StallSlot);
-            NumIngredients = 4;
+            NumIngredients = ProductInv.Slots.Length;
             ItemStack[] productContents = stall.GetProductContents();
-
             if (productContents != null)
             {
                 NumIngredients = Math.Min(NumIngredients, productContents.Length);
             }
-            ProductInv = new DummyInventory(Api, NumIngredients);
-            ProductInv.TakeLocked = true;
-            ProductInv.PutLocked = true;
 
-            for (int i = 0; i < NumIngredients; i++)
+            for (int i = 0; i < ProductInv.Slots.Length; i++)
             {
-                ItemStack stack = null;
-                if (productContents != null && i < productContents.Length) stack = productContents[i];
-                DummySlot ingSlot = new DummySlot(stack, ProductInv);
-                ProductInv[i] = ingSlot;
+                if (productContents != null && i < productContents.Length)
+                {
+                    ProductInv[i].Itemstack = productContents[i];
+                }
+                 else
+                {
+                    ProductInv[i].Itemstack = null;
+                }
+                
 
             }
         }
@@ -399,6 +406,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
             Inventory.OnStockUpdated += OnUpdateContents;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Ownable = entity?.GetBehavior<IOwnableChild>();
+            ProductInv = new DummyInventory(Api, 8);
+            ProductInv.TakeLocked = true;
+            ProductInv.PutLocked = true;
             //NumColumns = GetConfiguration()?["NumColumns"].AsInt(10) ?? 10;
 
             //TODO: Figure out a better way to pass this in - will need it for all of the tabbed GUIs for shops
@@ -409,7 +419,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             }
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
             return true;
         }

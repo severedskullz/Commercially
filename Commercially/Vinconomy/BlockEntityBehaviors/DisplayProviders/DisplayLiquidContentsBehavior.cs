@@ -1,11 +1,10 @@
 ﻿using Commercially.Vinconomy.Inventory.StallSlots;
-using HarmonyLib;
-using System;
 using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
@@ -13,7 +12,9 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
     public class DisplayLiquidContentsBehavior : BaseDisplayContentsBehavior
     {
 
-        public virtual AssetLocation liquidContentsShape { get; protected set; } = AssetLocation.Create("shapes/block/wood/barrel/liquidcontents.json");
+        public AssetLocation LiquidContentsShape { get; protected set; } = AssetLocation.Create("shapes/block/wood/barrel/liquidcontents.json");
+        public bool IsCubicDisplay { get; protected set; }
+
 
         public DisplayLiquidContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
@@ -22,49 +23,70 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
+            if (properties["contentsShape"] != null)
+            {
+                string contentsShape = properties["contentsShape"]?.AsString("shapes/block/wood/barrel/liquidcontents.json");
+                LiquidContentsShape = AssetLocation.Create(contentsShape);
+            }
+            if (properties["isCubic"] != null)
+            {
+                IsCubicDisplay = properties["isCubic"]?.AsBool() == true;
+            }
         }
 
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
         {
             TesselateDisplayedItems(mesher, tessThreadTesselator);
-            return false;
+            return true;
+        }
+
+        protected override MeshData GetOrCreateMesh(ItemSlot slot, int index)
+        {
+            ICoreClientAPI capi = Api as ICoreClientAPI;
+
+            MeshData mesh = GetMesh(slot, index);
+            if (mesh != null) return mesh;
+
+            return GenMesh(slot, index);
         }
 
         protected override MeshData GenMesh(ItemSlot stack, int stallSlot)
         {
             Block block = stack.Itemstack?.Block;
-            BaseStallSlot stall = _InventoryProvider.GetStallSlot(stallSlot);
-            ItemStack liquidStack = stall.Product.Itemstack;
+            LiquidStallSlot stall = _InventoryProvider.GetStallSlot<LiquidStallSlot>(stallSlot);
+
+            ItemStack liquidStack = stall.Product.Itemstack.Clone();
+            liquidStack.StackSize = stall.GetTotalProductAvailable();
           
-            return GenMesh(null, liquidStack, false, Blockentity.Pos);
+            return GenMesh(stall, liquidStack, false, Blockentity.Pos);
         }
 
-        public virtual MeshData GenMesh(ItemStack contentStack, ItemStack liquidContentStack, bool issealed, BlockPos forBlockPos = null)
+        public virtual MeshData GenMesh(LiquidStallSlot stall, ItemStack liquidContentStack, bool issealed, BlockPos forBlockPos = null)
         {
             ICoreClientAPI capi = this.Api as ICoreClientAPI;
 
             var containerProps = liquidContentStack?.ItemAttributes?["waterTightContainerProps"];
-            MeshData contentMesh = getContentMeshLiquids(contentStack, liquidContentStack, forBlockPos, containerProps);
+            MeshData contentMesh = getContentMeshLiquids(stall, liquidContentStack, forBlockPos, containerProps);
 
             return contentMesh;
         }
 
-        protected MeshData getContentMeshLiquids(ItemStack contentStack, ItemStack liquidContentStack, BlockPos forBlockPos, JsonObject containerProps)
+        protected MeshData getContentMeshLiquids(LiquidStallSlot stall, ItemStack liquidContentStack, BlockPos forBlockPos, JsonObject containerProps)
         {
             bool isopaque = containerProps?["isopaque"].AsBool(false) == true;
             bool isliquid = containerProps?.Exists == true;
-            if (liquidContentStack != null && (isliquid || contentStack == null))
+            if (liquidContentStack != null && isliquid)
             {
-                AssetLocation shapefilepath = liquidContentsShape;
+                AssetLocation shapefilepath = LiquidContentsShape;
 
-                return getContentMesh(liquidContentStack, forBlockPos, shapefilepath);
+                return getContentMesh(stall, liquidContentStack, forBlockPos, shapefilepath);
             }
 
             return null;
         }
 
-        protected virtual MeshData getContentMesh(ItemStack stack, BlockPos forBlockPos, AssetLocation shapefilepath)
+        protected virtual MeshData getContentMesh(LiquidStallSlot stall, ItemStack stack, BlockPos forBlockPos, AssetLocation shapefilepath)
         {
             if (stack == null) return null;
             ICoreClientAPI capi = this.Api as ICoreClientAPI;
@@ -76,9 +98,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
             if (props != null)
             {
                 if (props.Texture == null) return null;
-
+                float heightLimit = stall.LiterCapacity;
                 contentSource = new ContainerTextureSource(capi, stack, props.Texture);
-                fillHeight = GameMath.Min(1f, stack.StackSize / props.ItemsPerLitre / Math.Max(50, props.MaxStackSize)) * 10f / 16f;
+                float curLiters = stack.StackSize / props.ItemsPerLitre;
+                float stallCapacity = stall.LiterCapacity;
+                fillHeight = GameMath.Min(1f, curLiters / stallCapacity) * 10f / 16f;
             }
             else
             {
@@ -96,7 +120,16 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
                 }
                 capi.Tesselator.TesselateShape("barrel", shape, out MeshData contentMesh, contentSource, new Vec3f(Blockentity.Block.Shape.rotateX, Blockentity.Block.Shape.rotateY, Blockentity.Block.Shape.rotateZ), props?.GlowLevel ?? 0);
 
-                contentMesh.Translate(0, fillHeight, 0);
+
+                if (!IsCubicDisplay)
+                {
+                    contentMesh.Translate(0, fillHeight, 0);
+                }
+                else
+                {
+                    contentMesh.RenderPassesAndExtraBits.Fill((short)2);
+                }
+                    
 
                 if (props?.ClimateColorMap != null)
                 {
@@ -126,6 +159,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
                     }
                 }
 
+                if (contentMesh != null)
+                {
+                    string key = stack.Collectible.Code.ToString() + (IsCubicDisplay ? "-cubic" : "-planar") + fillHeight.ToString();
+                    MeshCache[key] = contentMesh;
+                }
 
                 return contentMesh;
             }

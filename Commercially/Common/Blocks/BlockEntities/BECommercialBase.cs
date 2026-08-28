@@ -1,4 +1,5 @@
-﻿using Commercially.Common.Interfaces;
+﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+using Commercially.Common.Interfaces;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
@@ -59,10 +60,10 @@ namespace Commercially.Common.Blocks.BlockEntities
         {
             if (InteractionManager != null)
             {
-                IInteraction interaction = InteractionManager.GetInteraction(key, caller, blockSel);
+                Interaction? interaction = InteractionManager.GetInteraction(key, caller, blockSel);
                 if (interaction != null)
                 {
-                    return interaction.Interact(world, caller, this, blockSel);
+                    return interaction.Interact(world, caller, this, blockSel, key, interaction.GetProperties());
                 }
             }
 

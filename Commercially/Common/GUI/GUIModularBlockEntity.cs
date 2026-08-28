@@ -144,7 +144,7 @@ namespace Commercially.Common.GUI
             int i = 0;
             foreach (var tab in Tabs)
             {
-                if (tab.IsVisible(this))
+                if (tab.IsVisible())
                 {
                     guiTabs.Add(new GuiTab() { Name = tab.TabName, Active = tab == ActiveTab, DataInt = i });
                 }

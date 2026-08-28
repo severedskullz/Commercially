@@ -1,20 +1,24 @@
 ﻿using Commercially.Common.Database;
-using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Network.Packets;
 using Commercially.Vinconomy.Trading;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Vinconomy.Network.Packets;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy
 {
     public class VinconomyDatabase : BaseDatabase
     {
+
+        Dictionary<long, ShopProductList> productListCache = new Dictionary<long, ShopProductList>();
+        private long EXPIRE_TIME_MILLIS = 1000 * 60 * 10;
+
         public VinconomyDatabase(ICoreServerAPI api) : base(api, "commerce")
         {
         }
@@ -26,10 +30,10 @@ namespace Commercially.Vinconomy
                 connection.Open();
                 SqliteCommand cmd = connection.CreateCommand();
 
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Sales (ShopId INTEGER, Customer TEXT, Month INTEGER, Year INTEGER, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes TEXT);";
+                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Products ( Id INTEGER, ShopId INTEGER, X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, PRIMARY KEY (X,Y,Z, StallSlot));";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Products ( X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, PRIMARY KEY (X,Y,Z, StallSlot));";
+                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Sales (ShopId INTEGER, Customer TEXT, Month INTEGER, Year INTEGER, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB);";
                 cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS PendingSales (Id INTEGER PRIMARY KEY AUTOINCREMENT, X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER, Customer TEXT, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, Amount INTEGER);";
@@ -38,15 +42,17 @@ namespace Commercially.Vinconomy
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS ShopPermissions (Id INTEGER, PlayerUid TEXT, PlayerName TEXT);";
                 cmd.ExecuteNonQuery();
 
+                /*
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS CurrencyDefinitions (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopId INTEGER, CurrencyCode TEXT, CurrencyAttributes BLOB, IgnoreAttributes BOOLEAN, Supply INTEGER, IntervalType INTEGER, IntervalDuration INTEGER, IntervalPeriod INTEGER, IntervalAction INTEGER, IntervalActionValue INTEGER);";
                 cmd.ExecuteNonQuery();
 
+                
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS ProductDefinitions (Id INTEGER PRIMARY KEY AUTOINCREMENT, ShopId INTEGER, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB,  IgnoreAttributes BOOLEAN, Supply INTEGER, IntervalType INTEGER, IntervalDuration INTEGER, IntervalPeriod INTEGER, IntervalAction INTEGER, IntervalActionValue INTEGER, SupplyThreshold INTEGER, ThresholdScale INTEGER, CurrencyLowQuantity INTEGER, CurrencyHighQuantity INTEGER, IdealSupply INTEGER, MaxSupply INTEGER, SalesContribute BOOLEAN, UnlimitedSupply BOOLEAN, UnlimitedDemand BOOLEAN);";
                 cmd.ExecuteNonQuery();
 
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS PlayerCooldowns (ShopId INTEGER, PlayerUid TEXT, LastAccessed TIMESTAMP, PRIMARY KEY (ShopId, PlayerUid));";
                 cmd.ExecuteNonQuery();
-
+                */
                 connection.Close();
             }
         }
@@ -100,10 +106,10 @@ namespace Commercially.Vinconomy
                 cmd.Parameters.Add("@Year", SqliteType.Integer).Value = year;
                 cmd.Parameters.Add("@ProductCode", SqliteType.Text).Value = product.Collectible.Code.ToString();
                 cmd.Parameters.Add("@ProductQuantity", SqliteType.Text).Value = productAmount;
-                cmd.Parameters.Add("@ProductAttributes", SqliteType.Text).Value = product.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+                cmd.Parameters.Add("@ProductAttributes", SqliteType.Text).Value = AttributesToBytes(product);
                 cmd.Parameters.Add("@CurrencyCode", SqliteType.Text).Value = currency.Collectible.Code.ToString();
                 cmd.Parameters.Add("@CurrencyQuantity", SqliteType.Text).Value = currencyAmount;
-                cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Text).Value = currency.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+                cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Text).Value = AttributesToBytes(currency);
 
                 cmd.CommandText = @"SELECT Count(*) FROM Sales 
                                     WHERE ShopId = @ShopId 
@@ -220,28 +226,28 @@ namespace Commercially.Vinconomy
 
                 BlockPos pos = shop.GetBlockEntity().Pos;
 
-
-                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = shop.Ownable.ID;
-                cmd.Parameters.Add("@StallSlot", SqliteType.Integer).Value = stallSlot;
+                cmd.Parameters.Add("@Id", SqliteType.Integer).Value = shop.Ownable.ID;
+                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = shop.Ownable.ParentID;
                 cmd.Parameters.Add("@X", SqliteType.Integer).Value = pos.X;
                 cmd.Parameters.Add("@Y", SqliteType.Integer).Value = pos.Y;
                 cmd.Parameters.Add("@Z", SqliteType.Integer).Value = pos.Z;
-                cmd.Parameters.Add("@TotalStock", SqliteType.Integer).Value = productCount;
+                cmd.Parameters.Add("@StallSlot", SqliteType.Integer).Value = stallSlot;
 
                 cmd.Parameters.Add("@ProductName", SqliteType.Text).Value = product.GetName();
                 cmd.Parameters.Add("@ProductCode", SqliteType.Text).Value = product.Collectible.Code.ToString();
-                cmd.Parameters.Add("@ProductQuantity", SqliteType.Integer).Value = product.StackSize;
-                cmd.Parameters.Add("@ProductAttributes", SqliteType.Text).Value = product.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+                cmd.Parameters.Add("@ProductQuantity", SqliteType.Integer).Value = product.StackSize;              
+                cmd.Parameters.Add("@ProductAttributes", SqliteType.Blob).Value = AttributesToBytes(product);
+                cmd.Parameters.Add("@TotalStock", SqliteType.Integer).Value = productCount;
 
                 cmd.Parameters.Add("@CurrencyName", SqliteType.Text).Value = currency.GetName();
                 cmd.Parameters.Add("@CurrencyCode", SqliteType.Text).Value = currency.Collectible.Code.ToString();
                 cmd.Parameters.Add("@CurrencyQuantity", SqliteType.Integer).Value = currency.StackSize;
-                cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Text).Value = currency.Attributes.ToJsonToken(); //TODO: This has CONSISTENTLY failed in the past due to Tyron's poor escape-sequencing for quotes in strings. Serialize to Binary in the future.
+                cmd.Parameters.Add("@CurrencyAttributes", SqliteType.Blob).Value = AttributesToBytes(currency);
 
 
 
                 cmd.CommandText = @"SELECT Count(*) FROM Products 
-                                    WHERE ShopId = @ShopId 
+                                    WHERE Id = @Id 
                                         AND X = @X
                                         AND Y = @Y
                                         AND Z = @Z
@@ -251,7 +257,7 @@ namespace Commercially.Vinconomy
                 if (numRows == 1)
                 {
                     cmd.CommandText = @"UPDATE Products 
-                                    SET 
+                                    SET ShopId = @ShopId 
                                         ProductName = @ProductName,
                                         ProductCode = @ProductCode, 
                                         ProductAttributes = @ProductAttributes,
@@ -261,7 +267,7 @@ namespace Commercially.Vinconomy
                                         CurrencyCode = @CurrencyCode,
                                         CurrencyAttributes = @CurrencyAttributes,
                                         CurrencyQuantity = @CurrencyQuantity 
-                                    WHERE ShopId = @ShopId 
+                                    WHERE Id = @Id 
                                         AND X = @X
                                         AND Y = @Y
                                         AND Z = @Z
@@ -273,7 +279,7 @@ namespace Commercially.Vinconomy
                     //X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER,
                     //ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER,
                     //CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB
-                    cmd.CommandText = "INSERT INTO Products VALUES (@X, @Y, @Z, @StallSlot, @ShopId, @ProductName, @ProductCode, @ProductQuantity, @ProductAttributes, @TotalStock, @CurrencyName, @CurrencyCode, @CurrencyQuantity, @CurrencyAttributes);";
+                    cmd.CommandText = "INSERT INTO Products VALUES (@Id, @ShopId, @X, @Y, @Z, @StallSlot,  @ProductName, @ProductCode, @ProductQuantity, @ProductAttributes, @TotalStock, @CurrencyName, @CurrencyCode, @CurrencyQuantity, @CurrencyAttributes);";
                     cmd.ExecuteNonQuery();
                 }
                 else
@@ -283,6 +289,66 @@ namespace Commercially.Vinconomy
 
                 connection.Close();
             }
+        }
+
+        public ShopProductList GetShopProducts(long ID)
+        {
+            if (productListCache.ContainsKey(ID))
+            {
+                ShopProductList listing = productListCache[ID];
+                // If the expiration timer is in the future, then simply return the cached copy.
+                if (listing.ExpiresAt >= DateTime.UtcNow.Ticks)
+                {
+                    return listing;
+                }
+            }
+
+            ShopProductList products = new ShopProductList();
+            products.ExpiresAt = DateTime.UtcNow.Ticks + EXPIRE_TIME_MILLIS;
+            using (SqliteConnection connection = GetConnection())
+            {
+                connection.Open();
+                SqliteCommand cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT * FROM Products WHERE ShopID = @ShopId";
+                cmd.Parameters.Add("@ShopId", SqliteType.Integer).Value = ID;
+                SqliteDataReader reader = cmd.ExecuteReader();
+
+
+                while (reader.Read())
+                {
+                    ShopProduct product = new ShopProduct();
+                    product.ProductName = reader.GetString(5);
+                    product.ProductCode = reader.GetString(6);
+                    product.ProductQuantity = reader.GetInt32(7);
+                    product.ProductAttributes = (byte[])reader.GetValue(8);
+                    product.TotalStock = reader.GetInt32(9);
+                    product.CurrencyName = reader.GetString(10);
+                    product.CurrencyCode = reader.GetString(11);
+                    product.CurrencyQuantity = reader.GetInt32(12);
+                    product.CurrencyAttributes = (byte[])reader.GetValue(13);
+                    products.Products.Add(product);
+                }
+
+            }
+
+            productListCache[ID] = products;
+            return products;
+        }
+
+        public static byte[] AttributesToBytes(ItemStack stack)
+        {
+            // All of this because Anego won't escape strings in their Json Tokenizer code... :/
+            byte[] productAttributes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(ms))
+                {
+                    stack.Attributes.ToBytes(writer);
+                    writer.Flush();
+                }
+                productAttributes = ms.ToArray();
+            }
+            return productAttributes;
         }
     }
 }

@@ -27,12 +27,27 @@
     { "name": "Vinconomy.Stall" },
     {
       "name": "Commercially.InteractionManager",
-      "properties": {}
+      "properties": {
+        "interactions": [
+          {
+            "code": "Vinconomy.PurchaseItem",
+            "priority": 5
+          },
+          {
+            "code": "Vinconomy.OpenStall",
+            "priority": 0,
+            "properties": {
+              "ownerTab": "Vinconomy.SculptureOwner",
+              "customerTab": "Vinconomy.ShopCustomer"
+            }
+          }
+        ]
+      }
     },
     {
       "name": "Commercially.GuiManager",
       "properties": {
-        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.SculptureOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+        "tabs": [ "Vinconomy.SculptureOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
       }
     },
     {

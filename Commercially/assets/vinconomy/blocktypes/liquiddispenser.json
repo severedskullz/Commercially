@@ -3,6 +3,7 @@
 	"class": "Commercially.BlockCommercial",
 	"entityClass": "Commercially.BECommercialBase",
 	"priorityInteract": true,
+
 	"attributes": {
 		"handbook": {
 			"groupBy": [ "liquidbarrel-north" ],
@@ -26,16 +27,24 @@
 		{
 			"name": "Vinconomy.LiquidDisplay",
 			"properties": {
+				"isCubic": true,
+				"contentsShape": "game:shapes/block/basic/cube.json",
 				"displayTransforms": [
 					{
-						"x": -0.25,
-						"y": 0.05,
-						"z": -0.25
+						"x": -0.22,
+						"y": 0.3,
+						"z": 0,
+						"scaleX": 0.28,
+						"scaleY": 0.58,
+						"scaleZ": 0.6
 					},
 					{
-						"x": 0.25,
-						"y": 0.05,
-						"z": -0.25
+						"x": 0.22,
+						"y": 0.3,
+						"z": 0,
+						"scaleX": 0.28,
+						"scaleY": 0.58,
+						"scaleZ": 0.6
 					}
 				]
 			}
@@ -52,7 +61,7 @@
 		{
 			"name": "Commercially.GuiManager",
 			"properties": {
-				"tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.LiquidOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+				"tabs": ["Vinconomy.LiquidOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
 			}
 		},
 		{
@@ -69,7 +78,11 @@
 					},
 					{
 						"code": "Vinconomy.OpenStall",
-						"priority": 0
+						"priority": 0,
+						"properties": {
+							"ownerTab": "Vinconomy.LiquidOwner",
+							"customerTab": "Vinconomy.ShopCustomer"
+						}
 					}
 				]
 			}
@@ -235,6 +248,5 @@
 		"break": "game:block/planks",
 		"place": "game:block/planks",
 		"walk": "game:walk/wood"
-	},
-	"renderPass": "Transparent"
+	}
 }

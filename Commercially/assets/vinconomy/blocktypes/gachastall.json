@@ -34,12 +34,31 @@
     },
     {
       "name": "Commercially.InteractionManager",
-      "properties": {}
+      "properties": {
+        "interactions": [
+          {
+            "code": "Vinconomy.AddStock",
+            "priority": 10
+          },
+          {
+            "code": "Vinconomy.PurchaseItem",
+            "priority": 5
+          },
+          {
+            "code": "Vinconomy.OpenStall",
+            "priority": 0,
+            "properties": {
+              "ownerTab": "Vinconomy.GachaStallOwner",
+              "customerTab": "Vinconomy.GachaStallCustomer"
+            }
+          }
+        ]
+      }
     },
     {
       "name": "Commercially.GuiManager",
       "properties": {
-        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.GachaStallOwner", "Vinconomy.GachaStallCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+        "tabs": [ "Vinconomy.GachaStallOwner", "Vinconomy.GachaStallCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
       }
     },
     {

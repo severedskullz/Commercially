@@ -2,6 +2,7 @@
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
 using System.Collections.Generic;
 using Vintagestory.API.Client;
@@ -69,9 +70,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
         public BaseDisplayContentsBehavior(BlockEntity blockentity) : base(blockentity)
         {
         }
-
-
-
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
@@ -164,24 +162,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
             return texPos;
         }
 
-        public virtual void UpdateMeshes()
-        {
-            if (Api != null && Api.Side != EnumAppSide.Server && _InventoryProvider.StallCount != 0)
-            {
-                for (int i = 0; i < _InventoryProvider.StallCount; i++)
-                {
-                    UpdateMesh(i);
-                }
-            }
-            this.GetBlockEntity().MarkDirty(true);
-        }
-
-        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
-        {
-            base.FromTreeAttributes(tree, worldAccessForResolve);
-            UpdateMeshes();
-        }
-
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
         {
             TesselateDisplayedItems(mesher, tessThreadTesselator);
@@ -202,9 +182,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
                 {
                     try
                     {
-                        slot = _InventoryProvider.GetStallSlot(i).Product;
+                        BaseStallSlot stall = _InventoryProvider.GetStallSlot(i);
+                        slot = stall.Product;
 
-                        if (slot?.Itemstack != null && _InventoryProvider.GetStallSlot(i).GetNumPurchasesRemaining() > 0 && TfData != null)
+                        if (slot?.Itemstack != null && stall.GetNumPurchasesRemaining() > 0 && TfData != null)
                         {
                             mesh = GetOrCreateMesh(slot, i);
                             if (mesh != null)
@@ -224,14 +205,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
 
         }
 
-        protected virtual void UpdateMesh(int index)
-        {
-            if (Api != null && Api.Side != EnumAppSide.Server && !_InventoryProvider.Inventory[index].Empty)
-            {
-                GetOrCreateMesh(_InventoryProvider.Inventory[index], index);
-            }
-        }
-
         protected virtual MeshData GetOrCreateMesh(ItemSlot slot, int index)
         {
             ICoreClientAPI capi = Api as ICoreClientAPI;
@@ -241,8 +214,11 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
 
             mesh = GenMesh(slot, index);
 
-            string key = GetMeshCacheKey(slot);
-            MeshCache[key] = mesh;
+            if (mesh != null)
+            {
+                string key = GetMeshCacheKey(slot);
+                MeshCache[key] = mesh;
+            }
 
             return mesh;
         }

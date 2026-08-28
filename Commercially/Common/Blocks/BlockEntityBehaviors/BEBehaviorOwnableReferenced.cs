@@ -1,5 +1,6 @@
 ﻿using Commercially.Common.Interfaces;
 using System.IO;
+using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -65,8 +66,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
         public override void OnBlockRemoved()
         {
-            CommerciallyModSystem modSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
-            modSystem.RemoveOwnable(this);
+            ModSystem.RemoveOwnable(this);
             base.OnBlockRemoved();
         }
 
@@ -88,5 +88,34 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
             base.UpdateOwnership(ownerUID, ownerName, name, isAdminOwned);
             ModSystem.UpdateOwnable(this);
         }
+
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+
+            if (packetid == CommerciallyConstants.SET_WAYPOINT)
+            {
+                using (MemoryStream ms = new MemoryStream(data))
+                {
+
+                    if (player.PlayerUID == OwnerUID)
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        bool enabled = reader.ReadBoolean();
+                        string icon = reader.ReadString();
+                        int color = reader.ReadInt32();
+                        ModSystem.UpdateOwnableWaypoint(this, enabled, icon, color);
+                    }
+                    else
+                    {
+                        ((IServerPlayer)player).SendMessage(0, Lang.Get("viconomy:doesnt-own", []), EnumChatType.OwnMessage);
+                    }
+                }
+                return;
+            } 
+            else
+            {
+                base.OnReceivedClientPacket(player, packetid, data);
+            }            
+         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Commercially.Common.Blocks.BlockEntities;
-using Commercially.Common.Interfaces;
-using System;
+﻿using Commercially.Common.Interfaces;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -39,7 +37,7 @@ namespace Commercially.Common.GUI
         public abstract void Compose(GuiComposer composer, ElementBounds rootBounds);
         public abstract void OnGuiClosed();
         public abstract void OnGuiOpened();
-        public abstract bool IsVisible(GuiDialog gui);
+        public abstract bool IsVisible();
 
         public abstract void OnRecievedData(byte[] data);
 

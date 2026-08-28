@@ -10,17 +10,17 @@ namespace Commercially.Common.Interactions
     {
         public const string Key = "Vinconomy.OpenStall";
 
-        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             return true;
         }
 
-        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             return 1;
         }
 
-        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
            return
            [
@@ -32,15 +32,19 @@ namespace Commercially.Common.Interactions
             ];
         }
 
-        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             IGUIManager manager = blockEntity.GetBehavior<IGUIManager>();
             bool isOwner = blockEntity.GetBehavior<IOwnableReference>()?.OwnerUID == caller.Player?.PlayerUID;
 
-            return manager.OpenGUI(blockEntity as BECommercialBase, caller, blockSel, key, isOwner ? "Vinconomy.ShopOwner" : "Vinconomy.ShopCustomer");
+            string ownerTab = properties?["ownerTab"] != null ? properties["ownerTab"].AsString() : "Vinconomy.ShopOwner";
+            string customerTab = properties?["customerTab"] != null ? properties["customerTab"].AsString() : "Vinconomy.ShopCustomer";
+            string tab = isOwner ? ownerTab : customerTab;
+
+            return manager.OpenGUI(blockEntity as BECommercialBase, caller, blockSel, key, tab);
         }
 
-        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject? properties = null, ITreeAttribute activationArgs = null)
         {
             return true;
         }

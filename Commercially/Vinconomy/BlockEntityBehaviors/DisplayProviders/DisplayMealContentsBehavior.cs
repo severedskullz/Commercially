@@ -1,7 +1,6 @@
 ﻿using Commercially.Vinconomy.Inventory.StallSlots;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
@@ -14,17 +13,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
         {
         }
 
-        public override void Initialize(ICoreAPI api, JsonObject properties)
-        {
-            base.Initialize(api, properties);
-        }
-
-
-        public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-        {
-            TesselateDisplayedItems(mesher, tessThreadTesselator);
-            return false;
-        }
 
         protected override MeshData GenMesh(ItemSlot stack, int stallSlot)
         {
@@ -35,19 +23,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
             ItemStack[] contents = mealStall.GetProductContents();
 
             CookingRecipe fromRecipe = Api.GetCookingRecipe(recipe);
-            return mesher.GenMealMesh(fromRecipe, contents);
+            MeshData mesh = mesher.GenMealMesh(fromRecipe, contents);
+            if (mesh != null)
+                ApplyDefaultTranforms(stack.Itemstack, mesh);
 
-            /*
-            if (this.ownBlock == null)
-            {
-                return null;
-            }
-            ItemStack[] stacks = base.GetNonEmptyContentStacks(true);
-            if (stacks == null || stacks.Length == 0)
-            {
-                return null;
-            }
-            return (this.Api as ICoreClientAPI).ModLoader.GetModSystem<MealMeshCache>(true).GenMealInContainerMesh(block, this.FromRecipe, stacks, null);*/
+            return mesh;
         }
+        
     }
 }

@@ -59,7 +59,7 @@ namespace Vinconomy.Util
             return null;
         }
 
-        public static ItemStack DeserializeProduct(ICoreAPI api, string code, int quantity, byte[] attributes)
+        public static ItemStack DeserializeItem(ICoreAPI api, string code, int quantity, byte[] attributes)
         {
             if (code == null)
             {

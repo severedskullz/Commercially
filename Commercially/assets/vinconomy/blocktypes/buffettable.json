@@ -15,7 +15,6 @@
         }
     },
     "entityBehaviors": [
-
         {
             "name": "Vinconomy.MealInventory",
             "properties": {
@@ -32,23 +31,35 @@
                     {
                         "x": -0.25,
                         "y": 0.85,
-                        "z": -0.25
+                      "z": -0.25,
+                      "scaleX": 3,
+                      "scaleY": 3,
+                      "scaleZ": 3
                     },
-                    {
-                        "x": 0.25,
-                        "y": 0.85,
-                        "z": -0.25
-                    },
-                    {
-                        "x": -0.25,
-                        "y": 0.85,
-                        "z": 0.25
-                    },
-                    {
-                        "x": 0.25,
-                        "y": 0.85,
-                        "z": 0.25
-                    }
+                  {
+                    "x": 0.25,
+                    "y": 0.85,
+                    "z": -0.25,
+                    "scaleX": 3,
+                    "scaleY": 3,
+                    "scaleZ": 3
+                  },
+                  {
+                    "x": -0.25,
+                    "y": 0.85,
+                    "z": 0.25,
+                    "scaleX": 3,
+                    "scaleY": 3,
+                    "scaleZ": 3
+                  },
+                  {
+                    "x": 0.25,
+                    "y": 0.85,
+                    "z": 0.25,
+                    "scaleX": 3,
+                    "scaleY": 3,
+                    "scaleZ": 3
+                  }
                 ]
             }
         },
@@ -76,17 +87,21 @@
                         "code": "Vinconomy.PurchaseItem",
                         "priority": 5
                     },
-                    {
-                        "code": "Vinconomy.OpenStall",
-                        "priority": 0
+                  {
+                    "code": "Vinconomy.OpenStall",
+                    "priority": 0,
+                    "properties": {
+                      "ownerTab": "Vinconomy.BuffetOwner",
+                      "customerTab": "Vinconomy.GachaStallCustomer"
                     }
+                  }
                 ]
             }
         },
         {
             "name": "Commercially.GuiManager",
             "properties": {
-                "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.BuffetOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
+              "tabs": [ "Vinconomy.BuffetOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
             }
         },
         {

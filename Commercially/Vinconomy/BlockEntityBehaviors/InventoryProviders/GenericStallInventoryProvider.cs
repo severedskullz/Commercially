@@ -1,19 +1,22 @@
-﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+﻿using Commercially.Common;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GenericStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider, IDecocratedBlock
+    public class GenericStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
     {
         private DecoratedShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
-
         public int StallCount => _Inventory.StallSlots?.Length ?? 0;
+        protected CommerciallyModSystem ModSystem;
+        protected IOwnable Ownable;
 
         public GenericStallInventoryProvider(BlockEntity blockentity) : base(blockentity)
         {
@@ -56,6 +59,20 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
             return _Inventory[0];
         }
 
-
+        public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
+        {
+            if (Ownable != null && !Ownable.CanAccess(player))
+            {
+                if (!((ICoreServerAPI)Api).Server.IsDedicated)
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, "Nice Try, but that isn't yours... If this wasn't singleplayer, you would have been kicked.");
+                }
+                else
+                {
+                    ((IServerPlayer)player).Disconnect("Nice try, but that wasn't yours. (Tried to access Inventory you didn't own)");
+                }
+            }
+            base.OnReceivedClientPacket(player, packetid, data);
+        }
     }
 }

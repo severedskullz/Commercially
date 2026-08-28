@@ -1,10 +1,12 @@
 ﻿
 using Commercially.Common.Inventory.Slots;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
 using Vinconomy.Inventory.Slots;
+using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -23,7 +25,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public StockItemSlot Liquid;
 
-        private float LiterCapacity = 500;
+        public float LiterCapacity { get; private set; } = 50;
 
         public override ItemSlot this[int slotId] {
             get 
@@ -333,7 +335,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             float itemsPerLiter = LiquidUtils.GetItemsPerLiter(contents);
             float stallCapacity = LiterCapacity * itemsPerLiter;
             float currentCapacity = LiquidUtils.GetItemsPerLiter(Liquid.Itemstack);
-            float remainingCapacity = LiterCapacity - currentCapacity;
+            float remainingCapacity = stallCapacity - currentCapacity;
             
             float containerCurrentLiters = container.GetCurrentLitres(sourceStack);
             float fromTransferLimit = Math.Min(liters, containerCurrentLiters);
@@ -346,6 +348,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             Liquid.IsLocked = false;
             int takenAmt = slot.TryPutInto(Inventory.Api.World, Liquid, slot.StackSize);
             Liquid.IsLocked = true;
+
+            if (takenAmt > 0) Liquid.MarkDirty(); 
             return takenAmt;
         }
 
@@ -377,8 +381,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             int moved = container.TryPutLiquid(destContainer, Liquid.Itemstack, actualLitersToTransfer);
             Liquid.TakeOut(moved);
             Liquid.IsLocked = true;
-            //Liquid.Itemstack.StackSize -= moved;
-            Liquid.MarkDirty();
+            if (moved > 0) Liquid.MarkDirty();
             return moved;
         }
 
@@ -394,12 +397,43 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
         public bool AddContents(ItemSlot sourceSlot, int amount)
         {
-            return AddContentsToStall(sourceSlot.Itemstack, amount) > 0;
+            int moved = AddContentsToStall(sourceSlot.Itemstack, amount);
+            if (moved > 0)
+            {
+                ResetProduct();
+            }
+            return moved > 0;
         }
 
         public bool RemoveContents(ItemSlot sourceSlot, int amount)
         {
-            return RemoveContentsFromStall(sourceSlot.Itemstack, amount) > 0;
+            int moved = RemoveContentsFromStall(sourceSlot.Itemstack, amount);
+            if (moved > 0)
+            {
+                ResetProduct();
+            }
+            return moved > 0;
+        }
+
+        public void ResetProduct()
+        {
+            if (Product.Itemstack == null)
+            {
+                if (Liquid.Itemstack != null)
+                {
+                    Product.Itemstack = Liquid.Itemstack.Clone();
+                    Product.Itemstack.StackSize = LiquidUtils.GetStackSizeFromLiters(Liquid.Itemstack, 1);
+                    Product.MarkDirty();
+                }
+            } 
+            else if (Liquid.Itemstack != null && !TradingUtil.IsMatchingItem(Product.Itemstack, Liquid.Itemstack, Inventory.Api.World))
+            {
+                // Product is different than whats in the stall - Get the amount for sale and transfer it over. Items Per Liter might be different, so convert to liters first, then back on the new item
+                float origLiters = LiquidUtils.GetLitersFromStackSize(Product.Itemstack);
+                Product.Itemstack = Liquid.Itemstack.Clone();
+                Product.Itemstack.StackSize = LiquidUtils.GetStackSizeFromLiters(Liquid.Itemstack, origLiters);
+                Product.MarkDirty();
+            }
         }
     }
 }

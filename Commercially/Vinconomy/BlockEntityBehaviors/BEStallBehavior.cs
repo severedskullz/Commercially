@@ -283,6 +283,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                     break;
             }
         }
+
+
+
+
         protected void SetStallRegisterID(IPlayer byPlayer, byte[] data)
         {
             //Only the owner can change the register! Not any joint ownership players
@@ -308,7 +312,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             // even if they were given access...
             if (_Ownable != null && !_Ownable.IsOwner(byPlayer))
             {
-                
                 CommerciallyModSystem.PrintClientMessage(byPlayer, TradingConstants.DOESNT_OWN, new object[] { });
                 return;
             }

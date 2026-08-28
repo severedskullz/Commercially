@@ -4,7 +4,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Common.Blocks.BlockEntityBehaviors
 {
-    public class BEBehaviorGenericContainer : BEBehaviorAbstractContainer
+    public class BEBehaviorGenericContainer : BEBehaviorOwnableContainer
     {
 
         public override InventoryBase Inventory => _Inventory;

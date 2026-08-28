@@ -1,6 +1,7 @@
 ﻿using Commercially.Common.Blocks.BlockEntities;
 using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
+using Commercially.Common.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -56,9 +57,9 @@ namespace Commercially.Common.GUI.Tabs
 
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsCreativePlayer(Api.World.Player);
         }
 
         public override void OnGuiClosed()

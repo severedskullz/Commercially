@@ -13,7 +13,7 @@ namespace Commercially.Vinconomy.Interactions
     {
         public const string Key = "Vinconomy.AddStock";
 
-        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool CanHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type == EnumCallerType.Player)
             {
@@ -26,7 +26,7 @@ namespace Commercially.Vinconomy.Interactions
             return false;
         }
 
-        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool ShouldHandle(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type != EnumCallerType.Player) return false;
 
@@ -42,7 +42,7 @@ namespace Commercially.Vinconomy.Interactions
 
         }
 
-        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public int GetInteractionCount(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject properties = null, ITreeAttribute activationArgs = null)
         {
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
             int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
@@ -50,7 +50,7 @@ namespace Commercially.Vinconomy.Interactions
             return currency == null ? 0 : 2;
         }
 
-        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public WorldInteraction[] GetInteractions(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject properties = null, ITreeAttribute activationArgs = null)
         {
             IStallComponent stallComponent = blockEntity.GetBehavior<IStallComponent>();
             int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
@@ -83,7 +83,7 @@ namespace Commercially.Vinconomy.Interactions
 
         }
 
-        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", ITreeAttribute activationArgs = null)
+        public bool Interact(IWorldAccessor world, Caller caller, BlockEntity blockEntity, BlockSelection blockSel, string key = "default", JsonObject properties = null, ITreeAttribute activationArgs = null)
         {
             if (caller.Type != EnumCallerType.Player) return false;
 

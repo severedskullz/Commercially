@@ -325,14 +325,9 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
 
                 RecipeCode = sourceMealBlock.GetRecipeCode(world, sourceMeal);
-
-                Block generatedMealBlock = world.GetBlock("game:claypot-black-cooked");
-                IBlockMealContainer genMeal = generatedMealBlock as IBlockMealContainer; // While 9 out of 10 times this is probably going to have the same implementation, better safe than sorry.
-                ItemStack stack = new ItemStack(generatedMealBlock);
-                genMeal.SetContents(RecipeCode, stack, sourceMealBlock.GetContents(world, sourceMeal), 1);
-                stack.StackSize = servingsToTransfer;
-                MealSlot.Itemstack = stack;
-                Product.Itemstack = stack.Clone();
+                ItemStack productStack = GenerateMealProduct(sourceMeal, servingsToTransfer);
+                MealSlot.Itemstack = productStack;
+                Product.Itemstack = productStack.Clone();
                 Product.MarkDirty();
             }
 
@@ -364,6 +359,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             MealSlot.OnItemSlotModified(MealSlot.Itemstack);
             MealSlot.MarkDirty();
             sourceSlot.MarkDirty();
+            this.Inventory.BlockEntity.MarkDirty(true);
             return true;
         }
 
@@ -463,16 +459,21 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             ItemStack[] contentsFrom = containerFrom.GetNonEmptyContents(world, source);
             string recipeCodeFrom = containerFrom.GetRecipeCode(world, source);
 
-            // check if recipe code matches
-            if (RecipeCode != recipeCodeFrom)
-            {
-                return false;
-            }
+
 
 
             // check if ingredients match
             IBlockMealContainer sourceMeal = target.Block as IBlockMealContainer;
             ItemStack[] sourceContents = sourceMeal.GetContents(world, target);
+            string recipeCodeTo = sourceMeal.GetRecipeCode(world, target);
+
+            // check if recipe code matches
+            if (recipeCodeTo != recipeCodeFrom)
+            {
+                return false;
+            }
+
+
             if (sourceContents.Length != 0)
             {
                 if (sourceContents.Length != contentsFrom.Length)
@@ -500,6 +501,28 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return CanMergeMeal(itemStack, MealSlot.Itemstack);
         }
 
+        public override int GetNumPurchasesRemaining()
+        {
+            return base.GetNumPurchasesRemaining();
+        }
+
+
+        public override int GetTotalProductAvailable()
+        {
+            if (Product?.Itemstack == null) return 0;
+
+            ItemSlot[] items = GetStockSlots();
+            int amount = 0;
+            foreach (ItemSlot item in items)
+            {
+                if (MatchesProduct(item.Itemstack))
+                {
+                    amount += item.StackSize;
+                }
+            }
+
+            return amount;
+        }
 
         public static int TransferToMealBlock(IPlayer player, ItemSlot containerSlot, string recipe, ItemStack[] mealStacks, int servings)
         {
@@ -796,6 +819,21 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 GenericTradingProcessor.AuditLogError(result, "Somehow allowed purchase of " + totalServingsLeftToTransfer + " extra servings even though we didnt have enough containers");
             }
+        }
+
+        public ItemStack GenerateMealProduct(ItemStack origStack, int desiredServings)
+        {
+            if (origStack == null) return null;
+
+            IWorldAccessor world = Inventory.Api.World;
+            IBlockMealContainer sourceMealBlock = origStack.Block as IBlockMealContainer;
+
+            Block generatedMealBlock = world.GetBlock("game:claypot-black-cooked");
+            IBlockMealContainer genMeal = generatedMealBlock as IBlockMealContainer; // While 9 out of 10 times this is probably going to have the same implementation, better safe than sorry.
+            ItemStack stack = new ItemStack(generatedMealBlock);
+            genMeal.SetContents(RecipeCode, stack, sourceMealBlock.GetContents(world, origStack), 1);
+            stack.StackSize = desiredServings;
+            return stack;
         }
     }
 }

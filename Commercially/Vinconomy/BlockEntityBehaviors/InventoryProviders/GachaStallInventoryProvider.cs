@@ -1,16 +1,19 @@
-﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+﻿using Commercially.Common;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.Trading;
 using System;
 using System.IO;
 using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GachaStallInventoryProvider : BEBehaviorAbstractContainer, IStallInventoryProvider
+    public class GachaStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider
     {
         private GachaShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
@@ -65,6 +68,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
             if (packetid == VinConstants.SET_WEIGHT)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);
@@ -78,6 +87,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
             if (packetid == VinConstants.SET_TOTAL_RANDOMIZER)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);
@@ -90,6 +105,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 
             if (packetid == VinConstants.SET_CONTENTS_QUANTITY)
             {
+                if (!CanAccess(player))
+                {
+                    CommerciallyModSystem.PrintClientMessage(player, TradingConstants.DOESNT_OWN);
+                    return;
+                }
+
                 using (MemoryStream memoryStream = new MemoryStream(data))
                 {
                     BinaryReader binaryReader = new BinaryReader(memoryStream);

@@ -45,10 +45,7 @@ namespace Commercially.Common.Interfaces
 
         public void UpdateOwnership(string ownerUID, string ownerName, string name, bool isAdminOwned);
 
-        public static bool IsCreativePlayer(IPlayer player)
-        {
-            return player.WorldData.CurrentGameMode == EnumGameMode.Creative && player.HasPrivilege("gamemode");
-        }
+        public bool CanAccess(IPlayer player);
     }
 
     /// <summary>

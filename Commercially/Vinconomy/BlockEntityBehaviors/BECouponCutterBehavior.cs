@@ -236,7 +236,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         }
                     }
                     break;
-                case VinConstants.SET_ITEM_PRICE:
+                case VinConstants.SET_COUPON_VALUE:
                     CouponValue = CommUtils.ReadStreamInt(data);
                     break;
                 case VinConstants.SET_COUPON_CONSUME_ON_PURCHASE:

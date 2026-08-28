@@ -73,12 +73,27 @@
     },
     {
       "name": "Commercially.InteractionManager",
-      "properties": {}
+      "properties": {
+        "interactions": [
+          {
+            "code": "Vinconomy.AddStock",
+            "priority": 10
+          },
+          {
+            "code": "Vinconomy.PurchaseItem",
+            "priority": 5
+          },
+          {
+            "code": "Vinconomy.OpenStall",
+            "priority": 0
+          }
+        ]
+      }
     },
     {
       "name": "Commercially.GuiManager",
       "properties": {
-        "tabs": [ "Commercially.Ownership", "Commercially.Container", "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
+        "tabs": [ "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
       }
     },
     {

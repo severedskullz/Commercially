@@ -1,12 +1,9 @@
 ﻿using Commercially.Common.Registry.Packets;
-using ProtoBuf;
-using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
 namespace Commercially.Common.Registry
 {
-    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class OwnableRegistration
     {
         public OwnableRegistration()

@@ -462,7 +462,7 @@ namespace Commercially.Vinconomy.Inventory
 
         public virtual void OnStockModified(ItemSlot slot)
         {
-            if (Api.Side == EnumAppSide.Client) return;
+            //if (Api.Side == EnumAppSide.Client) return;
 
             if (slot is ITrackedItemSlot stallProductSlot)
             {
@@ -500,6 +500,7 @@ namespace Commercially.Vinconomy.Inventory
 
             //TODO: Taking OUT results in 2 events, whereas inserting generates 1... why?
             OnStockUpdated?.Invoke(shop, stallSlot, product, stockCount, currency);
+            if (this.Api.Side == EnumAppSide.Server)
             modSystem.UpdateStockForSlot(shop, stallSlot, product, stockCount, currency);
         }
 

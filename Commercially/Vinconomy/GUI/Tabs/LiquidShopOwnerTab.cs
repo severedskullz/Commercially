@@ -3,8 +3,8 @@ using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Registry;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
@@ -350,6 +350,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             base.Initialize(gui, entity);
             Registry = Api.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as LiquidShopInventory;
+            Inventory.OnStockUpdated += OnUpdateContents;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Ownable = entity?.GetBehavior<IOwnableChild>();
             //NumColumns = GetConfiguration()?["NumColumns"].AsInt(10) ?? 10;
@@ -367,14 +368,23 @@ namespace Commercially.Vinconomy.GUI.Tabs
             }
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        private void OnUpdateContents(IStallComponent shop, int stallSlot, ItemStack product, int stockCount, ItemStack currency)
         {
-            return true;
+            if (stallSlot == StallSlot)
+            {
+                LiquidStallSlot stall = Inventory.GetStall<LiquidStallSlot>(stallSlot);
+                ProductInv[0].Itemstack = stall.Liquid.Itemstack?.Clone();
+            }
+        }
+
+        public override bool IsVisible()
+        {
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
         }
 
         public override void OnGuiClosed()
         {
-            
+            Inventory.OnStockUpdated -= OnUpdateContents;
         }
 
         public override void OnGuiOpened()

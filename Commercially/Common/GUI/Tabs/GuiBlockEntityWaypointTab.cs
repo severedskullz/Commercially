@@ -117,7 +117,7 @@ namespace Commercially.Common.GUI.Tabs
             Api.Network.SendBlockEntityPacket(this.BlockEntityPosition, CommerciallyConstants.SET_WAYPOINT, data);
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
             return true;
         }

@@ -2,6 +2,7 @@
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
+using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
@@ -436,9 +437,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
             }
         }
 
-        public override bool IsVisible(GuiDialog gui)
+        public override bool IsVisible()
         {
-            return true;
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
         }
 
         public override void OnGuiClosed()

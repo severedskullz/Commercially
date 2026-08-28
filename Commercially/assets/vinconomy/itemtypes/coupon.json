@@ -2,7 +2,22 @@
   "code": "coupon",
   "class": "Vinconomy.Coupon",
   "maxstacksize": 64,
-
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Quadrants",
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.125,
+          "z2": 1
+        }
+      }
+    }
+  ],
   "shape": { "base": "item/coupon" },
   "textures": {
     "*": { "base": "item/coupon" },

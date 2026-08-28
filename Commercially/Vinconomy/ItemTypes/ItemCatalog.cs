@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Commercially.Vinconomy.Network.Packets;
+using System.Text;
+using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -7,7 +9,7 @@ namespace Vinconomy.ItemTypes
 {
     public class ItemCatalog : Item
     {
-        /*
+        
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
            
@@ -17,12 +19,12 @@ namespace Vinconomy.ItemTypes
                 int shopID = slot.Itemstack.Attributes.GetInt("ShopId", -1);
                 if (shopID > 0)
                 {
-                    ShopCatalogRequestPacket packet = new ShopCatalogRequestPacket();
+                    CatalogRequestPacket packet = new CatalogRequestPacket();
                     packet.ShopId = shopID;
                     clientAPI.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL).SendPacket(packet);
                 } else {
                     //clientAPI.ShowChatMessage(Lang.Get("vinconomy:ledger-not-set"));
-                    ShopCatalogRequestPacket packet = new ShopCatalogRequestPacket();
+                    CatalogRequestPacket packet = new CatalogRequestPacket();
                     clientAPI.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL).SendPacket(packet);
                 }
                
@@ -44,6 +46,6 @@ namespace Vinconomy.ItemTypes
 
             
         }
-        */
+        
     }
 }
