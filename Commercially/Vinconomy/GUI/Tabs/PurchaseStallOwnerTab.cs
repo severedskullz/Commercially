@@ -81,7 +81,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(priceLabel, priceSlotBounds, priceInputBounds);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-purchased-stock"), smallText, priceLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-purchased-stock"), hoverText, 500, priceLabel);
-                composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { productSlotId }, priceSlotBounds, "currency");
+                composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { currencySlotId }, priceSlotBounds, "currency");
                 composer.AddNumberInput(priceInputBounds, this.OnCostQuantityChanged, smallText, "costQuantity");
 
                 ElementBounds productLabel = ElementBounds.FixedSize(250, 30).FixedUnder(priceSlotBounds, 5);
@@ -90,7 +90,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(productLabel, productSlotBounds, productInputBounds);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-currency"), smallText, productLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-returned-currency"), hoverText, 500, productLabel);
-                composer.AddItemSlotGrid(Inventory, this.SetProductSlot, 1, new int[] { currencySlotId }, productSlotBounds, "product");
+                composer.AddItemSlotGrid(Inventory, this.SetProductSlot, 1, new int[] { productSlotId }, productSlotBounds, "product");
                 composer.AddNumberInput(productInputBounds, this.OnSellQuantityChanged, smallText, "sellQuantity");
 
 
@@ -103,7 +103,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddItemSlotGrid(Inventory, new Action<object>(this.SetCurrencySlot), 1, new int[] { 0 }, chiselSlotBounds, "chisel");
                 */
 
-                if (GUIUtils.IsCreativePlayer(Api.World.Player)) {
+                if (GUIUtils.IsCreativePlayer(ClientApi.World.Player)) {
 
                     ElementBounds adminShopLabel = ElementBounds.FixedSize(200, 25).FixedUnder(productSlotBounds, 13);
                     ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).FixedUnder(productSlotBounds, 10).FixedRightOf(adminShopLabel);
@@ -230,7 +230,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_SHOULD_DISCARD_CURRENCY, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_SHOULD_DISCARD_CURRENCY, data);
         }
 
         private void OnRemainingPurchasesQuantityChanged(string amount)
@@ -240,9 +240,9 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             Int32.TryParse(amount, out int val);
 
-            BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
+            PurchaseStallSlot stall = StallProvider.GetStallSlot<PurchaseStallSlot>(StallSlot);
 
-            if (val > 0 && val <= 1024 && val != stall.ProductPerPurchase)
+            if (val >= 0 && val <= 1024 && val != stall.NumPurchasesRemaining)
             {
                 stall.ProductPerPurchase = val;
                 byte[] data;
@@ -253,7 +253,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     writer.Write(val);
                     data = ms.ToArray();
                 }
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_PURCHASES_REMAINING, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_PURCHASES_REMAINING, data);
             }
         }
 
@@ -270,7 +270,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_FUZZY_MATCHING, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_FUZZY_MATCHING, data);
         }
 
         private void OnToggleLimitPurchases(bool isToggled)
@@ -286,7 +286,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_LIMITED_PURCHASES, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_LIMITED_PURCHASES, data);
         }
 
         private void OnToggleRegisterFallback(bool isToggled)
@@ -302,7 +302,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_REGISTER_FALLBACK, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_REGISTER_FALLBACK, data);
         }
 
         private bool PreviousPage()
@@ -337,7 +337,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ADMIN_OWNED, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ADMIN_OWNED, data);
         }
 
         private void SetProductSlot(object obj)
@@ -345,14 +345,14 @@ namespace Commercially.Vinconomy.GUI.Tabs
             BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
             Gui.Composer.GetTextInput("sellQuantity").SetValue(stall.ProductPerPurchase);
             Gui.SendPacket(obj);
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
 
         private void SetCurrencySlot(object obj)
         {
             BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
             Gui.Composer.GetTextInput("costQuantity").SetValue(stall.CurrencyPerPurchase);
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
 
         private void OnSellQuantityChanged(string amount)
@@ -375,7 +375,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     writer.Write(val);
                     data = ms.ToArray();
                 }
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEMS_PER_PURCHASE, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEMS_PER_PURCHASE, data);
             }
         }
 
@@ -399,7 +399,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     writer.Write(val);
                     data = ms.ToArray();
                 }
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEM_PRICE, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEM_PRICE, data);
             }
         }
 
@@ -416,13 +416,13 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(id);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_PARENT_ID, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_PARENT_ID, data);
         }
 
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Registry = Api.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
+            Registry = ClientApi.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as PurchaseStallShopInventory;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Stall = entity?.GetBehavior<IStallComponent>() as BEStallBehavior;
@@ -439,7 +439,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         public override bool IsVisible()
         {
-            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, ClientApi);
         }
 
         public override void OnGuiClosed()

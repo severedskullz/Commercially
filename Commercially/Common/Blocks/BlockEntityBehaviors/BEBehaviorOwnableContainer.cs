@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
-using ProperVersion;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -58,7 +57,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
             else if (packetid <= 1000)
             {
                 // Actual intent is inventory manipulation. Make sure they have permission!
-                if (CanAccess(player))
+                if (!CanAccess(player))
                 {
                     IServerAPI server = ((ICoreServerAPI)Api).Server;
                     if (!server.IsDedicated && server.Players.Length == 1)

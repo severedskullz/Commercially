@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
 using System.Collections.Generic;
-using Vintagestory.API.MathTools;
 
 namespace Commercially.Common.Registry
 {
@@ -14,6 +13,8 @@ namespace Commercially.Common.Registry
         public string[] GetAllOwners();
 
         public List<OwnableRegistration> GetAllOwnables();
+        public List<OwnableRegistration> GetAllOwnablesForType(string type);
+        public List<T> GetAllOwnablesForType<T>(string type) where T : OwnableRegistration;
 
         public void ClearOwnable(long id);
         public void ClearOwnablePos(long id);

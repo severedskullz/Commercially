@@ -11,7 +11,6 @@ using Commercially.Common.Registry.Packets;
 using Commercially.Common.Renderer;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Reflection;
 using Vinconomy.Delegates;
 using Vinconomy.Filters;
@@ -165,6 +164,7 @@ namespace Commercially.Common
             RegisterSlotFilter("Commercially.ArmorLegsSlot", CommonFilters.IsArmorLegsDressType);
 
             RegisterSlotFilter("Commercially.ToolRackSlot", CommonFilters.IsToolOrWeapon);
+            RegisterSlotFilter("Commercially.ShieldRackSlot", CommonFilters.IsShield);
         }
 
         public void Lifecycle_RegisterRenderers()

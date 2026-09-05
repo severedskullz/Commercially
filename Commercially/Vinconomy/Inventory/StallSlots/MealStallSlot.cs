@@ -660,7 +660,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return VinUtils.GetRecipeCode(Product.Itemstack, Inventory.Api);
         }
 
-        public override void DropInventory(Vec3d pos, int maxStackSize)
+        public override void DropInventory(Vec3d pos, int maxStackSize, bool markDirty = false)
         {
             // DO NOTHING. Meals go bye-bye! Dont wanna duplicate the cooking pots I use to hold the ingredients. Pretend they spilled on the floor and got dirty or something, I don't care.
         }
@@ -718,15 +718,13 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return null;
         }
 
-        public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
+        public AggregatedStacks ExtractProduct(int totalProductNeeded, int numPurchases, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
         {
             AggregatedStacks result = new AggregatedStacks();
 
             IBlockMealContainer mealContainer = Product.Itemstack.Block as IBlockMealContainer;
             if (mealContainer == null)
                 return result;
-
-
 
             string recipeCode = mealContainer.GetRecipeCode(Inventory.Api.World, Product.Itemstack);
             ItemStack[] mealStacks = mealContainer.GetContents(Inventory.Api.World, Product.Itemstack);
@@ -743,7 +741,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                     int capacity = containerSlot.Itemstack.Block.Attributes["servingCapacity"].AsInt();
                     int servingsToTransfer = Math.Min(totalServingsLeftToTransfer, capacity);
                     ItemStack mealStack = TransferToItemStack(containerSlot, recipeCode, mealStacks, totalServingsLeftToTransfer, out int moved);
-                    ExtractProduct(moved, isAdminShop);
+                    ExtractProduct(moved, numPurchases, isAdminShop);
                     totalServingsLeftToTransfer -= moved;
 
 
@@ -765,7 +763,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return result;
         }
 
-        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned)
         {
             AggregatedStacks result = new AggregatedStacks();
             if (!isAdminOwned)

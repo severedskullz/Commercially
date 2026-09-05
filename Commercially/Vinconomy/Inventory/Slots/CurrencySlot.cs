@@ -16,7 +16,7 @@ namespace Vinconomy.Inventory.Slots
 
         public CurrencySlot(InventoryBase inventory) : base(inventory)
         {
-            //this.HexBackgroundColor = "#B62521";
+            this.HexBackgroundColor = "#B62521";
             this.BackgroundIcon = "commercially-payment";
         }
 

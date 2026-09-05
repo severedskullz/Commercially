@@ -11,6 +11,7 @@ namespace Commercially.Common.Registry
     public class OwnableServerRegistry : IOwnableRegistry
     {
         //TODO: Better checks / seperation for DB commits
+        //TODO: Events for Ownable Loaded/Addition/Removal? Might help with cleaning up other data when an ownable is removed and we have references to it in other places
         private readonly ILogger Logger;
         private readonly CommercialDatabase DB;
         private readonly Dictionary<string, Dictionary<long, OwnableRegistration>> OwnablesByOwner = new Dictionary<string, Dictionary<long, OwnableRegistration>>();

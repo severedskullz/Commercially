@@ -186,7 +186,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public virtual void DropInventory(Vec3d pos, int maxStackSize)
+        public virtual void DropInventory(Vec3d pos, int maxStackSize, bool markDirty = false)
         {
             int i = 0;
             ItemSlot[] slots = GetStockSlots();
@@ -206,12 +206,14 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
                 slot.Itemstack = null;
                 i++;
+
+                if (markDirty) slot.MarkDirty();
             }
         }
 
 
 
-        public abstract AggregatedStacks ExtractProduct(int amount, bool isAdminOwned);
+        public abstract AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned);
 
         public virtual int GetTotalProductAvailable()
         {

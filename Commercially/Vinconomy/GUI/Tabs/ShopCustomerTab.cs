@@ -32,7 +32,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             base.Initialize(gui, entity);
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Inventory = StallProvider?.Inventory as VinconBaseInventory;
-            DInv = new DummyInventory(Api, 2);
+            DInv = new DummyInventory(ClientApi, 2);
             DInv.PutLocked = true;
             DInv.TakeLocked = true;
             DInv[0] = new ItemLockedSlot(DInv);
@@ -198,7 +198,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(Quantity);
                 data = ms.ToArray();
 
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
             return true;
         }

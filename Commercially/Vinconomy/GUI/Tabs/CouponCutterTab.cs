@@ -36,10 +36,10 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Registry = Api.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
+            Registry = ClientApi.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory;
             CouponPrinter = entity?.GetBehavior<BECouponCutterBehavior>();
-            OwnableRegistration[] allRegisters = Registry.GetOwnablesForOwner(Api.World.Player.PlayerUID, ["ShopRegister"]);
+            OwnableRegistration[] allRegisters = Registry.GetOwnablesForOwner(ClientApi.World.Player.PlayerUID, ["ShopRegister"]);
             List<OwnableRegistration> filteredRegisters = new List<OwnableRegistration>();
             foreach (OwnableRegistration register in allRegisters)
             {
@@ -61,7 +61,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(code);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_BONUS_TYPE, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_BONUS_TYPE, data);
         }
 
         private void OnChangeNumericType(string code, bool selected)
@@ -73,7 +73,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(code);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_DISCOUNT_TYPE, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_DISCOUNT_TYPE, data);
         }
 
         private void OnNameChanged(string name)
@@ -91,7 +91,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(name);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_ITEM_NAME, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_ITEM_NAME, data);
         }
 
         private void OnShopChanged(string code, bool selected)
@@ -111,7 +111,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 }
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_SHOPS, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_SHOPS, data);
         }
 
         private void OnNumberValueChanged(string txt)
@@ -129,7 +129,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(val);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_VALUE, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_VALUE, data);
         }
 
         private void OnToggleConsumeCoupon(bool consume)
@@ -141,7 +141,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(consume);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_CONSUME_ON_PURCHASE, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_CONSUME_ON_PURCHASE, data);
         }
 
         private void OnToggleBlacklist(bool blacklist)
@@ -153,19 +153,19 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(blacklist);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_BLACKLIST, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_COUPON_BLACKLIST, data);
             Gui.Composer.GetDynamicText("itemListLabel").SetNewText(blacklist ? Lang.Get("vinconomy:gui-item-blacklist") : Lang.Get("vinconomy:gui-item-whitelist"));
         }
 
         private bool OnCut()
         {
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.ACTIVATE_BLOCK, null);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.ACTIVATE_BLOCK, null);
             return true;
         }
 
         private void SendInvPacket(object p)
         {
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition.X, BlockEntityPosition.Y, BlockEntityPosition.Z, p);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition.X, BlockEntityPosition.Y, BlockEntityPosition.Z, p);
         }
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)
@@ -220,7 +220,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 CairoFont labelFont = CairoFont.WhiteSmallishText();
                 CairoFont hoverText = CairoFont.WhiteDetailText();
 
-                composer.AddStaticText(Lang.Get("vinconomy:gui-name"), labelFont, couponNameLabel);
+                composer.AddStaticText(Lang.Get("commercially:label-name"), labelFont, couponNameLabel);
                 composer.AddTextInput(couponNameInput, OnNameChanged, labelFont, "couponName");
 
                 composer.AddStaticText(Lang.Get("vinconomy:gui-whitelisted-shops"), labelFont, appliedShopsLabel);
@@ -287,7 +287,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         public override bool IsVisible()
         {
-            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, ClientApi);
         }
 
         public override void OnRecievedData(byte[] data)

@@ -108,7 +108,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned)
         {
             AggregatedStacks result = new AggregatedStacks();
             int totalProductToMove = amount;

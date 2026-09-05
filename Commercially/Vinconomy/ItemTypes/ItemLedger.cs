@@ -17,7 +17,7 @@ namespace Vinconomy.ItemTypes
                 ICoreClientAPI clientAPI = ((ICoreClientAPI)api);
 
                 IPlayer player = (byEntity as EntityPlayer).Player;
-                int shopID = slot.Itemstack.Attributes.GetInt("ShopId", -1);
+                long shopID = slot.Itemstack.Attributes.GetLong("ShopId", -1);
                 if (shopID > 0 || player.WorldData.CurrentGameMode == EnumGameMode.Creative)
                 {
                     //clientAPI.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL).SendPacket(new LedgerReadRequestPacket() { shopId = shopID });

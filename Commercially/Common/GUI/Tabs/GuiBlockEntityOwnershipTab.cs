@@ -63,7 +63,7 @@ namespace Commercially.Common.GUI.Tabs
                 composer.AddDropDown(ParentIDs, ParentNames, SelectedIndex, new SelectionChangedDelegate(this.OnSelectionChanged), parentSelectBounds, "parentSelection");
             }
 
-            if ((Ownable != null && Ownable.IsAdminOwned) || CommUtils.IsCreativePlayer(Api.World.Player))
+            if ((Ownable != null && Ownable.IsAdminOwned) || CommUtils.IsCreativePlayer(ClientApi.World.Player))
             {
                 composer.AddStaticText(Lang.Get("commercially:label-admin-owned"), smallText, adminShopLabel);
                 composer.AddHoverText(Lang.Get("commercially:tooltip-admin-owned"), hoverText, 500, adminShopLabel);
@@ -126,7 +126,7 @@ namespace Commercially.Common.GUI.Tabs
         {
             base.Initialize(gui, entity);
             Ownable = entity?.GetBehavior<IOwnable>();
-            ModSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
+            ModSystem = ClientApi.ModLoader.GetModSystem<CommerciallyModSystem>();
 
 
             JsonObject config = GetConfiguration("OwnableConfig");
@@ -172,7 +172,7 @@ namespace Commercially.Common.GUI.Tabs
 
         public override bool IsVisible()
         {
-            return CommUtils.IsLocalPlayerOwner(BlockEntity, Api);
+            return CommUtils.IsLocalPlayerOwner(BlockEntity, ClientApi);
         }
 
         public override void OnGuiClosed()

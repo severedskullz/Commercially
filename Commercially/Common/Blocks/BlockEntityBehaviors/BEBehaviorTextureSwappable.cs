@@ -28,10 +28,13 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
         public override void OnBlockPlaced(ItemStack byItemStack = null)
         {
-            if (Api.Side == EnumAppSide.Client)
+            if (byItemStack == null)
             {
                 // For some reason byItemStack is null on other clients. It is only non-null for the person placing it (since they have the item attributes locally.
                 // Therefore, let the server send the update and retesselate the model in the FromAttributes step. Results in a "blinking" block with missing textures, but nothing I can do about it.
+                PrimaryMaterial = "default";
+                SecondaryMaterial = "default";
+                DecoMaterial = "default";
                 return; 
             }
 

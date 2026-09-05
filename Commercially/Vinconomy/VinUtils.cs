@@ -8,6 +8,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace Vinconomy.Util
@@ -281,6 +282,32 @@ namespace Vinconomy.Util
             }
         }
 
+        public static byte[] AttributesToBytes(ItemStack stack)
+        {
+            // All of this because Anego won't escape strings in their Json Tokenizer code... :/
+            byte[] productAttributes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(ms))
+                {
+                    stack.Attributes.ToBytes(writer);
+                    writer.Flush();
+                }
+                productAttributes = ms.ToArray();
+            }
+            return productAttributes;
+        }
+
+        public static ITreeAttribute AttributesFromBytes(byte[] attributes)
+        {
+            // All of this because Anego won't escape strings in their Json Tokenizer code... :/
+            TreeAttribute attrs = new TreeAttribute();
+            SerializerUtil.FromBytes(attributes, (binaryReader) =>
+            {
+                attrs.FromBytes(binaryReader);
+            });
+            return null;
+        }
 
     }
 

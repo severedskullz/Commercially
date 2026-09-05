@@ -1,4 +1,5 @@
-﻿using Commercially.Common.Inventory;
+﻿using Commercially.Common.Interfaces;
+using Commercially.Common.Inventory;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using System;
@@ -529,12 +530,18 @@ namespace Commercially.Vinconomy.Inventory
 
         public override void DropAll(Vec3d pos, int maxStackSize = 0)
         {
+            // I didnt mark the slots as dirty as to not trigger all of the Updater logic. It is also easier to clear the ownable inventory
+            // in one go rather than triggering the event for each slot dozens of times.
+            IStallComponent ownable = this.BlockEntity.GetBehavior<IStallComponent>();
+            if (ownable != null)
+            {
+                modSystem.DB.ClearAllStock(ownable);
+            }
+
             for (int i = 0; i < StallSlots.Length; i++)
             {
-                GetStall(i).DropInventory(pos, maxStackSize);
+                GetStall(i).DropInventory(pos, maxStackSize, ownable == null);
             }
-            //TODO: I didnt mark the slots as dirty as to not trigger all of the Updater logic. It is also easier to clear the ownable inventory
-            // in one go rather than triggering the event for each slot dozens of times.
         }
     }
 }

@@ -277,5 +277,31 @@ namespace Commercially.Common.Registry
             }
             return [];
         }
+
+        public List<OwnableRegistration> GetAllOwnablesForType(string type)
+        {
+            List<OwnableRegistration> results = new List<OwnableRegistration>(Ownables.Values.Count); // Might be a bit of an over optimization
+            foreach (OwnableRegistration ownable in Ownables.Values)
+            {
+                if (ownable.Type == type)
+                {
+                    results.Add(ownable);
+                }
+            }
+            return results;
+        }
+
+        public List<T> GetAllOwnablesForType<T>(string type) where T : OwnableRegistration
+        {
+            List<T> results = new List<T>(Ownables.Values.Count); // Might be a bit of an over optimization
+            foreach (OwnableRegistration ownable in Ownables.Values)
+            {
+                if (ownable.Type == type)
+                {
+                    results.Add((T)ownable);
+                }
+            }
+            return results;
+        }
     }
 }

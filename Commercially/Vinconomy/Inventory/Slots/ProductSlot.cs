@@ -7,7 +7,7 @@ namespace Vinconomy.Inventory.Slots
         
         public ProductSlot(InventoryBase inventory) : base(inventory)
         {
-            //this.HexBackgroundColor = "#B625FF";
+            this.HexBackgroundColor = "#B625FF";
             this.BackgroundIcon = "commercially-general2";
         }
     }

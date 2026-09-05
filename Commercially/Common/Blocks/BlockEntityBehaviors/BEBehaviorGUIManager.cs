@@ -112,7 +112,8 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
                     foreach (var tab in gui.Tabs)
                     {
-                        tab.OnRecievedData(packet.GetData(tab.TabName));
+                        byte[] tabData = packet.GetData(tab.Code);
+                        tab.OnRecievedData(tabData);
                     }
                 }
                 gui.TryOpen();

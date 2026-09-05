@@ -188,7 +188,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             }
         }
 
-        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned)
         {
             List<ItemStack> neededItems = new List<ItemStack>(GachaContents.Length);
             //Check for duplicate items and combine them if players have 2 of the same items in 2 or more slots

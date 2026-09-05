@@ -28,7 +28,7 @@ namespace Commercially.Common.Interactions
            [
                new WorldInteraction()
                 {
-                    ActionLangCode = "vinconomy:open-stall",
+                    ActionLangCode = "vinconomy:stall-open",
                     MouseButton = EnumMouseButton.Right,
                 }
             ];

@@ -26,7 +26,7 @@ namespace Commercially.Common.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            modSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
+            modSystem = ClientApi.ModLoader.GetModSystem<CommerciallyModSystem>();
             icons = modSystem.OwnableMapLayer.WaypointIcons.Keys.ToArray();
             colors = modSystem.OwnableMapLayer.WaypointColors.ToArray();
 
@@ -51,12 +51,12 @@ namespace Commercially.Common.GUI.Tabs
 
             rootBounds.WithChildren(waypointLabel,waypointVisible,colorRow,iconRow,colorLabelBounds,iconLabelBounds);
 
-            composer.AddStaticText(Lang.Get("vinconomy:gui-waypoint-visible"), CairoFont.WhiteSmallText(), waypointLabel)
-                .AddHoverText(Lang.Get("vinconomy:tooltip-waypoint-visible"), CairoFont.WhiteDetailText(), 500, waypointLabel)
+            composer.AddStaticText(Lang.Get("commercially:gui-waypoint-visible"), CairoFont.WhiteSmallText(), waypointLabel)
+                .AddHoverText(Lang.Get("commercially:tooltip-waypoint-visible"), CairoFont.WhiteDetailText(), 500, waypointLabel)
                 .AddSwitch(new Action<bool>(OnToggleWaypointVisible), waypointVisible, "isvisible")
-                .AddStaticText(Lang.Get("vinconomy:gui-color"), CairoFont.WhiteSmallText(), colorLabelBounds)
+                .AddStaticText(Lang.Get("commercially:gui-color"), CairoFont.WhiteSmallText(), colorLabelBounds)
                 .AddColorListPicker(colors, OnToggleColor, colorRow, 500, "colorpicker")
-                .AddStaticText(Lang.Get("vinconomy:gui-icon"), CairoFont.WhiteSmallText(), iconLabelBounds)
+                .AddStaticText(Lang.Get("commercially:gui-icon"), CairoFont.WhiteSmallText(), iconLabelBounds)
                 .AddIconListPicker(icons, OnToggleIcon, iconRow, 500, "iconpicker");
 
             if (registration?.BroadcastWaypoint ?? false)
@@ -114,7 +114,7 @@ namespace Commercially.Common.GUI.Tabs
                 data = ms.ToArray();
             }
 
-            Api.Network.SendBlockEntityPacket(this.BlockEntityPosition, CommerciallyConstants.SET_WAYPOINT, data);
+            ClientApi.Network.SendBlockEntityPacket(this.BlockEntityPosition, CommerciallyConstants.SET_WAYPOINT, data);
         }
 
         public override bool IsVisible()

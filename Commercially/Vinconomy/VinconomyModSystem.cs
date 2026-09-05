@@ -12,6 +12,7 @@ using Commercially.Vinconomy.Interactions;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Network.Packets;
+using Commercially.Vinconomy.Registry;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
@@ -31,12 +32,14 @@ namespace Commercially.Vinconomy
 {
     public class VinconomyModSystem : ModSystem
     {
+        private const string ShopRegisterType = "ShopRegister";
         private ICoreServerAPI _CoreServerAPI;
         private ICoreClientAPI _CoreClientAPI;
         private IServerNetworkChannel _ServerChannel;
         private IClientNetworkChannel _ClientChannel;
 
         public CommerciallyModSystem CommerciallySystem { get; private set; }
+        public Dictionary<long, ShopConfiguration> ShopConfiguration { get; private set; }
 
         private static Dictionary<string, Type> StallTypes;
 
@@ -95,7 +98,7 @@ namespace Commercially.Vinconomy
         public override void Start(ICoreAPI api)
         {
             CommerciallySystem = api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
+            ShopConfiguration = new Dictionary<long, ShopConfiguration>();
 
             api.Network.RegisterChannel(VinConstants.VINCONOMY_CHANNEL)
                 //.RegisterMessageType(typeof(RegistryUpdatePacket))
@@ -124,6 +127,7 @@ namespace Commercially.Vinconomy
             CommerciallySystem.RegisterInteraction(PurchaseItemInteraction.Key, new PurchaseItemInteraction());
             CommerciallySystem.RegisterInteraction(OpenStallInteraction.Key, new OpenStallInteraction());
             CommerciallySystem.RegisterInteraction(BindLedgerInteraction.Key, new BindLedgerInteraction());
+            CommerciallySystem.RegisterInteraction(OpenRegisterInteraction.Key, new OpenRegisterInteraction());
             
         }
 
@@ -195,6 +199,7 @@ namespace Commercially.Vinconomy
             _ServerChannel.SetMessageHandler(new NetworkClientMessageHandler<CatalogRequestPacket>(OnRecieveCatalogRequest));            
 
             DB.InitializeDB();
+            ShopConfiguration = DB.LoadShopConfiguration();
 
         }
 
@@ -205,7 +210,7 @@ namespace Commercially.Vinconomy
             _ClientChannel.SetMessageHandler(new NetworkServerMessageHandler<CatalogResponsePacket>(this.OnRecieveCatalogResponse));
 
             api.RegisterLinkProtocol("viewmap", OnMapLinkClicked);
-            api.ModLoader.GetModSystem<WorldMapManager>().RegisterMapLayer<ShopMapLayer>("vinconomyShop", 20);
+            //api.ModLoader.GetModSystem<WorldMapManager>().RegisterMapLayer<ShopMapLayer>("vinconomyShop", 20);
         }
 
         private void OnMapLinkClicked(LinkTextComponent component)
@@ -244,7 +249,8 @@ namespace Commercially.Vinconomy
 
             if (shopId <= 0 || request.IncludeShopList)
             {
-                List<OwnableRegistration> regs = CommerciallySystem.OwnableRegistry.GetAllOwnables();
+                //TODO: Will need to make this more flexible at some point for modders. Its fine for now, as I dont expect them to move *that* fast.
+                List<OwnableRegistration> regs = CommerciallySystem.OwnableRegistry.GetAllOwnablesForType(ShopRegisterType);
                 response.ShopList = new List<ShopCatalog>();
                 foreach (OwnableRegistration reg in regs)
                 {
@@ -352,8 +358,10 @@ namespace Commercially.Vinconomy
             PostProcessTradeHandlers.Add(priority, hook);
         }
 
-        public OwnableShopInformation GetShopInformation(int shopId)
+        public ShopConfiguration GetShopConfiguration(long shopId)
         {
+            if (ShopConfiguration.ContainsKey(shopId))
+                return ShopConfiguration[shopId];
             return null;
         }
 
@@ -444,11 +452,11 @@ namespace Commercially.Vinconomy
             int totalProductNeeded = req.GetFinalProductNeeded();
             if (stall is IContainedStallSlot container)
             {
-                result.ProductStacks = container.ExtractProduct(totalProductNeeded, req.ContainerSourceSlots, req.IsAdminShop);
+                result.ProductStacks = container.ExtractProduct(totalProductNeeded, req.NumPurchases, req.ContainerSourceSlots, req.IsAdminShop);
             }
             else
             {
-                result.ProductStacks = stall.ExtractProduct(totalProductNeeded, req.IsAdminShop);
+                result.ProductStacks = stall.ExtractProduct(totalProductNeeded, req.NumPurchases, req.IsAdminShop);
             }
 
             if (stall is ITooledStallSlot tooled)
@@ -618,5 +626,28 @@ namespace Commercially.Vinconomy
             return amountLeft <= 0;
         }
 
+        public void UpdateShopConfiguration(long id, string description, string shortDescription, string webhook)
+        {
+            ShopConfiguration config = GetShopConfiguration(id);
+            if (config == null)
+            {
+                config = new ShopConfiguration()
+                {
+                    Id = id,
+                    Description = description,
+                    ShortDescription = shortDescription,
+                    WebHook = webhook
+                };
+                ShopConfiguration[id] = config;
+            } else
+            {
+                config.Description = description;
+                config.ShortDescription = shortDescription;
+                config.WebHook = webhook;
+            }
+
+            DB.SaveShopConfiguration(config);
+
+        }
     }    
 }

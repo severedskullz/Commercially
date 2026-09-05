@@ -41,7 +41,7 @@ namespace Commercially.Vinconomy.Interfaces
         /// <returns></returns>
         public ItemSlot this[int slotId] { get; set; }
 
-        public AggregatedStacks ExtractProduct(int amount, bool isAdminOwned);
+        public AggregatedStacks ExtractProduct(int amount, int numPurchases,  bool isAdminOwned);
 
         public int GetTotalProductAvailable();
 

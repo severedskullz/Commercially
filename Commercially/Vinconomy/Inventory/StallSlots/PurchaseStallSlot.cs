@@ -73,9 +73,15 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return PurchasedProduct;
         }
 
+        public override ItemSlot[] GetStockSlots()
+        {
+            return GetProductAndParentSlots();
+        }
+
+
         public ItemSlot[] GetProductAndParentSlots()
         {
-            ItemSlot[] currency = GetStockSlots();
+            ItemSlot[] currency = base.GetStockSlots();
             if (this.RegisterFallback && this.Inventory.StallComponent.Ownable.HasParent())
             {
                 ItemSlot[] parentCurrency = GetParentCurrencySlots();
@@ -239,11 +245,41 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             result.Request.Api.World.PlaySoundAt(sound ?? new AssetLocation("sounds/player/build"), result.Request.Customer.Entity, result.Request.Customer, true, 16f, 1f);
         }
 
-        public void ExtractProductFromStall(TradeResult result)
+        public override int GetNumPurchasesRemaining()
         {
+            int numLeft = GetTotalProductAvailable() / ProductPerPurchase;
             if (IsLimited)
             {
-                NumPurchasesRemaining -= result.FinalPurchases;
+                numLeft = Math.Min(numLeft, NumPurchasesRemaining);
+            }
+            return numLeft;
+        }
+
+        public override int GetTotalProductAvailable()
+        {
+            int actualAvail = base.GetTotalProductAvailable();
+            if (IsLimited)
+            {
+                int availNeeded = ProductPerPurchase * NumPurchasesRemaining;
+                return Math.Min(actualAvail, availNeeded);
+            }
+            else
+            {
+                return actualAvail;
+            }
+        }
+
+        
+
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned)
+        {
+            int totalProductToMove = amount;
+            AggregatedStacks productStacks = new AggregatedStacks();
+            ItemStack product = GetOfferedProduct();
+
+            if (IsLimited)
+            {
+                NumPurchasesRemaining -= numPurchases;
                 if (NumPurchasesRemaining < 0)
                 {
                     this.Inventory.modSystem.Mod.Logger.Error($"Somehow removed {Math.Abs(NumPurchasesRemaining)} extra purchases from Purchase Stall");
@@ -251,22 +287,22 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
                 }
             }
 
-            int totalProductToMove = result.TotalProductAmount;
-            AggregatedStacks productStacks = result.ProductStacks;
-           
-            if (result.Request.IsAdminShop)
+            if (isAdminOwned)
             {
-                int maxStackSize = result.Request.ProductNeeded.Collectible.MaxStackSize;
+
+                int maxStackSize = product.Collectible.MaxStackSize;
                 while (totalProductToMove > 0)
                 {
-                    ItemStack transferStack = result.Request.ProductNeeded.Clone();
+                    ItemStack transferStack = product.Clone();
                     int stackSize = Math.Min(totalProductToMove, maxStackSize);
                     transferStack.StackSize = stackSize;
                     productStacks.Add(transferStack);
                     totalProductToMove -= stackSize;
                 }
-            } else {
-                AggregatedSlots products = result.Request.ProductSourceSlots;
+            }
+            else
+            {
+                AggregatedSlots products = TradingUtil.GetAllValidSlotsFor(this.Inventory.Api, product, GetStockSlots(), IsFuzzyMatching);
                 foreach (ItemSlot slot in products)
                 {
                     ItemStack takenStack = slot.TakeOut(totalProductToMove);
@@ -293,6 +329,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             {
                 this.Inventory.modSystem.Mod.Logger.Error($"Somehow missing {totalProductToMove}  items from Product");
             }
+
+            return productStacks;
         }
 
         public BlockEntity GetBlockEntity()

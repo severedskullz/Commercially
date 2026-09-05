@@ -91,7 +91,7 @@
                     "code": "Vinconomy.OpenStall",
                     "priority": 0,
                     "properties": {
-                      "ownerTab": "Vinconomy.LiquidOwner",
+                      "ownerTab": "Vinconomy.ShopOwner",
                       "customerTab": "Vinconomy.ClothingStandCustomer"
                     }
                   }

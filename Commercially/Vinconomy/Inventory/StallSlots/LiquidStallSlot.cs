@@ -1,12 +1,9 @@
-﻿
-using Commercially.Common.Inventory.Slots;
-using Commercially.Common.Util;
+﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
 using System;
 using Vinconomy.Inventory.Slots;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -109,7 +106,7 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return slots;
         }
 
-        public override AggregatedStacks ExtractProduct(int amount, bool isAdminOwned)
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminOwned)
         {
             AggregatedStacks result = new AggregatedStacks();
             int totalProductToMove = amount;
@@ -371,7 +368,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             float itemsPerLiter = LiquidUtils.GetItemsPerLiter(contents);
             float containerCurrentLiters = container.GetCurrentLitres(destContainer);
 
-
             int desiredItemsToTransfer = LiquidUtils.GetStackSizeFromLiters(Liquid.Itemstack, liters);
             int capacityItemsToTransfer = LiquidUtils.GetStackSizeFromLiters(Liquid.Itemstack, container.CapacityLitres - containerCurrentLiters);
             int actualItemsToTransfer = Math.Min(desiredItemsToTransfer, capacityItemsToTransfer);
@@ -385,12 +381,12 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             return moved;
         }
 
-        public override void DropInventory(Vec3d pos, int maxStackSize)
+        public override void DropInventory(Vec3d pos, int maxStackSize, bool markDirty = false)
         {
             // DO NOTHING. Liquids go bye-bye! Needs a container since liquid-portion isnt an actual obtainable item. Pretend they spilled on the floor, I don't care.
         }
 
-        public AggregatedStacks ExtractProduct(int totalProductNeeded, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
+        public AggregatedStacks ExtractProduct(int totalProductNeeded, int numPurchases, CapacityAggregatedSlots containerSourceSlots, bool isAdminShop)
         {
             throw new NotImplementedException();
         }

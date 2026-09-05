@@ -24,21 +24,6 @@ namespace Commercially.Common.Database
                 cmd.CommandText = "CREATE TABLE IF NOT EXISTS Ownables (Id INTEGER PRIMARY KEY AUTOINCREMENT, Type TEXT, Name TEXT, Owner TEXT, OwnerName TEXT, ParentId INTEGER, X INTEGER, Y INTEGER, Z INTEGER, BroadcastWaypoint INTEGER, WaypointIcon TEXT, WaypointColor INTEGER);";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Sales (ShopId INTEGER, Customer TEXT, Month INTEGER, Year INTEGER, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes TEXT);";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Products ( X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, PRIMARY KEY (X,Y,Z, StallSlot));";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Products ( X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, TotalStock INTEGER, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, PRIMARY KEY (X,Y,Z, StallSlot));";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS PendingSales (Id INTEGER PRIMARY KEY AUTOINCREMENT, X INTEGER, Y INTEGER, Z INTEGER, StallSlot INTEGER, ShopId INTEGER, Customer TEXT, ProductName TEXT, ProductCode TEXT, ProductQuantity INTEGER, ProductAttributes BLOB, CurrencyName TEXT, CurrencyCode TEXT, CurrencyQuantity INTEGER, CurrencyAttributes BLOB, Amount INTEGER);";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "CREATE TABLE IF NOT EXISTS ShopPermissions (Id INTEGER, PlayerUid TEXT, PlayerName TEXT);";
-                cmd.ExecuteNonQuery();
-
                 connection.Close();
             }
         }
@@ -52,7 +37,7 @@ namespace Commercially.Common.Database
                 connection.Open();
                 SqliteCommand cmd = connection.CreateCommand();
 
-                cmd.CommandText = @"UPDATE Ownables SET Name = @Name, Owner = @Owner, OwnerName = @OwnerName, X = @X, Y = @Y, Z = @Z, ParentId = @ParentID WHERE ID = @ID;";
+                cmd.CommandText = @"UPDATE Ownables SET Name = @Name, Owner = @Owner, OwnerName = @OwnerName, X = @X, Y = @Y, Z = @Z, ParentId = @ParentID, BroadcastWaypoint = @BroadcastWaypoint, WaypointIcon = @WaypointIcon, WaypointColor = @WaypointColor WHERE ID = @ID;";
                 cmd.Parameters.Add("@Name", SqliteType.Text).Value = ownable.Name != null ? ownable.Name : DBNull.Value;
                 cmd.Parameters.Add("@Owner", SqliteType.Text).Value = ownable.OwnerUID != null ? ownable.OwnerUID : DBNull.Value;
                 cmd.Parameters.Add("@OwnerName", SqliteType.Text).Value = ownable.OwnerName != null ? ownable.OwnerName : DBNull.Value;
@@ -72,6 +57,12 @@ namespace Commercially.Common.Database
                     cmd.Parameters.Add("@Y", SqliteType.Integer).Value = ownable.Position.Y;
                     cmd.Parameters.Add("@Z", SqliteType.Integer).Value = ownable.Position.Z;
                 }
+
+
+                cmd.Parameters.Add("@BroadcastWaypoint", SqliteType.Integer).Value = ownable.BroadcastWaypoint ? 1 : 0;
+                cmd.Parameters.Add("@WaypointIcon", SqliteType.Text).Value = ownable.WaypointIcon != null ? ownable.WaypointIcon : DBNull.Value;
+                cmd.Parameters.Add("@WaypointColor", SqliteType.Integer).Value = ownable.WaypointColor != 0 ? ownable.WaypointColor : DBNull.Value;
+
 
                 cmd.ExecuteNonQuery();
             }

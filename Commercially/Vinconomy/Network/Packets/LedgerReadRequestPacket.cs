@@ -6,7 +6,7 @@ namespace Vinconomy.Network.Packets
     public class LedgerReadRequestPacket
     {
         [ProtoMember(1)]
-        public int shopId { get; set; }
+        public long shopId { get; set; }
 
         public LedgerReadRequestPacket() { }
     }

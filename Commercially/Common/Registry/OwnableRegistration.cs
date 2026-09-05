@@ -76,5 +76,12 @@ namespace Commercially.Common.Registry
         {
             return player.PlayerUID == this.OwnerUID;
         }
+
+        /// <summary>
+        /// Loads any additional data that might be needed for this type of Ownable
+        /// </summary>
+        public virtual void Initialize() {
+
+        }
     }
 }

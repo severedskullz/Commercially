@@ -1,8 +1,8 @@
 ﻿using Commercially.Common;
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Registry;
 using Commercially.Common.Util;
+using Commercially.Vinconomy.Registry;
 using System;
 using System.IO;
 using Vinconomy.Util;
@@ -18,21 +18,22 @@ namespace Commercially.Vinconomy.GUI.Tabs
         private ElementBounds shortDescClipBounds;
         private ElementBounds descClipBounds;
 
-        private OwnableRegistration ownable;
-        private OwnableShopInformation shopInformation;
+        string Name;
+        string Description;
+        string ShortDescription;
+        string WebHook;
+        
 
         public override string Code => CODE;
         public override string TabName => Lang.Get("vinconomy:tabname-register-config");
 
-        public override void Initialize(IModularGui gui, BlockEntity entity = null)
-        {
-            base.Initialize(gui, entity);
-            shopInformation = new OwnableShopInformation();
-            ownable = new OwnableRegistration();
-        }
 
         public override void Compose(GuiComposer composer, ElementBounds rootBounds)
         {
+            CairoFont labelFont = CairoFont.WhiteSmallishText();
+            CairoFont hoverFont = CairoFont.WhiteDetailText();
+            CairoFont inputFont = CairoFont.TextInput();
+
             ElementBounds shopNameLabelBounds = ElementBounds.Fixed(0, 35, 500, 25);
             ElementBounds shopNameInputBounds = ElementBounds.FixedSize(500, 25).FixedUnder(shopNameLabelBounds);
 
@@ -69,67 +70,57 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 descriptionLabelBounds, descriptionSizeLabelBounds,
                 webhookLabelBounds, webhookBounds, saveButtonBounds);
 
-            CairoFont hoverText = CairoFont.WhiteDetailText();
+
 
             composer
-                .AddStaticText(Lang.Get("vinconomy:gui-name"), CairoFont.WhiteSmallText(), shopNameLabelBounds)
-                .AddTextInput(shopNameInputBounds, null, CairoFont.TextInput(), "shopName")
+                .AddStaticText(Lang.Get("commercially:label-name"), labelFont, shopNameLabelBounds)
+                .AddTextInput(shopNameInputBounds, null, inputFont, "shopName")
 
-                .AddStaticText(Lang.Get("vinconomy:gui-short-description"), CairoFont.WhiteSmallText(), shortDescriptionLabelBounds)
-                .AddHoverText(Lang.Get("vinconomy:tooltip-short-description"), hoverText, 500, shortDescriptionLabelBounds)
+                .AddStaticText(Lang.Get("vinconomy:gui-description-short"), labelFont, shortDescriptionLabelBounds)
+                .AddHoverText(Lang.Get("vinconomy:tooltip-description-short"), hoverFont, 500, shortDescriptionLabelBounds)
 
                 .AddInset(shortDescInsetBounds, 3)
                 .BeginClip(shortDescClipBounds);
             try
             {
-                composer.AddTextArea(shortDescContainerBounds, UpdateShortDesc, CairoFont.TextInput(), "shortDescription");
+                //composer.AddTextArea(shortDescContainerBounds, UpdateShortDesc, inputFont, "shortDescription");
+                composer.AddTextInput(shortDescContainerBounds, UpdateShortDesc, inputFont, "shortDescription");
             }
             catch (Exception ex)
             {
-                composer.AddRichtext(Lang.Get("vinconomy:gui-error-tell-the-dev") + ex.Message, CairoFont.WhiteDetailText(), shortDescContainerBounds, "description");
+                composer.AddRichtext(Lang.Get("vinconomy:gui-error-tell-the-dev") + ex.Message, labelFont, shortDescContainerBounds, "description");
             }
             composer.EndClip()
-            .AddVerticalScrollbar(OnNewShortDescScrollbarValue, shortDescScrollbarBounds, "shortdescription-scrollbar")
+            //.AddVerticalScrollbar(OnNewShortDescScrollbarValue, shortDescScrollbarBounds, "shortdescription-scrollbar")
             .AddDynamicText("0 / 250", CairoFont.WhiteSmallishText(), shortDescriptionSizeLabelBounds, "shortDescriptionLength")
 
-            .AddStaticText(Lang.Get("vinconomy:gui-description"), CairoFont.WhiteSmallText(), descriptionLabelBounds)
-            .AddHoverText(Lang.Get("vinconomy:tooltip-description"), hoverText, 500, descriptionLabelBounds)
+            .AddStaticText(Lang.Get("vinconomy:gui-description-long"), labelFont, descriptionLabelBounds)
+            .AddHoverText(Lang.Get("vinconomy:tooltip-description-long"), hoverFont, 500, descriptionLabelBounds)
             //.AddTextArea(descriptionBounds, UpdateLongCount, CairoFont.TextInput(), "description")
             .AddInset(descriptionInsetBounds, 3)
             .BeginClip(descClipBounds);
             try
             {
-                composer.AddTextArea(descriptionContainerBounds, UpdateLongDesc, CairoFont.TextInput(), "description");
+                //composer.AddTextArea(descriptionContainerBounds, UpdateLongDesc, inputFont, "description");
+                composer.AddTextInput(descriptionContainerBounds, UpdateLongDesc, inputFont, "description");
             }
             catch (Exception ex)
             {
-                composer.AddRichtext("There was an error in the store's description. Exception " + ex.Message, CairoFont.WhiteDetailText(), descriptionContainerBounds, "description");
+                composer.AddRichtext("There was an error in the store's description. Exception " + ex.Message, labelFont, descriptionContainerBounds, "description");
             }
             composer.EndClip()
-            .AddVerticalScrollbar(OnNewDescriptionScrollbarValue, descriptionScrollbarBounds, "description-scrollbar")
-            .AddDynamicText("0 / 2500", CairoFont.WhiteSmallishText(), descriptionSizeLabelBounds, "descriptionLength")
+            //.AddVerticalScrollbar(OnNewDescriptionScrollbarValue, descriptionScrollbarBounds, "description-scrollbar")
+            .AddDynamicText("0 / 2500", labelFont, descriptionSizeLabelBounds, "descriptionLength")
 
-            .AddStaticText(Lang.Get("vinconomy:gui-webhook"), CairoFont.WhiteSmallText(), webhookLabelBounds)
-            .AddHoverText(Lang.Get("vinconomy:tooltip-webhook"), hoverText, 500, webhookLabelBounds)
-            .AddTextInput(webhookBounds, null, CairoFont.TextInput(), "webhook")
+            .AddStaticText(Lang.Get("vinconomy:gui-webhook"), labelFont, webhookLabelBounds)
+            .AddHoverText(Lang.Get("vinconomy:tooltip-webhook"), hoverFont, 500, webhookLabelBounds)
+            .AddTextInput(webhookBounds, null, inputFont, "webhook")
 
             .AddButton(Lang.Get("vinconomy:gui-save"), OnSaveShopConfigPressed, saveButtonBounds, EnumButtonStyle.Small, "save");
 
 
-            
-            int shortLength = shopInformation.ShortDescription == null ? 0 : shopInformation.ShortDescription.Length;
-            int longLength = shopInformation.Description == null ? 0 : shopInformation.Description.Length;
-            composer.GetTextInput("shopName").SetValue(ownable.Name);
-
-            GuiElementTextArea shortDesc = composer.GetTextArea("shortDescription");
-            shortDesc.SetValue(shopInformation.ShortDescription);
-
-            GuiElementTextArea longDesc = composer.GetTextArea("description");
-            longDesc.SetValue(shopInformation.Description);
-
-            composer.GetTextInput("webhook").SetValue(shopInformation.WebHook);
-            composer.GetDynamicText("shortDescriptionLength").SetNewText($"{shortLength} / 250");
-            composer.GetDynamicText("descriptionLength").SetNewText($"{longLength} / 1024");
+            UpdateConfig();
+           
             
             UpdateShortDescScrollbar();
             UpdateDescScrollbar();
@@ -138,7 +129,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         public override bool IsVisible()
         {
-            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, ClientApi);
         }
 
         public override void OnGuiClosed()
@@ -151,12 +142,59 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
         }
 
+        public void UpdateConfig()
+        {
+            int shortLength = ShortDescription == null ? 0 : ShortDescription.Length;
+            int longLength = Description == null ? 0 : Description.Length;
+            Gui.Composer.GetTextInput("shopName").SetValue(Name ?? "");
+
+            //GuiElementTextArea shortDesc = Gui.Composer.GetTextArea("shortDescription");
+            GuiElementTextInput shortDesc = Gui.Composer.GetTextInput("shortDescription");
+            shortDesc.SetValue(ShortDescription ?? "");
+
+            //GuiElementTextArea longDesc = Gui.Composer.GetTextArea("description");
+            GuiElementTextInput longDesc = Gui.Composer.GetTextInput("description");
+            longDesc.SetValue(Description ?? "");
+
+            Gui.Composer.GetTextInput("webhook").SetValue(WebHook ?? "");
+            Gui.Composer.GetDynamicText("shortDescriptionLength").SetNewText($"{shortLength} / 250");
+            Gui.Composer.GetDynamicText("descriptionLength").SetNewText($"{longLength} / 1024");
+        }
+
         public override void OnRecievedData(byte[] data)
         {
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                BinaryReader reader = new BinaryReader(ms);
+                Name = reader.ReadString();
+                Description = reader.ReadString();
+                ShortDescription = reader.ReadString();
+                WebHook = reader.ReadString();
+            }
         }
 
         public override byte[] OnSendData(BlockEntity entity, Caller caller, BlockSelection blockSel, string key)
         {
+            IOwnableReference ownable = entity.GetBehavior<IOwnableReference>();
+            if (ownable != null)
+            {
+                ShopConfiguration config = entity.Api.ModLoader.GetModSystem<VinconomyModSystem>().GetShopConfiguration(ownable.ID);
+                if (config == null)
+                    return null;
+
+                byte[] data;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    BinaryWriter writer = new BinaryWriter(ms);
+                    writer.Write(ownable.Name);
+                    writer.Write(config.Description);
+                    writer.Write(config.ShortDescription);
+                    writer.Write(config.WebHook);
+                    data = ms.ToArray();
+                }
+                return data;
+
+            }
             return null;
         }
 
@@ -167,27 +205,29 @@ namespace Commercially.Vinconomy.GUI.Tabs
             {
                 BinaryWriter writer = new BinaryWriter(ms);
                 writer.Write(Gui.Composer.GetTextInput("shopName").GetText());
-                writer.Write(Gui.Composer.GetTextArea("description").GetText());
-                writer.Write(Gui.Composer.GetTextArea("shortDescription").GetText());
+                writer.Write(Gui.Composer.GetTextInput("description").GetText());
+                writer.Write(Gui.Composer.GetTextInput("shortDescription").GetText());
                 writer.Write(Gui.Composer.GetTextInput("webhook").GetText());
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntityPosition, CommerciallyConstants.SET_NAME, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntityPosition, VinConstants.SET_CONFIGURATION, data);
             return true;
         }
 
         private void UpdateShortDescScrollbar()
         {
             float descScrollVisibleHeight = (float)descClipBounds.fixedHeight;
-            double descScrollTotalHeight = Gui.Composer.GetTextArea("shortDescription").Bounds.fixedHeight;
-            Gui.Composer.GetScrollbar("shortdescription-scrollbar").SetHeights(descScrollVisibleHeight, (float)descScrollTotalHeight);
+            //double descScrollTotalHeight = Gui.Composer.GetTextArea("shortDescription").Bounds.fixedHeight;
+            double descScrollTotalHeight = Gui.Composer.GetTextInput("shortDescription").Bounds.fixedHeight;
+            //Gui.Composer.GetScrollbar("shortdescription-scrollbar").SetHeights(descScrollVisibleHeight, (float)descScrollTotalHeight);
         }
 
         private void UpdateDescScrollbar()
         {
             float descScrollVisibleHeight = (float)descClipBounds.fixedHeight;
-            double descScrollTotalHeight = Gui.Composer.GetTextArea("description").Bounds.fixedHeight;
-            Gui.Composer.GetScrollbar("description-scrollbar").SetHeights(descScrollVisibleHeight, (float)descScrollTotalHeight);
+            //double descScrollTotalHeight = Gui.Composer.GetTextArea("description").Bounds.fixedHeight;
+            double descScrollTotalHeight = Gui.Composer.GetTextInput("description").Bounds.fixedHeight;
+            //Gui.Composer.GetScrollbar("description-scrollbar").SetHeights(descScrollVisibleHeight, (float)descScrollTotalHeight);
         }
 
         private void OnNewDescriptionScrollbarValue(float value)
@@ -221,7 +261,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             if (obj.Length > 250)
             {
-                GuiElementTextArea area = Gui.Composer.GetTextArea("shortDescription");
+                //GuiElementTextArea area = Gui.Composer.GetTextArea("shortDescription");
+                GuiElementTextInput area = Gui.Composer.GetTextInput("shortDescription");
                 area.SetValue(obj.Substring(0, 250));
             }
 
@@ -247,7 +288,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
             GuiElementDynamicText desc = Gui.Composer.GetDynamicText("descriptionLength");
             if (obj.Length > 1024)
             {
-                GuiElementTextArea area = Gui.Composer.GetTextArea("description");
+                //GuiElementTextArea area = Gui.Composer.GetTextArea("description");
+                GuiElementTextInput area = Gui.Composer.GetTextInput("description");
                 area.SetValue(obj.Substring(0, 1024));
             }
 

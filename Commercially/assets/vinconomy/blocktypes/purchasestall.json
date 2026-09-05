@@ -31,23 +31,13 @@
         "displayTransforms": [
 
           {
-            "x": -0.25,
-            "y": 0.63,
+            "x": -0.225,
+            "y": 1,
             "z": -0.25
           },
           {
-            "x": 0.25,
-            "y": 0.63,
-            "z": -0.25
-          },
-          {
-            "x": -0.25,
-            "y": 0.13,
-            "z": -0.25
-          },
-          {
-            "x": 0.25,
-            "y": 0.13,
+            "x": 0.225,
+            "y": 1,
             "z": -0.25
           }
         ]
@@ -76,7 +66,11 @@
           },
           {
             "code": "Vinconomy.OpenStall",
-            "priority": 0
+            "priority": 0,
+            "properties": {
+              "ownerTab": "Vinconomy.PurchaseStallOwner",
+              "customerTab": "Vinconomy.ShopCustomer"
+            }
           }
         ]
       }

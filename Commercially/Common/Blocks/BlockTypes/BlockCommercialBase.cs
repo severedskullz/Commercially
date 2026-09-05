@@ -88,29 +88,14 @@ namespace Commercially.Common.Blocks.BlockTypes
             return result;
         }
 
-        /*
-        public override ItemStack[] GetDrops(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)
-        {
-            ItemStack stack = new ItemStack(this);
-            return base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
-        }
-
-        public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
-        {
-            return base.OnPickBlock(world, pos);
-        }
-
-        */
-
         public override bool CanCreatureSpawnOn(IBlockAccessor blockAccessor, BlockPos pos, EntityProperties type, BaseSpawnConditions sc)
         {
             return false;
         }
 
-       
-
         public override Vec4f GetSelectionColor(ICoreClientAPI capi, BlockPos pos)
         {
+            //TODO: IPartialSelectable Interface for controlling color and indexes
             var i = capi.World.Player.CurrentBlockSelection.SelectionBoxIndex;
             return i switch
             {
@@ -121,6 +106,7 @@ namespace Commercially.Common.Blocks.BlockTypes
 
         public override bool DoPartialSelection(IWorldAccessor world, BlockPos pos)
         {
+            //TODO: IPartialSelectable Interface for controlling color and indexes
             var i = ((IClientWorldAccessor) world).Player.CurrentBlockSelection.SelectionBoxIndex;
             return i != 0;
         }

@@ -28,7 +28,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Inventory = StallProvider?.Inventory as VinconBaseInventory;
 
-            DInv = new DummyInventory(this.Api, 31);
+            DInv = new DummyInventory(this.ClientApi, 31);
 
             
 
@@ -188,7 +188,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     .AddButton(dealText, () => { return this.OnPurchase(14); }, footDealButton, EnumButtonStyle.Small)
                     .AddItemSlotGrid(DInv, null, 1, [28], footCurrencyIcon)
                     .AddItemSlotGrid(DInv, null, 1, [29], footProductIcon)
-                    .AddButton("Buy Outfit", () => { return this.OnPurchase(-1); }, outfitDealButton, EnumButtonStyle.Small)
+                    .AddButton(Lang.Get("vinconomy:gui-buy-all"), () => { return this.OnPurchase(-1); }, outfitDealButton, EnumButtonStyle.Small)
                 .EndChildElements();
             }
             else if (StallProvider == null)
@@ -215,7 +215,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(1);
                 data = ms.ToArray();
 
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
             return true;
         }

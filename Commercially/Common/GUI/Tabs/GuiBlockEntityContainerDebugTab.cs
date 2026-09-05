@@ -44,7 +44,7 @@ namespace Commercially.Common.GUI.Tabs
 
         public override bool IsVisible()
         {
-            return CommUtils.IsCreativePlayer(Api.World.Player);
+            return CommUtils.IsCreativePlayer(ClientApi.World.Player);
         }
 
         public override void OnGuiClosed()

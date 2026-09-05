@@ -6,7 +6,7 @@ using Vintagestory.API.Config;
 using Vinconomy.Util;
 using Vinconomy.Network.Packets;
 using Vinconomy.GUI;
-using Commercially.Vinconomy.Trading;
+using Commercially.Common.Registry;
 
 namespace Commercially.Vinconomy
 {
@@ -50,7 +50,7 @@ namespace Commercially.Vinconomy
             _clientChannel.SetMessageHandler(new NetworkServerMessageHandler<LedgerReadResponsePacket>(this.OnRecieveRequestToReadResponsePacket));
         }
 
-        public void RequestToReadLedgerData(int shopId)
+        public void RequestToReadLedgerData(long shopId)
         {
             _clientChannel.SendPacket(new LedgerReadRequestPacket() { shopId = shopId }); 
         }
@@ -62,7 +62,7 @@ namespace Commercially.Vinconomy
                 return;
             }
 
-            OwnableShopInformation shop = _coreSystem.GetShopInformation(packet.shopId);
+            OwnableRegistration shop = _coreSystem.CommerciallySystem.OwnableRegistry.GetOwnable(packet.shopId);
             if (shop != null)
             {
                 _serverChannel.SendPacket(new LedgerReadResponsePacket() { Id = shop.ID, Name = shop.Name }, new IServerPlayer[] { player });
@@ -92,7 +92,7 @@ namespace Commercially.Vinconomy
             ledgerGUI=null;
         }
 
-        public void RequestLedgerData(int shopId, int month, int year)
+        public void RequestLedgerData(long shopId, int month, int year)
         {
             _clientChannel.SendPacket(new LedgerEntryRequestPacket(shopId, month, year));
         }

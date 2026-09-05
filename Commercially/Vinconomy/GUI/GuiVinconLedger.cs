@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using Vinconomy.Network.Packets;
+using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Util;
 
 namespace Vinconomy.GUI
 {
@@ -17,11 +19,11 @@ namespace Vinconomy.GUI
         private GuiElementNumberInput yearElem;
         private ElementBounds clipBounds;
 
-        int shopId;
+        long shopId;
         int year;
         int month;
 
-        public GuiVinconLedger(string DialogTitle, int shopID, ICoreClientAPI capi)
+        public GuiVinconLedger(string DialogTitle, long shopID, ICoreClientAPI capi)
             : base(DialogTitle, capi)
         {
             shopId = shopID;
@@ -54,8 +56,7 @@ namespace Vinconomy.GUI
         {
             CairoFont font = CairoFont.WhiteSmallText();
             List<RichTextComponent> list = new List<RichTextComponent>();
-            try
-            {
+
 
                 if (data != null)
                 {
@@ -64,19 +65,24 @@ namespace Vinconomy.GUI
                         list.Add(new RichTextComponent(capi, key + ":\r\n", font));
                         foreach (var sale in data[key])
                         {
-                            ItemStack product = ResolveBlockOrItem(sale.ProductCode, sale.ProductQuantity);
-                            if (sale.ProductAttributes != null)
+                            try
                             {
-                                JsonObject productAttr = JsonObject.FromJson(sale.ProductAttributes);
-                                product.Attributes = (ITreeAttribute)productAttr.ToAttribute();
+                                ItemStack product = ResolveBlockOrItem(sale.ProductCode, sale.ProductQuantity);
+                                if (sale.ProductAttributes != null)
+                                {
+                                    product.Attributes = VinUtils.AttributesFromBytes(sale.ProductAttributes);
+                                }
+                                ItemStack currency = ResolveBlockOrItem(sale.CurrencyCode, sale.CurrencyQuantity);
+                                if (sale.CurrencyAttributes != null)
+                                {
+                                    product.Attributes = VinUtils.AttributesFromBytes(sale.CurrencyAttributes);
+                                }
+                                list.Add(new RichTextComponent(capi, "\t" + Lang.Get("vinconomy:gui-sale-entry", new object[] { product.StackSize, product.GetName(), currency.StackSize, currency.GetName() }) + "\r\n", font));
                             }
-                            ItemStack currency = ResolveBlockOrItem(sale.CurrencyCode, sale.CurrencyQuantity);
-                            if (sale.CurrencyAttributes != null)
-                            {
-                                JsonObject currencyAttr = JsonObject.FromJson(sale.CurrencyAttributes);
-                                currency.Attributes = (ITreeAttribute)currencyAttr.ToAttribute();
+                            catch(Exception e) {
+                                list.Add(new RichTextComponent(capi, Lang.Get("vinconomy:gui-ledger-error", new object[] { sale.ProductCode, sale.CurrencyCode, e.Message }), font));
                             }
-                            list.Add(new RichTextComponent(capi, "\t" + Lang.Get("vinconomy:gui-sale-entry", new object[] { product.StackSize, product.GetName(), currency.StackSize, currency.GetName() }) + "\r\n", font));
+                            
                         }
                         list.Add(new RichTextComponent(capi, "\r\n", font));
                     }
@@ -86,9 +92,7 @@ namespace Vinconomy.GUI
                 {
                     list.Add(new RichTextComponent(capi, Lang.Get("vinconomy:gui-no-sales"), font));
                 }
-            } catch(Exception e) {
-                list.Add(new RichTextComponent(capi, Lang.Get("vinconomy:gui-error-tell-the-dev") + e.Message, font));
-            }
+
            
             textElem.SetNewText(list.ToArray());
             updateScrollbarBounds();

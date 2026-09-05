@@ -22,7 +22,7 @@
         "numStalls": 3,
         "numSlotsPerStall": 16,
         "stallType": "GenericStallSlot",
-        "stallFilters": [ "Commercially.ToolRackSlot", "Commercially.ToolRackSlot", "Commercially.ToolRackSlot" ]
+        "stallFilters": [ "Commercially.ToolRackSlot", "Commercially.ToolRackSlot", "Commercially.ShieldRackSlot" ]
       }
     },
     {
@@ -32,35 +32,36 @@
         "displayTransforms": [
 
           {
-            "x": -0.25,
-            "y": 0.77,
+            "x": -0.05,
+            "y": 0.55,
             "z": -0.1,
             "scaleX": 0.6,
             "scaleY": 0.6,
             "scaleZ": 0.6,
             "rotX": -90,
-            "rotY": -90
+            "rotY": -135
 
           },
           {
-            "x": 0.25,
-            "y": 0.77,
+            "x": 0.05,
+            "y": 0.55,
             "z": -0.1,
             "scaleX": 0.6,
             "scaleY": 0.6,
-            "scaleZ": 0.6,
+            "scaleZ": -0.6,
             "rotX": -90,
             "rotY": -90
           },
           {
-            "x": -0.25,
-            "y": 0.3,
-            "z": 0.01,
+            "x": 0.025,
+            "y": 0.715,
+            "z": -0.155,
             "scaleX": 0.6,
             "scaleY": 0.6,
             "scaleZ": 0.6,
             "rotX": -90,
-            "rotY": -90
+            "rotY": -90,
+            "rotZ": 7
           }
         ]
       }

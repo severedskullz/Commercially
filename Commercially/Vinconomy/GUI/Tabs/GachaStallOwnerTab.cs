@@ -36,7 +36,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         public override void Initialize(IModularGui gui, BlockEntity entity = null)
         {
             base.Initialize(gui, entity);
-            Registry = Api.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
+            Registry = ClientApi.ModLoader.GetModSystem<CommerciallyModSystem>().OwnableRegistry;
             Inventory = entity?.GetBehavior<IInventoryProvider>()?.Inventory as GachaShopInventory;
             StallProvider = entity?.GetBehavior<IStallInventoryProvider>();
             Ownable = entity?.GetBehavior<IOwnableChild>();
@@ -93,8 +93,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 ElementBounds priceSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).FixedUnder(priceLabel);
                 ElementBounds priceInputBounds = ElementBounds.FixedSize(75, 30).FixedUnder(priceLabel, 10).FixedRightOf(priceSlotBounds, 10);
                 settingBounds.WithChildren(priceLabel, priceSlotBounds, priceInputBounds);
-                composer.AddStaticText(Lang.Get("vinconomy:gui-currency"), smallText, priceLabel);
-                composer.AddHoverText(Lang.Get("vinconomy:tooltip-currency"), hoverText, 500, priceLabel);
+                composer.AddStaticText(Lang.Get("vinconomy:gui-price"), smallText, priceLabel);
+                composer.AddHoverText(Lang.Get("vinconomy:tooltip-price"), hoverText, 500, priceLabel);
                 composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { currencySlotId }, priceSlotBounds, "currency");
                 composer.AddNumberInput(priceInputBounds, this.OnCostQuantityChanged, smallText, "costQuantity");
 
@@ -106,7 +106,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-item-weight-counts"), hoverText, 500, totalCountLabel);
 
 
-                if (GUIUtils.IsCreativePlayer(Api.World.Player))
+                if (GUIUtils.IsCreativePlayer(ClientApi.World.Player))
                 {
 
                     ElementBounds adminShopLabel = ElementBounds.FixedSize(200, 25).FixedUnder(totalCountLabel, 13);
@@ -137,8 +137,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 ElementBounds contentsLabel = ElementBounds.FixedSize(slotGridWidth, 25).FixedUnder(pagePrev, 10);
                 pageBounds.WithChildren(contentsLabel);
-                composer.AddStaticText(Lang.Get("vinconomy:gui-contents"), labelTextFont, contentsLabel);
-                composer.AddHoverText(Lang.Get("vinconomy:tooltip-contents"), hoverText, 500, contentsLabel);
+                composer.AddStaticText(Lang.Get("vinconomy:gui-gacha-contents"), labelTextFont, contentsLabel);
+                composer.AddHoverText(Lang.Get("vinconomy:tooltip-gacha-contents"), hoverText, 500, contentsLabel);
 
                 ElementBounds last = null;
                 for (int i = 0; i < stall.GachaContents.Length; i++)
@@ -255,12 +255,12 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(value);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_WEIGHT, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_WEIGHT, data);
         }
 
         public override bool IsVisible()
         {
-            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, Api);
+            return CommUtils.IsLocalPlayerOwner(this.BlockEntity, ClientApi);
         }
 
         public override void OnGuiClosed()
@@ -296,7 +296,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(id);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_PARENT_ID, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_PARENT_ID, data);
         }
 
         private void OnContentsQuantityChanged(int slot, string amount)
@@ -316,7 +316,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(val);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_CONTENTS_QUANTITY, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_CONTENTS_QUANTITY, data);
             
         }
 
@@ -340,7 +340,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     writer.Write(val);
                     data = ms.ToArray();
                 }
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEM_PRICE, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ITEM_PRICE, data);
             }
         }
 
@@ -348,7 +348,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
         {
             BaseStallSlot stall = StallProvider.GetStallSlot(StallSlot);
             Gui.Composer.GetTextInput("costQuantity").SetValue(stall.CurrencyPerPurchase);
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos.X, BlockEntity.Pos.Y, BlockEntity.Pos.Z, obj);
         }
 
         private bool PreviousPage()
@@ -379,7 +379,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ADMIN_OWNED, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.SET_ADMIN_OWNED, data);
         }
         private void OnToggleItemWeight(bool isToggled)
         {
@@ -393,7 +393,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 writer.Write(isToggled);
                 data = ms.ToArray();
             }
-            Api.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_TOTAL_RANDOMIZER, data);
+            ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, VinConstants.SET_TOTAL_RANDOMIZER, data);
         }
     }
 }

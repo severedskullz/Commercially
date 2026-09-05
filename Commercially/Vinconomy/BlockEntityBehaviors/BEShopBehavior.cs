@@ -1,9 +1,15 @@
-﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
+﻿using Commercially.Common;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using System;
+using System.IO;
+using Vinconomy.Util;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
 
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
@@ -37,7 +43,32 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
         {
-            base.OnReceivedClientPacket(player, packetid, data);
+            if (packetid == VinConstants.SET_CONFIGURATION)
+            {
+                using (MemoryStream ms = new MemoryStream(data))
+                {
+
+                    if (player.PlayerUID == OwnerUID)
+                    {
+                        BinaryReader reader = new BinaryReader(ms);
+                        string name = reader.ReadString();
+                        string description = reader.ReadString();
+                        string shortDescription = reader.ReadString();
+                        string webhook = reader.ReadString();
+                        this.Name = name;
+                        Api.ModLoader.GetModSystem<VinconomyModSystem>().UpdateShopConfiguration(this.Ownable.ID, description, shortDescription, webhook);
+                        Ownable.UpdateOwnership(OwnerUID, OwnerName, name, IsAdminOwned);
+                    }
+                    else
+                    {
+                        ((IServerPlayer)player).SendMessage(0, Lang.Get("viconomy:doesnt-own", []), EnumChatType.OwnMessage);
+                    }
+                }
+            }
+            else
+            {
+                base.OnReceivedClientPacket(player, packetid, data);
+            }
         }
     }
 }

@@ -119,10 +119,8 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
         }
 
 
-        public override AggregatedStacks ExtractProduct(int amount, bool isAdminShop)
+        public override AggregatedStacks ExtractProduct(int amount, int numPurchases, bool isAdminShop)
         {
-
-            int numPurchases = amount;
             ItemStack bundle = GenNewSculptureBundle();
 
             if (!isAdminShop)

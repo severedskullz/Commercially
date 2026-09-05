@@ -22,13 +22,13 @@ namespace Vinconomy.Network.Packets
         [ProtoMember(3)]
         public int ProductQuantity;
         [ProtoMember(4)]
-        public string ProductAttributes;
+        public byte[] ProductAttributes;
         [ProtoMember(5)]
         public string CurrencyCode;
         [ProtoMember(6)]
         public int CurrencyQuantity;
         [ProtoMember(7)]
-        public string CurrencyAttributes;
+        public byte[] CurrencyAttributes;
 
     }
 }

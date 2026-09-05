@@ -23,7 +23,7 @@
 
         //Owner Packets [2000 - 2999]
 
-
+        public const int SET_CONFIGURATION = 2006;
         public const int SET_SCULPTURE_XZ = 2007;
         public const int SET_SCULPTURE_Y = 2008;
         public const int SET_ITEM_NAME = 2009;

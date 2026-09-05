@@ -98,7 +98,7 @@ namespace Commercially.Vinconomy.Interactions
             int index = stallComponent.GetStallIndexFromSelection(blockSel.SelectionBoxIndex);
             BaseStallSlot stallSlot = stallComponent?.GetStallSlot(index);
 
-            AggregatedStacks returnedStacks = stallSlot.ExtractProduct(1, false);
+            AggregatedStacks returnedStacks = stallSlot.ExtractProduct(1, 1, false);
             while (returnedStacks.CanRemoveStack()) 
             {
                 ItemStack stack = returnedStacks.RemoveStack();

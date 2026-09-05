@@ -10,7 +10,7 @@ namespace Vinconomy.Network.Packets
         public string Name {  get; set; }
 
         [ProtoMember(2)]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [ProtoMember(3)]
         public string Error { get; set; }

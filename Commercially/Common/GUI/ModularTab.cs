@@ -3,12 +3,14 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace Commercially.Common.GUI
 {
     public abstract class ModularTab
     {
-        public ICoreClientAPI Api { get; set; }
+        public ICoreClientAPI ClientApi { get; set; }
+        public ICoreServerAPI ServerApi { get; set; }
         public abstract string Code { get; }
         public abstract string TabName { get; }
         public BlockEntity BlockEntity { get; set; }
@@ -26,7 +28,8 @@ namespace Commercially.Common.GUI
         {
                 Gui = gui;
                 BlockEntity = entity;
-                Api = (entity?.Api as ICoreClientAPI);
+                ClientApi = (entity?.Api as ICoreClientAPI);
+                ServerApi = (entity?.Api as ICoreServerAPI);
         }
 
         /// <summary>

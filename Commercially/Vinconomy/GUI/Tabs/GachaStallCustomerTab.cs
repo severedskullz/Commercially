@@ -175,7 +175,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 data = ms.ToArray();
 
-                Api.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
+                ClientApi.Network.SendBlockEntityPacket(BlockEntity.Pos, CommerciallyConstants.PURCHASE_ITEMS, data);
             }
             this.Gui.FullRecompose();
             return true;
