@@ -31,7 +31,7 @@
   "tooltip-waypoint-visible": "If enabled, the waypoint is broadcasted to all other players to let them know where your block is located.",
   "tooltip-admin-owned": "Denotes if this Ownable is owned by an Admin and should come with any sort of admininstrator benefits such as infinite resources, no food perish speed, etc.",
 
-  "dosent-own": "You do not own this",
+  "doesnt-own": "You do not own this",
   "default-name": "{0}'s Block",
   "container-no-inventory": "This ownable does not have any inventory providers",
 

@@ -26,18 +26,18 @@ namespace Commercially.Common.Registry
             this.WaypointColor = item.WaypointColor;
         }
 
-        public long ID { get; internal set; }
-        public string Type { get; internal set; }
-        public string Name { get; internal set; }
-        public string OwnerUID { get; internal set; }
-        public string OwnerName { get; internal set; }
-        public long? ParentId { get; internal set; }
-        public int X { get; internal set; }
-        public int Y { get; internal set; }
-        public int Z { get; internal set; }
-        public bool BroadcastWaypoint { get; internal set; }
-        public string WaypointIcon { get; internal set; }
-        public int WaypointColor { get; internal set; }
+        public long ID { get;  set; }
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string OwnerUID { get; set; }
+        public string OwnerName { get; set; }
+        public long? ParentId { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Z { get; set; }
+        public bool BroadcastWaypoint { get; set; }
+        public string WaypointIcon { get; set; }
+        public int WaypointColor { get; set; }
 
         
 

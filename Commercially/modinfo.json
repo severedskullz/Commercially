@@ -4,7 +4,7 @@
     "name": "Commercially",
     "authors": ["Severed Skullz"],
     "description": "To be added",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "dependencies": {
         "game": ""
     }
