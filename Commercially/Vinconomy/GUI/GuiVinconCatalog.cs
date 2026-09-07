@@ -104,7 +104,7 @@ namespace Vinconomy.GUI
 
 
                                 SingleComposer.AddRichtext(catalog.Ownable.Name, CairoFont.WhiteSmallText(), shop["shopNameLabel"]);
-                                SingleComposer.AddRichtext(Lang.Get("vinconomy:gui-f-owner", catalog.Ownable.OwnerName), CairoFont.WhiteSmallText(), shop["ownerLabel"]);
+                                SingleComposer.AddRichtext($"{Lang.Get("commercially:label-owner")}: { catalog.Ownable.OwnerName}", CairoFont.WhiteSmallText(), shop["ownerLabel"]);
 
                                 string location = Lang.Get("vinconomy:gui-location")  + (catalog.Ownable.IsWaypointBroadcasted ? $"<a href=\"viewmap://{catalog.Ownable.WorldX}={catalog.Ownable.Y}={catalog.Ownable.WorldZ}\">({catalog.Ownable.X}, {catalog.Ownable.Y}, {catalog.Ownable.Z})</a>" : Lang.Get("vinconomy:gui-no-location"));
 

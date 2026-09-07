@@ -1,12 +1,11 @@
-﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
-using Commercially.Vinconomy.Interfaces;
+﻿using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class RegisterInventoryProvider : BEBehaviorOwnableContainer, IShopInventoryProvider
+    public class RegisterInventoryProvider : BaseInventoryProvider, IShopInventoryProvider
     {
         private RegisterInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

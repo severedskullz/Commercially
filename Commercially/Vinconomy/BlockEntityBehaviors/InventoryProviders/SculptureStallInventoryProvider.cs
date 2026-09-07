@@ -1,5 +1,4 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.Slots;
@@ -12,7 +11,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class SculptureStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider
+    public class SculptureStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider
     {
         private GenericShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

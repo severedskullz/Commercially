@@ -1,5 +1,4 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
@@ -10,7 +9,7 @@ using Vintagestory.API.Server;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GenericStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
+    public class GenericStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider, IDecocratedBlock
     {
         private DecoratedShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;
@@ -27,6 +26,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
         {
             base.Initialize(api, properties);
             _Inventory.InitializeFromProperties(properties, "GenericShopInventory", this.Pos.ToString(), api);
+
         }
 
         public ItemStack GetCurrencyForStallSlot(int stallSlot)

@@ -1,5 +1,4 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -11,7 +10,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class PurchaseStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider
+    public class PurchaseStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider
     {
         private PurchaseStallShopInventory _Inventory;
 

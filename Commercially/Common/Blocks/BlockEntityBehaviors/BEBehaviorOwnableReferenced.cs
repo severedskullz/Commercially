@@ -1,6 +1,5 @@
 ﻿using Commercially.Common.Interfaces;
 using System.IO;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -14,6 +13,7 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public long ID { get; private set; }
 
         public BlockPos Position => this.Pos;
+        public virtual bool MaintainOwnershipOnBreak => false;
 
         public BEBehaviorOwnableReferenced(BlockEntity blockentity) : base(blockentity)
         {
@@ -44,16 +44,10 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
             if (Api.Side == EnumAppSide.Server)
             {
                 CommerciallyModSystem modSystem = Api.ModLoader.GetModSystem<CommerciallyModSystem>();
-
-                // These attributes were set on the itemstack in BehaviorCommercialEvents:DoPlaceBlock
-                OwnerName = byItemStack.Attributes.GetString("OwnerName");
-                OwnerUID = byItemStack.Attributes.GetString("OwnerUID");
-
                 if (byItemStack.Attributes.HasAttribute("ID"))
                 {
                     ID = byItemStack.Attributes.GetLong("ID");
                     modSystem.UpdateOwnable(this);
-
                 }
                 else
                 {
@@ -78,9 +72,13 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
 
         public virtual void AddAttributes(ItemStack stack)
         {
-            stack.Attributes.SetLong("ID", ID);
-            stack.Attributes.SetString("OwnerUID", OwnerUID);
-            stack.Attributes.SetString("OwnerName", OwnerName);
+            if (MaintainOwnershipOnBreak)
+            {
+                stack.Attributes.SetLong("ID", ID);
+                stack.Attributes.SetString("OwnerUID", OwnerUID);
+                stack.Attributes.SetString("OwnerName", OwnerName);
+                stack.Attributes.SetString("Name", Name);
+            }
         }
 
         public override void UpdateOwnership(string ownerUID, string ownerName, string name, bool isAdminOwned)

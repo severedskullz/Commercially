@@ -1,4 +1,5 @@
 ﻿using Commercially.Common;
+using Commercially.Common.GUI.Tabs;
 using Commercially.Common.Interactions;
 using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Registry;
@@ -157,6 +158,7 @@ namespace Commercially.Vinconomy
             guiSystem.RegisterTabType(GachaStallOwnerTab.CODE, typeof(GachaStallOwnerTab));
             guiSystem.RegisterTabType(GachaStallCustomerTab.CODE, typeof(GachaStallCustomerTab));
             guiSystem.RegisterTabType(LiquidShopOwnerTab.CODE, typeof(LiquidShopOwnerTab));
+            guiSystem.RegisterTabType(RegisterContentsTab.CODE, typeof(RegisterContentsTab));
         }
 
         public void Lifecycle_RegisterItemClasses(ICoreAPI api)
@@ -283,8 +285,10 @@ namespace Commercially.Vinconomy
             }
             catalog.Ownable = entry;
 
-            //catalog.Description = shop.Description;
-            //catalog.ShortDescription = shop.ShortDescription;
+
+            ShopConfiguration.TryGetValue(shop.ID, out ShopConfiguration config);
+            catalog.Description = config.Description;
+            catalog.ShortDescription = config.ShortDescription;
 
             if (includeProductList)
             {

@@ -16,13 +16,12 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public string OwnerUID { get; set; }
         public string OwnerName { get; set; }
         protected CommerciallyModSystem ModSystem;
+        public virtual string DefaultLangCode => "commercially:default-name";
 
         public BEBehaviorOwnable(BlockEntity blockentity) : base(blockentity)
         {
 
         }
-
-
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
@@ -82,23 +81,10 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
             SetIsAdminOwned(isAdminOwned);
         }
 
-
-        public override void OnBlockPlaced(ItemStack byItemStack = null)
-        {
-            base.OnBlockPlaced(byItemStack);
-        }
-
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            base.OnBlockBroken(byPlayer);
-        }
-
         public bool IsOwner(IPlayer byPlayer)
         {
             return this.OwnerUID == byPlayer.PlayerUID;
         }
-
-
 
         public override void OnReceivedClientPacket(IPlayer player, int packetid, byte[] data)
         {
@@ -150,6 +136,14 @@ namespace Commercially.Common.Blocks.BlockEntityBehaviors
         public bool CanAccess(IPlayer player)
         {
             return player.PlayerUID == OwnerUID || CommUtils.IsCreativePlayer(player);
+        }
+
+        public override void OnBlockPlaced(ItemStack? byItemStack = null)
+        {   
+            // These attributes were set on the itemstack in BehaviorCommercialEvents:DoPlaceBlock
+            OwnerName = byItemStack?.Attributes.GetString("OwnerName");
+            OwnerUID = byItemStack?.Attributes.GetString("OwnerUID");
+            Name = byItemStack?.Attributes.GetString("Name", Lang.Get(DefaultLangCode, [OwnerName]));
         }
     }
 }

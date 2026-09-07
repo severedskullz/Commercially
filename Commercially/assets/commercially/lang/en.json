@@ -31,7 +31,7 @@
   "tooltip-admin-owned": "Denotes if this Ownable is owned by an Admin and should come with any sort of admininstrator benefits such as infinite resources, no food perish speed, etc.",
 
   "dosent-own": "You do not own this",
-
+  "default-name": "{0}'s Block",
   "container-no-inventory": "This ownable does not have any inventory providers",
 
   "wp-genericcoins": "Shop",

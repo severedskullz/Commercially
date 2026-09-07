@@ -13,7 +13,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Util;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Commercially.Vinconomy.GUI.Tabs
 {
@@ -111,7 +110,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddItemSlotGrid(Inventory, this.SetCurrencySlot, 1, new int[] { currencySlotId }, priceSlotBounds, "currency");
                 composer.AddNumberInput(priceInputBounds, this.OnCostQuantityChanged, smallText, "costQuantity");
 
-                if (true)
+                if (GUIUtils.IsCreativePlayer(ClientApi.World.Player))
                 {
                     ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).FixedUnder(priceSlotBounds).WithFixedOffset(0, 10);
                     ElementBounds adminShopLabel = ElementBounds.FixedSize(100, 25).FixedUnder(priceSlotBounds).FixedRightOf(adminShopBounds).WithFixedOffset(0, 10);
@@ -120,6 +119,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     composer.AddSwitch(this.OnToggleAdminShop, adminShopBounds, "admin");
                     composer.AddStaticText(Lang.Get("vinconomy:gui-admin-shop"), smallText, adminShopLabel);
                     composer.AddHoverText(Lang.Get("vinconomy:tooltip-admin-shop"), hoverText, 500, adminShopLabel);
+                    composer.GetSwitch("admin").SetValue(Ownable.IsAdminOwned);
                 }
 
                 ElementBounds pageBounds = ElementBounds.FixedSize(250, 30).FixedRightOf(settingBounds, 15).WithFixedOffset(0, GuiStyle.TitleBarHeight);

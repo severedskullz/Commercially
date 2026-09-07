@@ -80,7 +80,7 @@ namespace Vinconomy.GUI
                                 list.Add(new RichTextComponent(capi, "\t" + Lang.Get("vinconomy:gui-sale-entry", new object[] { product.StackSize, product.GetName(), currency.StackSize, currency.GetName() }) + "\r\n", font));
                             }
                             catch(Exception e) {
-                                list.Add(new RichTextComponent(capi, Lang.Get("vinconomy:gui-ledger-error", new object[] { sale.ProductCode, sale.CurrencyCode, e.Message }), font));
+                                list.Add(new RichTextComponent(capi, Lang.Get("vinconomy:gui-ledger-error", new object[] { sale.ProductCode, sale.CurrencyCode, e.Message }) + "\r\n", font));
                             }
                             
                         }

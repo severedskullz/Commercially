@@ -1,11 +1,11 @@
 {
-  "code": "shelf",
+  "code": "shoptoolrack",
   "class": "Commercially.BlockCommercial",
   "entityClass": "Commercially.BECommercialBase",
   "priorityInteract": true,
   "attributes": {
     "handbook": {
-      "groupBy": [ "shelf-north" ],
+      "groupBy": [ "shoptoolrack-north" ],
       "extraSections": [
         {
           "title": "",
@@ -21,7 +21,8 @@
       "properties": {
         "numStalls": 4,
         "numSlotsPerStall": 16,
-        "stallType": "GenericStallSlot"
+        "stallType": "GenericStallSlot",
+        "stallFilter": "Commercially.ToolRackSlot"
       }
     },
     {
@@ -32,23 +33,44 @@
 
           {
             "x": -0.25,
-            "y": 0.63,
-            "z": -0.25
+            "y": 0.77,
+            "z": -0.1,
+            "scaleX": 0.6,
+            "scaleY": 0.6,
+            "scaleZ": 0.6,
+            "rotX": -90,
+            "rotY": -90
+
           },
           {
             "x": 0.25,
-            "y": 0.63,
-            "z": -0.25
+            "y": 0.77,
+            "z": -0.1,
+            "scaleX": 0.6,
+            "scaleY": 0.6,
+            "scaleZ": 0.6,
+            "rotX": -90,
+            "rotY": -90
           },
           {
             "x": -0.25,
-            "y": 0.13,
-            "z": -0.25
+            "y": 0.3,
+            "z": 0.01,
+            "scaleX": 0.6,
+            "scaleY": 0.6,
+            "scaleZ": 0.6,
+            "rotX": -90,
+            "rotY": -90
           },
           {
             "x": 0.25,
-            "y": 0.13,
-            "z": -0.25
+            "y": 0.3,
+            "z": 0.01,
+            "scaleX": 0.6,
+            "scaleY": 0.6,
+            "scaleZ": 0.6,
+            "rotX": -90,
+            "rotY": -90
           }
         ]
       }
@@ -57,10 +79,10 @@
       "name": "Vinconomy.Stall",
       "properties": {
         "stallSelectionIndexes": {
-          "2": 0,
-          "3": 1,
-          "4": 2,
-          "5": 3
+          "1": 0,
+          "2": 1,
+          "3": 2,
+          "4": 3
         }
 
       }
@@ -105,7 +127,7 @@
     {
       "name": "Commercially.TextureSwappable",
       "properties": {
-        "BaseBlock": "shelf-north",
+        "BaseBlock": "shoptoolrack-north",
         "CreativeTabs": [ "vinconomy", "general" ],
         "PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ]
       }
@@ -142,46 +164,31 @@
   },
   "shapebytype": {
     "*-north": {
-      "base": "block/shelf",
+      "base": "block/toolrack",
       "rotateY": 0
     },
     "*-west": {
-      "base": "block/shelf",
+      "base": "block/toolrack",
       "rotateY": 90
     },
     "*-south": {
-      "base": "block/shelf",
+      "base": "block/toolrack",
       "rotateY": 180
     },
     "*-east": {
-      "base": "block/shelf",
+      "base": "block/toolrack",
       "rotateY": 270
     }
   },
 
   "collisionboxes": [
     {
-
       "x1": 0,
-      "y1": 0.5625,
+      "y1": 0,
       "z1": 0,
       "x2": 1,
-      "y2": 0.6253,
-      "z2": 0.5,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0,
-      "y1": 0.0625,
-      "z1": 0,
-      "x2": 1,
-      "y2": 0.125,
-      "z2": 0.5,
+      "y2": 1,
+      "z2": 0.25,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -193,13 +200,12 @@
 
   "selectionBoxes": [
     {
-
       "x1": 0,
-      "y1": 0.5625,
+      "y1": 0,
       "z1": 0,
-      "x2": 1,
-      "y2": 0.6253,
-      "z2": 0.5,
+      "x2": 0,
+      "y2": 0,
+      "z2": 0,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -207,28 +213,27 @@
         "*-south": 180
       }
     },
-
     {
       "x1": 0,
-      "y1": 0.0625,
+      "y1": 0.5,
+      "z1": 0,
+      "x2": 0.5,
+      "y2": 1,
+      "z2": 0.25,
+      "rotateYByType": {
+        "*-north": 0,
+        "*-east": 270,
+        "*-west": 90,
+        "*-south": 180
+      }
+    },
+    {
+      "x1": 0.5,
+      "y1": 0.5,
       "z1": 0,
       "x2": 1,
-      "y2": 0.125,
-      "z2": 0.5,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0.05,
-      "y1": 0.6253,
-      "z1": 0.05,
-      "x2": 0.45,
       "y2": 1,
-      "z2": 0.45,
+      "z2": 0.25,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -237,26 +242,12 @@
       }
     },
     {
-      "x1": 0.55,
-      "y1": 0.6253,
-      "z1": 0.05,
-      "x2": 0.95,
-      "y2": 1,
-      "z2": 0.45,
-      "rotateYByType": {
-        "*-north": 0,
-        "*-east": 270,
-        "*-west": 90,
-        "*-south": 180
-      }
-    },
-    {
-      "x1": 0.05,
-      "y1": 0.13,
-      "z1": 0.05,
-      "x2": 0.45,
+      "x1": 0,
+      "y1": 0,
+      "z1": 0,
+      "x2": 0.5,
       "y2": 0.5,
-      "z2": 0.45,
+      "z2": 0.25,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -265,14 +256,12 @@
       }
     },
     {
-
-      "x1": 0.55,
-      "y1": 0.13,
-      "z1": 0.05,
-      "x2": 0.95,
+      "x1": 0.5,
+      "y1": 0,
+      "z1": 0,
+      "x2": 1,
       "y2": 0.5,
-      "z2": 0.45,
-
+      "z2": 0.25,
       "rotateYByType": {
         "*-north": 0,
         "*-east": 270,
@@ -280,11 +269,12 @@
         "*-south": 180
       }
     }
+
   ],
   "guiTransform": {
     "translation": {
-      "x": 5,
-      "y": 0,
+      "x": 10,
+      "y": 5,
       "z": 0
     },
     "rotation": {
@@ -292,7 +282,7 @@
       "y": 135,
       "z": 0
     },
-    "scale": 1.2
+    "scale": 1.42
   },
   "lightAbsorption": 0,
   "sidesolid": {

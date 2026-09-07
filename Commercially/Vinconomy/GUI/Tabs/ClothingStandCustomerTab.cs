@@ -4,7 +4,6 @@ using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
-using System;
 using System.IO;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -131,9 +130,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(footDealButton, footCurrencyIcon, footProductIcon);
 
 
-                ElementBounds outfitDealButton =        ElementBounds.FixedSize(((paddingW + elementHeight) * 2) + btnWidth, elementHeight).FixedUnder(footCurrencyIcon, paddingH*2).FixedRightOf(armorHeadProductIcon, paddingW + columnPadding);
-
-                settingBounds.WithChild(outfitDealButton);
+                //ElementBounds outfitDealButton =        ElementBounds.FixedSize(((paddingW + elementHeight) * 2) + btnWidth, elementHeight).FixedUnder(footCurrencyIcon, paddingH*2).FixedRightOf(armorHeadProductIcon, paddingW + columnPadding);
+                //settingBounds.WithChild(outfitDealButton);
 
                 settingBounds.BothSizing = ElementSizing.FitToChildren;
 
@@ -188,7 +186,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                     .AddButton(dealText, () => { return this.OnPurchase(14); }, footDealButton, EnumButtonStyle.Small)
                     .AddItemSlotGrid(DInv, null, 1, [28], footCurrencyIcon)
                     .AddItemSlotGrid(DInv, null, 1, [29], footProductIcon)
-                    .AddButton(Lang.Get("vinconomy:gui-buy-all"), () => { return this.OnPurchase(-1); }, outfitDealButton, EnumButtonStyle.Small)
+                    //.AddButton(Lang.Get("vinconomy:gui-buy-all"), () => { return this.OnPurchase(-1); }, outfitDealButton, EnumButtonStyle.Small)
                 .EndChildElements();
             }
             else if (StallProvider == null)

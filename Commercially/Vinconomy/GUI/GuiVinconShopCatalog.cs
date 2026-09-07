@@ -90,7 +90,7 @@ namespace Vinconomy.GUI
                 SingleComposer = capi.Gui.CreateCompo("GuiVinconShopCatalog", dialogBounds)
                .AddShadedDialogBG(bgBounds)
                .AddDialogTitleBar(this.DialogTitle, OnTitleBarCloseClicked)
-               .AddStaticText(Lang.Get("vinconomy:gui-owner") + Catalog.Ownable.OwnerName, CairoFont.WhiteSmallishText(), descLabelBounds)
+               .AddStaticText($"{Lang.Get("commercially:label-owner")}: {Catalog.Ownable.OwnerName}", CairoFont.WhiteSmallishText(), descLabelBounds)
                .BeginChildElements()
                    .AddInset(descInsetBounds, insetDepth)
                    .BeginClip(descClipBounds);
@@ -99,7 +99,7 @@ namespace Vinconomy.GUI
                             SingleComposer.AddRichtext(Catalog.Description != null ? Catalog.Description : "", CairoFont.WhiteDetailText(), descContainerBounds, "description");
                         } catch (Exception ex)
                         {
-                            SingleComposer.AddRichtext(Lang.Get("vinconomy:gui-error-tell-the-dev") + ex.Message, CairoFont.WhiteDetailText(), descContainerBounds, "description");
+                            SingleComposer.AddRichtext(Lang.Get("vinconomy:gui-error") + ex.Message, CairoFont.WhiteDetailText(), descContainerBounds, "description");
                         }
                 SingleComposer.EndClip()
                    .AddVerticalScrollbar(OnNewDescriptionScrollbarValue, descScrollbarBounds, "description-scrollbar")

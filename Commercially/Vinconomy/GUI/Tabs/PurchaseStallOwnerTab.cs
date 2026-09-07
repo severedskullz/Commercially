@@ -51,7 +51,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 PurchaseStallSlot stall = StallProvider.GetStallSlot<PurchaseStallSlot>(StallSlot);
 
-                int stockSlotLength = stall.GetStockSlots().Length;
+                int stockSlotLength = stall.Stock.Length;
                 int[] stockSlotIds = GUIUtils.GetSlotIDsForStall(StallProvider, StallSlot);
 
                 int internalSlotLength = stall.GetInternalSlots().Length;

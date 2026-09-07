@@ -1,5 +1,4 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
@@ -11,7 +10,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class LiquidStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
+    public class LiquidStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider, IDecocratedBlock
     {
         private LiquidShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

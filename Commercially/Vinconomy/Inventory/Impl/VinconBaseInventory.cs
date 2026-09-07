@@ -168,9 +168,11 @@ namespace Commercially.Vinconomy.Inventory
 
         public virtual void InitializeFromProperties(JsonObject properties, string className, string instanceID, ICoreAPI api)
         {
-            Api = api;
-            this.instanceID = instanceID;
-            this.className = className;
+            //Api = api;
+            //this.instanceID = instanceID;
+            //this.className = className;
+            LateInitialize($"{className}-{instanceID}", api);
+
             modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
 
             InitializeSlots(properties, api);
@@ -533,7 +535,7 @@ namespace Commercially.Vinconomy.Inventory
             // I didnt mark the slots as dirty as to not trigger all of the Updater logic. It is also easier to clear the ownable inventory
             // in one go rather than triggering the event for each slot dozens of times.
             IStallComponent ownable = this.BlockEntity.GetBehavior<IStallComponent>();
-            if (ownable != null)
+            if (ownable != null && BlockEntity.Api.Side == EnumAppSide.Server)
             {
                 modSystem.DB.ClearAllStock(ownable);
             }

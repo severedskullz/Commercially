@@ -27,12 +27,15 @@ namespace Vinconomy.ItemTypes
         public override string GetHeldItemName(ItemStack itemStack)
         {
             ITreeAttribute attrs = itemStack.Attributes;
-            if (attrs.GetTreeAttribute("Contents") != null)
+            if (attrs?.GetTreeAttribute("Contents") != null)
             {
                 return attrs.GetString("Name", Lang.Get("vinconomy:item-gacha"));
             } else
             {
-                return Lang.Get("vinconomy:item-gacha-empty");
+                //return Lang.Get("vinconomy:item-gacha-empty");
+
+                //TODO: Honor Attributes above when we can name the Gacha Balls
+                return Lang.Get("vinconomy:item-gacha");
             }
 
         }

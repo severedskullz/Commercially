@@ -8,6 +8,7 @@ using System.IO;
 using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
 
 namespace Commercially.Vinconomy.GUI.Tabs
@@ -166,7 +167,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
             using (MemoryStream ms = new MemoryStream(data))
             {
                 BinaryReader reader = new BinaryReader(ms);
-                Name = reader.ReadString();
                 Description = reader.ReadString();
                 ShortDescription = reader.ReadString();
                 WebHook = reader.ReadString();
@@ -186,7 +186,6 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 using (MemoryStream ms = new MemoryStream())
                 {
                     BinaryWriter writer = new BinaryWriter(ms);
-                    writer.Write(ownable.Name);
                     writer.Write(config.Description);
                     writer.Write(config.ShortDescription);
                     writer.Write(config.WebHook);
@@ -196,6 +195,16 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
             }
             return null;
+        }
+
+        public override void Initialize(IModularGui gui, BlockEntity entity = null)
+        {
+            base.Initialize(gui, entity);
+            IOwnableReference ownable = entity.GetBehavior<IOwnableReference>();
+            if (ownable != null)
+            {
+                Name = ownable.Name;
+            }
         }
 
         private bool OnSaveShopConfigPressed()

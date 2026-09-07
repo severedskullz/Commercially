@@ -144,19 +144,19 @@
   },
   "shapebytype": {
     "*-north": {
-      "base": "block/purchasecrate",
+      "base": "block/purchasestall",
       "rotateY": 0
     },
     "*-west": {
-      "base": "block/purchasecrate",
+      "base": "block/purchasestall",
       "rotateY": 90
     },
     "*-south": {
-      "base": "block/purchasecrate",
+      "base": "block/purchasestall",
       "rotateY": 180
     },
     "*-east": {
-      "base": "block/purchasecrate",
+      "base": "block/purchasestall",
       "rotateY": 270
     }
   },

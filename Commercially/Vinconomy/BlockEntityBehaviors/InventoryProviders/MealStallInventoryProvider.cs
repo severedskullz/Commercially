@@ -1,8 +1,5 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
-using Commercially.Common.Util;
-using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -13,7 +10,7 @@ using Vintagestory.API.Datastructures;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class MealStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider, IDecocratedBlock
+    public class MealStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider, IDecocratedBlock
     {
         private MealShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

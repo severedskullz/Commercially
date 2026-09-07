@@ -4,10 +4,8 @@ using Commercially.Common.Interfaces;
 using Commercially.Common.Registry;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
-using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
-using HarmonyLib;
 using System;
 using System.IO;
 using Vinconomy.Util;
@@ -137,8 +135,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
 
                 ElementBounds contentsLabel = ElementBounds.FixedSize(slotGridWidth, 25).FixedUnder(pagePrev, 10);
                 pageBounds.WithChildren(contentsLabel);
-                composer.AddStaticText(Lang.Get("vinconomy:gui-gacha-contents"), labelTextFont, contentsLabel);
-                composer.AddHoverText(Lang.Get("vinconomy:tooltip-gacha-contents"), hoverText, 500, contentsLabel);
+                composer.AddStaticText(Lang.Get("vinconomy:gui-contents"), labelTextFont, contentsLabel);
+                composer.AddHoverText(Lang.Get("vinconomy:tooltip-contents"), hoverText, 500, contentsLabel);
 
                 ElementBounds last = null;
                 for (int i = 0; i < stall.GachaContents.Length; i++)

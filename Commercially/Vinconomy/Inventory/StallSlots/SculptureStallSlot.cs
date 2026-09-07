@@ -126,13 +126,24 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             if (!isAdminShop)
             {
                 ItemSlot[] products = GetStockSlots();
-                foreach (ItemSlot slot in products)
+                for (int layer = 0; layer < SculptureVerticalSize; layer++)
                 {
-                    ItemStack takenStack = slot.TakeOut(numPurchases);
-                    if (takenStack != null)
+                    for (int y = 0; y < SculptureHorizontalSize; y++)
                     {
-                        this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
-                        slot.MarkDirty();
+                        for (int x = 0; x < SculptureHorizontalSize; x++)
+                        {
+                            ToggledStockItemSlot slot = GetSlotForGrid(layer, x, y);
+                            if (!slot.Empty && slot.Enabled)
+                            {
+                                ItemStack takenStack = slot.TakeOut(numPurchases);
+                                if (takenStack != null)
+                                {
+                                    this.Inventory.modSystem.Mod.Logger.Debug($"Took out {takenStack.StackSize}x {takenStack} product from Product Stacks");
+                                    slot.MarkDirty();
+                                }
+                            }
+
+                        }
                     }
                 }
             }
@@ -264,14 +275,16 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
             this.Product.MarkDirty();
         }
 
-        public int GetProductQuantity()
+
+        public override int GetTotalProductAvailable()
         {
             if (Product?.Itemstack == null) return 0;
 
             int amount = Int32.MaxValue;
             foreach (ToggledStockItemSlot item in Slots)
             {
-                if (item.Enabled) {
+                if (item.Enabled)
+                {
                     if (item.StackSize <= 0) return 0;
                     amount = Math.Min(amount, item.StackSize);
                 }
@@ -279,5 +292,6 @@ namespace Commercially.Vinconomy.Inventory.StallSlots
 
             return amount;
         }
+
     }
 }

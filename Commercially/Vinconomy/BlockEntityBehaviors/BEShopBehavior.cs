@@ -3,7 +3,6 @@ using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
-using System;
 using System.IO;
 using Vinconomy.Util;
 using Vintagestory.API.Common;
@@ -25,9 +24,12 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         public IOwnableRoot Ownable => _Ownable;
         IOwnableRoot _Ownable;
 
+        public override bool MaintainOwnershipOnBreak => true;
+
         public ItemSlot TradePass => _ShopInventoryProvider.TradePass;
         public ItemSlot[] CurrencySlots => _ShopInventoryProvider.CurrencySlots;
         public ItemSlot[] CouponSlots => _ShopInventoryProvider.CouponSlots;
+        public override string DefaultLangCode => "vinconomy:default-shop-name";
 
         public BEShopBehavior(BlockEntity blockentity) : base(blockentity)
         {

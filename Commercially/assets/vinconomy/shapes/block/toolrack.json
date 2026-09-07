@@ -8,8 +8,8 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"rusty-iron": "block/metal/tarnished/rusty-iron",
-		"primary": "block/wood/debarked/aged"
+		"rusty-iron": "game:block/metal/tarnished/rusty-iron",
+		"primary": "game:block/wood/debarked/aged"
 	},
 	"elements": [
 		{

@@ -1,5 +1,4 @@
 ﻿using Commercially.Common;
-using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
@@ -9,11 +8,10 @@ using System.IO;
 using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.GameContent;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders
 {
-    public class GachaStallInventoryProvider : BEBehaviorOwnableContainer, IStallInventoryProvider
+    public class GachaStallInventoryProvider : BaseInventoryProvider, IStallInventoryProvider
     {
         private GachaShopInventory _Inventory;
         public override InventoryBase Inventory => _Inventory;

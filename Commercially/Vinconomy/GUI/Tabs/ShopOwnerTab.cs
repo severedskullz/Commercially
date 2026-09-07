@@ -68,14 +68,15 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-decoration-block"), hoverText, 500, chiselLabel);
                 composer.AddItemSlotGrid(Inventory, new Action<object>(this.SetCurrencySlot), 1, new int[] { 0 }, chiselSlotBounds, "chisel");
 
-                if (false) { 
-                    ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).WithFixedOffset(0, 10);
-                    ElementBounds adminShopLabel = ElementBounds.FixedSize(100, 25).WithAlignment(EnumDialogArea.LeftBottom).FixedUnder(chiselSlotBounds).FixedRightOf(adminShopBounds).WithFixedOffset(0, 10);
+                if (GUIUtils.IsCreativePlayer(ClientApi.World.Player)) { 
+                    ElementBounds adminShopBounds = ElementBounds.FixedSize(40, 40).FixedUnder(chiselSlotBounds).WithFixedOffset(0, 10);
+                    ElementBounds adminShopLabel = ElementBounds.FixedSize(100, 25).FixedUnder(chiselSlotBounds).FixedRightOf(adminShopBounds).WithFixedOffset(0, 10);
 
                     settingBounds.WithChildren(adminShopLabel, adminShopBounds);
                     composer.AddSwitch(this.OnToggleAdminShop, adminShopBounds, "admin");
                     composer.AddStaticText(Lang.Get("vinconomy:gui-admin-shop"), smallText, adminShopLabel);
                     composer.AddHoverText(Lang.Get("vinconomy:tooltip-admin-shop"), hoverText, 500, adminShopLabel);
+                    composer.GetSwitch("admin").SetValue(Ownable.IsAdminOwned);
                 }
 
                 ElementBounds pageBounds = ElementBounds.FixedSize(250, 30).FixedRightOf(settingBounds, 15).WithFixedOffset(0, GuiStyle.TitleBarHeight);

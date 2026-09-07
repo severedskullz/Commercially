@@ -1,4 +1,5 @@
 ﻿using Commercially.Common;
+using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
@@ -15,7 +16,7 @@ using Vintagestory.API.MathTools;
 
 namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
-    public class BEStallBehavior : BlockEntityBehavior, IStallComponent
+    public class BEStallBehavior : BEBehaviorOwnableChild, IStallComponent
     {
         protected VinconomyModSystem VinconomyCore;
         protected CommerciallyModSystem CommerciallyCore;
@@ -24,13 +25,10 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 
         IStallInventoryProvider IStallComponent.InventoryProvider => _InventoryProvider;
         protected IStallInventoryProvider _InventoryProvider;
-
         IOwnableChild IStallComponent.Ownable => _Ownable;
-        protected IOwnableChild _Ownable;
-
+        protected IOwnableChild _Ownable => this;
         public bool RequiresParent { get; protected set; } = true;
-
-
+        public override string DefaultLangCode => "vinconomy:default-stall-name";
         public int StallCount => _InventoryProvider?.StallCount ?? 0;
 
         public BEStallBehavior(BlockEntity blockentity) : base(blockentity)
@@ -41,7 +39,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
         {
             base.Initialize(api, properties);
             _InventoryProvider = this.GetComponent<IStallInventoryProvider>();
-            _Ownable = this.GetComponent<IOwnableChild>();
+            //_Ownable = this.GetComponent<IOwnableChild>();
 
             VinconomyCore = api.ModLoader.GetModSystem<VinconomyModSystem>();
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
@@ -345,11 +343,6 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             (_InventoryProvider.Inventory as VinconBaseInventory).DiscardCurrency = discard;
             Blockentity.MarkDirty();
 
-        }
-
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            base.OnBlockBroken(byPlayer);
         }
 
         public int GetStallIndexFromSelection(int selectionIndex)

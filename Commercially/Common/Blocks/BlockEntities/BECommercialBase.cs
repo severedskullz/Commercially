@@ -1,7 +1,6 @@
 ﻿using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 
 namespace Commercially.Common.Blocks.BlockEntities
 {
@@ -75,16 +74,6 @@ namespace Commercially.Common.Blocks.BlockEntities
             return false; // Interaction was not handled
         }
 
-        public override void ToTreeAttributes(ITreeAttribute tree)
-        {
-            base.ToTreeAttributes(tree);
-        }
-
-        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor world)
-        {
-            base.FromTreeAttributes(tree, world);
-        }
-
         public bool IsParent()
         {
             return Ownable is IOwnableRoot;
@@ -118,11 +107,6 @@ namespace Commercially.Common.Blocks.BlockEntities
         public string GetOwnerUID()
         {
             return Ownable != null ? Ownable.OwnerUID : null;
-        }
-
-        public override void OnBlockRemoved()
-        {
-            base.OnBlockRemoved();
         }
 
     }

@@ -1,11 +1,11 @@
 {
-	"code": "liquidbarrel",
+	"code": "shopbarrel",
 	"class": "Commercially.BlockCommercial",
 	"entityClass": "Commercially.BECommercialBase",
 	"priorityInteract": true,
 	"attributes": {
 		"handbook": {
-			"groupBy": [ "liquidbarrel-north" ],
+			"groupBy": [ "shopbarrel-north" ],
 			"extraSections": [
 				{
 					"title": "",
@@ -83,7 +83,7 @@
 		{
 			"name": "Commercially.TextureSwappable",
 			"properties": {
-				"BaseBlock": "liquidbarrel-north",
+				"BaseBlock": "shopbarrel-north",
 				"CreativeTabs": [ "vinconomy", "general" ],
 				"PrimaryMaterials": [ "acacia", "baldcypress", "birch", "ebony", "kapok", "larch", "maple", "oak", "pine", "purpleheart", "redwood", "walnut" ],
 				"SecondaryMaterials": [ "bismuth", "bismuthbronze", "blackbronze", "brass", "copper", "silver", "gold", "iron", "lead", "meteoriciron", "tinbronze", "steel", "tin", "uranium", "zinc" ]

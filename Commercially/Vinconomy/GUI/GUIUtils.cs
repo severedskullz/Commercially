@@ -6,6 +6,7 @@ using Commercially.Vinconomy.Inventory.StallSlots;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -110,6 +111,16 @@ namespace Commercially.Vinconomy.GUI
         public static bool IsCreativePlayer(IPlayer player)
         {
             return player.WorldData.CurrentGameMode == EnumGameMode.Creative && player.HasPrivilege("gamemode");
+        }
+
+        public static int[] GetArrayRange(int startingNumber, int length)
+        {
+            int[] result = new int[length];
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = startingNumber + i;
+            }
+            return result;
         }
     }
 }

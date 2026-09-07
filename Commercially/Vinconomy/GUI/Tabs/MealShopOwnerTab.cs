@@ -40,23 +40,8 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 CairoFont labelTextFont = CairoFont.WhiteSmallText().WithOrientation(EnumTextOrientation.Center);
                 string labelText = $"Page {StallSlot + 1} of {StallProvider.StallCount}"; //Lang.Get("vinconomy:gui-slot", new object[] { StallSlot + 1, stall.StallSlotCount });
 
-                OwnableRegistration[] ownables = Registry.GetOwnablesForOwner(Ownable.OwnerUID, Ownable.GetAllowedParentTypes());
-                int shopLength = ownables.Length;
-                string[] shopsNames = new string[shopLength+1];
-                string[] shopsKeys = new string[shopLength+1];
-
-                shopsNames[0] = "( None )";
-                shopsKeys[0] = "-1";
-
-                for (int i = 0; i < shopLength; i++)
-                {
-                    shopsNames[i+1] = ownables[i].Name ?? "Generic Shop";
-                    shopsKeys[i+1] = ownables[i].ID.ToString();
-                    if (ownables[i].ID == Ownable.ParentID)
-                    {
-                        SelectedIndex = i + 1;
-                    }
-                }
+                OwnableRegistryKeys shopKeys = GUIUtils.GetOwnableDropdownListForOwner(Registry, Ownable);
+                SelectedIndex = shopKeys.CurrentSelectedIndex;
 
                 // Figure out the slot indexes for SlotGrid
                 MealStallSlot stall = StallProvider.GetStallSlot<MealStallSlot>(StallSlot);
@@ -81,7 +66,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
                 settingBounds.WithChildren(shopSelectBounds, shopSelectionLabel);
                 composer.AddStaticText(Lang.Get("vinconomy:gui-shop"), smallText, shopSelectionLabel);
                 composer.AddHoverText(Lang.Get("vinconomy:tooltip-shop"), hoverText, 500, shopSelectionLabel);
-                composer.AddDropDown(shopsKeys, shopsNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
+                composer.AddDropDown(shopKeys.ShopKeys, shopKeys.ShopNames, SelectedIndex, this.OnShopChanged, shopSelectBounds, "shopSelection");
 
                 ElementBounds chiselLabel = ElementBounds.FixedSize(200, 25).FixedUnder(shopSelectBounds,15);
                 ElementBounds chiselSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0, 0, 1, 1).FixedUnder(chiselLabel);
