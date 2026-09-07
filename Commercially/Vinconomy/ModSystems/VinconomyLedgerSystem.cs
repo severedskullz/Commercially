@@ -3,12 +3,12 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using System.Collections.Generic;
 using Vintagestory.API.Config;
-using Vinconomy.Util;
 using Vinconomy.Network.Packets;
 using Vinconomy.GUI;
 using Commercially.Common.Registry;
+using Commercially.Vinconomy.Util;
 
-namespace Commercially.Vinconomy
+namespace Commercially.Vinconomy.ModSystems
 {
 
     public class VinconomyLedgerSystem : ModSystem
@@ -18,14 +18,14 @@ namespace Commercially.Vinconomy
         private IClientNetworkChannel _clientChannel;
         private IServerNetworkChannel _serverChannel;
 
-        private VinconomyModSystem _coreSystem;
+        private VinconomyCoreSystem _coreSystem;
         private GuiVinconLedger ledgerGUI;
 
         public override double ExecuteOrder() => 1.2;
 
         public override void Start(ICoreAPI api)
         {
-            _coreSystem = api.ModLoader.GetModSystem<VinconomyModSystem>();
+            _coreSystem = api.ModLoader.GetModSystem<VinconomyCoreSystem>();
             INetworkChannel channel = api.Network.GetChannel(VinConstants.VINCONOMY_CHANNEL);
             channel.RegisterMessageType(typeof(LedgerEntryRequestPacket))
                 .RegisterMessageType(typeof(LedgerEntryResponsePacket))

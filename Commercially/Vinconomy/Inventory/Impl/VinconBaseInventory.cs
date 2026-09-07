@@ -1,7 +1,9 @@
 ﻿using Commercially.Common.Interfaces;
 using Commercially.Common.Inventory;
+using Commercially.Vinconomy.Config;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.ModSystems;
 using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
@@ -22,7 +24,7 @@ namespace Commercially.Vinconomy.Inventory
         public bool IsInternalSlotsInitialized => InternalSlots != null;
         public bool IsSlotsInitialized => StallSlots != null;
 
-        public VinconomyModSystem modSystem { get; protected set; }
+        public VinconomyCoreSystem modSystem { get; protected set; }
         public event OnStockUpdatedDelegate OnStockUpdated;
 
         public IStallComponent StallComponent { get; protected set; }
@@ -92,7 +94,7 @@ namespace Commercially.Vinconomy.Inventory
                 throw new InvalidCastException("Stall Slot Type must be of StallSlotBase");
             }
             */
-            return VinconomyModSystem.GetStallType(className);
+            return VinconomyCoreSystem.GetStallType(className);
         }
 
         protected BaseStallSlot InstantiateStallType(Type type, int stallSlot)
@@ -173,7 +175,7 @@ namespace Commercially.Vinconomy.Inventory
             //this.className = className;
             LateInitialize($"{className}-{instanceID}", api);
 
-            modSystem = Api.ModLoader.GetModSystem<VinconomyModSystem>();
+            modSystem = Api.ModLoader.GetModSystem<VinconomyCoreSystem>();
 
             InitializeSlots(properties, api);
             ApplyFilters(properties);

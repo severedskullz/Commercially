@@ -1,4 +1,4 @@
-﻿namespace Vinconomy.Util
+﻿namespace Commercially.Vinconomy.Util
 {
     public static class VinConstants
     {

@@ -2,7 +2,7 @@
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace Commercially.Vinconomy
+namespace Commercially.Vinconomy.Util
 {
     public static class LiquidUtils
     {

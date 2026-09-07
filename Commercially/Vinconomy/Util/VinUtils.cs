@@ -11,7 +11,7 @@ using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
-namespace Vinconomy.Util
+namespace Commercially.Vinconomy.Util
 {
     public class VinUtils
     {

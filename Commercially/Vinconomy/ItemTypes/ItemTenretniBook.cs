@@ -1,10 +1,5 @@
-﻿using System.Text;
-using System.Threading.Tasks;
-using Vinconomy.Util;
-using Vintagestory.API.Client;
+﻿
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
-using Vintagestory.Common;
 
 namespace Vinconomy.ItemTypes
 {

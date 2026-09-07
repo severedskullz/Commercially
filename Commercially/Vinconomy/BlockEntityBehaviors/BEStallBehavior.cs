@@ -5,6 +5,7 @@ using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory;
 using Commercially.Vinconomy.Inventory.StallSlots;
+using Commercially.Vinconomy.ModSystems;
 using Commercially.Vinconomy.Trading;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
 {
     public class BEStallBehavior : BEBehaviorOwnableChild, IStallComponent
     {
-        protected VinconomyModSystem VinconomyCore;
+        protected VinconomyCoreSystem VinconomyCore;
         protected CommerciallyModSystem CommerciallyCore;
 
         protected Dictionary<int, int> _StallIndices = [];
@@ -41,7 +42,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
             _InventoryProvider = this.GetComponent<IStallInventoryProvider>();
             //_Ownable = this.GetComponent<IOwnableChild>();
 
-            VinconomyCore = api.ModLoader.GetModSystem<VinconomyModSystem>();
+            VinconomyCore = api.ModLoader.GetModSystem<VinconomyCoreSystem>();
             CommerciallyCore = api.ModLoader.GetModSystem<CommerciallyModSystem>();
 
             if (properties["stallSelectionIndexes"] != null)
@@ -278,6 +279,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                     SetDiscardCurrency(player, isAdmin);
                     break;
                 default:
+                    base.OnReceivedClientPacket(player, packetid, data);
                     break;
             }
         }

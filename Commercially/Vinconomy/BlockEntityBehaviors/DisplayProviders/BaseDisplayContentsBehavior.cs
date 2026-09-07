@@ -22,7 +22,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders
         protected bool BypassShelvableAttributes;
         protected bool ShouldRenderInventory = true;
         public virtual string ClassCode => _InventoryProvider.Inventory.ClassName;
-        protected Dictionary<string, MeshData> MeshCache => ObjectCacheUtil.GetOrCreate(Api, "meshesDisplay-" + ClassCode, () => new Dictionary<string, MeshData>());
+        protected Dictionary<string, MeshData> MeshCache => ObjectCacheUtil.GetOrCreate(Api, "stallMeshesDisplay", () => new Dictionary<string, MeshData>());
         public TransformationData[] TfData { get; protected set; }
 
         protected CollectibleObject nowTesselatingObj = null;

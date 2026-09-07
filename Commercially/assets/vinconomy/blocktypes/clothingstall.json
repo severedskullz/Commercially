@@ -65,9 +65,11 @@
             }
         },
         {
-            "name": "Vinconomy.Stall",
-            "properties": {
-            }
+          "name": "Vinconomy.Stall",
+          "properties": {
+            "ownableType": "ShopStall",
+            "allowedTypes": [ "ShopRegister" ]
+          }
         },
         {
             "name": "Commercially.GuiManager",
@@ -98,13 +100,7 @@
                 ]
             }
         },
-        {
-            "name": "Commercially.OwnableChild",
-            "properties": {
-                "ownableType": "ShopStall",
-                "allowedTypes": [ "ShopRegister" ]
-            }
-        },
+
         { "name": "Commercially.TextureSwappable" }
     ],
 

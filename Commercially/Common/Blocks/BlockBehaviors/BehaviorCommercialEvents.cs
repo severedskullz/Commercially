@@ -55,12 +55,7 @@ namespace Commercially.Common.Blocks.BlockBehaviors
             }
         }
 
-        public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)
-        {
-            world.Api.Logger.Debug("Calling Step 4: OnBlockPlaced on {0}", world.Api.Side.ToString());
-            //We need to set the ownership info here for newly created blocks, otherwise when we try to add the Ownable to the DB, this info will be null
-            //world.BlockAccessor.GetBlockEntity(blockPos)?.GetBehavior<IOwnable>()?.SetOwner(lastPlayer);
-        }
+
 
         //TODO: Another Tyron Inconsistency (tm)! Behavior doesnt have the item stack as a part of the method signature!
         /*
@@ -74,15 +69,24 @@ namespace Commercially.Common.Blocks.BlockBehaviors
         }
         */
 
+        /*
+        public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)
+        {
+            world.Api.Logger.Debug("Calling Step 4: OnBlockPlaced on {0}", world.Api.Side.ToString());
+            //We need to set the ownership info here for newly created blocks, otherwise when we try to add the Ownable to the DB, this info will be null
+            //world.BlockAccessor.GetBlockEntity(blockPos)?.GetBehavior<IOwnable>()?.SetOwner(lastPlayer);
+        }
+
         public override bool CanPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ref EnumHandling handling, ref string failureCode)
         {
             world.Api.Logger.Debug("Calling Step 2: CanPlaceBlock on {0}", world.Api.Side.ToString());
             return base.CanPlaceBlock(world, byPlayer, blockSel, ref handling, ref failureCode);
         }
+        */
 
         public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref EnumHandling handling, ref string failureCode)
         {
-            world.Api.Logger.Debug("Calling Step 1: TryPlaceBlock on {0}", world.Api.Side.ToString());
+            //world.Api.Logger.Debug("Calling Step 1: TryPlaceBlock on {0}", world.Api.Side.ToString());
             if (modSystem != null && !modSystem.TryPlaceBlock(world, byPlayer, itemstack, blockSel))
             {
                 handling = EnumHandling.PreventSubsequent;
@@ -95,11 +99,36 @@ namespace Commercially.Common.Blocks.BlockBehaviors
 
         public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack, ref EnumHandling handling)
         {
-            world.Api.Logger.Debug("Calling Step 3: DoPlaceBlock on {0}", world.Api.Side.ToString());
-            byItemStack.Attributes.SetString("OwnerUID", byPlayer.PlayerUID);
-            byItemStack.Attributes.SetString("OwnerName", byPlayer.PlayerName);
-            world.Api.Logger.Debug("byItemStack attributes were set on {0}", world.Api.Side.ToString());
-            return base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack, ref handling);
+
+            //world.Api.Logger.Debug("Calling Step 3: DoPlaceBlock on {0}", world.Api.Side.ToString());
+            ItemStack attrItemStack = byItemStack.Clone();
+            attrItemStack.Attributes.SetString("OwnerUID", byPlayer.PlayerUID);
+            attrItemStack.Attributes.SetString("OwnerName", byPlayer.PlayerName);
+            //world.Api.Logger.Debug("byItemStack attributes were set on {0}", world.Api.Side.ToString());
+
+            int blockID = attrItemStack.Block.BlockId;
+
+            BlockBehaviorHorizontalOrientable orientable = block.GetBehavior<BlockBehaviorHorizontalOrientable>();
+            BlockBehaviorHorizontalAttachable attachable = block.GetBehavior<BlockBehaviorHorizontalAttachable>();
+
+            if (orientable != null)
+            {
+                blockID = orientable.GetLookAwareBlockVariant(byPlayer, attrItemStack, blockSel).Id;
+            }
+            else if (attachable != null)
+            {
+                BlockFacing opposite = blockSel.Face.Opposite;
+                BlockPos pos = blockSel.Position.AddCopy(opposite);
+                Block obj = world.BlockAccessor.GetBlock(pos);
+                Block block = world.BlockAccessor.GetBlock(base.block.CodeWithParts(opposite.Code));
+                blockID = block.Id;
+
+            } 
+              
+            world.BlockAccessor.SetBlock(blockID, blockSel.Position, attrItemStack);
+
+            handling = EnumHandling.PreventSubsequent;
+            return true;
         }
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ref EnumHandling handling)
@@ -130,6 +159,13 @@ namespace Commercially.Common.Blocks.BlockBehaviors
             {
                 EnumHandling orientableHandling = EnumHandling.PassThrough;
                 stack = orientable.OnPickBlock(world, pos, ref orientableHandling);
+            }
+
+            BlockBehaviorHorizontalAttachable attachable = block.GetBehavior<BlockBehaviorHorizontalAttachable>();
+            if (attachable != null)
+            {
+                EnumHandling attachableHandling = EnumHandling.PassThrough;
+                stack = attachable.OnPickBlock(world, pos, ref attachableHandling);
             }
 
             bool applied = ApplyAttributesToItemStack(stack, world, pos);

@@ -56,6 +56,8 @@
     {
       "name": "Vinconomy.Stall",
       "properties": {
+        "ownableType": "ShopStall",
+        "allowedTypes": [ "ShopRegister" ],
         "stallSelectionIndexes": {
           "2": 0,
           "3": 1,
@@ -88,13 +90,6 @@
       "name": "Commercially.GuiManager",
       "properties": {
         "tabs": [ "Vinconomy.ShopOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
-      }
-    },
-    {
-      "name": "Commercially.OwnableChild",
-      "properties": {
-        "ownableType": "ShopStall",
-        "allowedTypes": [ "ShopRegister" ]
       }
     },
     { "name": "Commercially.TextureSwappable" }

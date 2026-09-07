@@ -2,9 +2,9 @@
 using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
+using Commercially.Vinconomy.Util;
 using System;
 using Vinconomy.Inventory.Slots;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;

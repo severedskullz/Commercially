@@ -78,7 +78,7 @@
   "gui-sculpture-name": "Sculpture Name:",
   "gui-sculpture-name-placeholder": "Sculpture Name",
   "gui-sculpture-width": "Sculpture Width:",
-
+  "gui-possible-product" : "Possible Products",
   "gui-description-short": "Short Description",
   "gui-description-long": "Description",
   "gui-webhook": "Webhook URL",

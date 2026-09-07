@@ -1,5 +1,5 @@
 ﻿using Commercially.Common;
-using Commercially.Common.GUI.Tabs;
+using Commercially.Common.Blocks.BlockTypes;
 using Commercially.Common.Interactions;
 using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Registry;
@@ -8,6 +8,8 @@ using Commercially.Common.Util;
 using Commercially.Vinconomy.BlockEntityBehaviors;
 using Commercially.Vinconomy.BlockEntityBehaviors.DisplayProviders;
 using Commercially.Vinconomy.BlockEntityBehaviors.InventoryProviders;
+using Commercially.Vinconomy.Config;
+using Commercially.Vinconomy.Database;
 using Commercially.Vinconomy.GUI.Tabs;
 using Commercially.Vinconomy.Interactions;
 using Commercially.Vinconomy.Interfaces;
@@ -16,22 +18,23 @@ using Commercially.Vinconomy.Network.Packets;
 using Commercially.Vinconomy.Registry;
 using Commercially.Vinconomy.Trading;
 using Commercially.Vinconomy.Trading.Processor;
+using Commercially.Vinconomy.Util;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Delegates;
 using Vinconomy.GUI;
 using Vinconomy.ItemTypes;
 using Vinconomy.Map;
-using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
-namespace Commercially.Vinconomy
+namespace Commercially.Vinconomy.ModSystems
 {
-    public class VinconomyModSystem : ModSystem
+    public class VinconomyCoreSystem : ModSystem
     {
         private const string ShopRegisterType = "ShopRegister";
         private ICoreServerAPI _CoreServerAPI;
@@ -121,6 +124,16 @@ namespace Commercially.Vinconomy
             Lifecycle_RegisterInteractions(api);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_CoreClientAPI != null)
+            {
+                Dictionary<string, MeshData> cache = ObjectCacheUtil.TryGet<Dictionary<string, MeshData>>(_CoreClientAPI, "stallMeshesDisplay");
+                foreach (MeshData data in cache.Values) { data.Dispose(); }
+                ObjectCacheUtil.Delete(_CoreClientAPI, "stallMeshesDisplay");
+            }
+        }
         public void Lifecycle_RegisterInteractions(ICoreAPI api)
         {
             CommerciallySystem.RegisterInteraction(AddStockInteraction.Key, new AddStockInteraction());
@@ -311,7 +324,6 @@ namespace Commercially.Vinconomy
                 ShopCatalogGui = new GuiVinconCatalog("Shop Catalog", response.ShopList, _CoreClientAPI);
             }
 
-
             ShopCatalogGui.TryOpen();
         }
 
@@ -334,9 +346,6 @@ namespace Commercially.Vinconomy
             return true;
         }
         
-
-        
-
         private SortedList<int, PreProcessTrade> PreValidateTradeHandlers = new SortedList<int, PreProcessTrade>();
         public void RegisterPreValidateTradeHandler(int priority, PreProcessTrade hook)
         {
@@ -653,5 +662,7 @@ namespace Commercially.Vinconomy
             DB.SaveShopConfiguration(config);
 
         }
+
+       
     }    
 }

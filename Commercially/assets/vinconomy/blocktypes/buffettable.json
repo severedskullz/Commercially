@@ -65,15 +65,17 @@
         },
         {
             "name": "Vinconomy.Stall",
-            "properties": {
-                "stallSelectionIndexes": {
-                    "1": 0,
-                    "2": 1,
-                    "3": 2,
-                    "4": 3
-                }
-
+          "properties": {
+            "ownableType": "ShopStall",
+            "allowedTypes": [ "ShopRegister" ],
+            "stallSelectionIndexes": {
+              "1": 0,
+              "2": 1,
+              "3": 2,
+              "4": 3
             }
+
+          }
         },
         {
             "name": "Commercially.InteractionManager",
@@ -102,13 +104,6 @@
             "name": "Commercially.GuiManager",
             "properties": {
               "tabs": [ "Vinconomy.BuffetOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ],
-            }
-        },
-        {
-            "name": "Commercially.OwnableChild",
-            "properties": {
-                "ownableType": "ShopStall",
-                "allowedTypes": [ "ShopRegister" ]
             }
         },
         { "name": "Commercially.TextureSwappable" }

@@ -52,6 +52,8 @@
     {
       "name": "Vinconomy.Stall",
       "properties": {
+        "ownableType": "ShopStall",
+        "allowedTypes": [ "ShopRegister" ],
         "stallSelectionIndexes": {
           "1": 0,
           "2": 1,
@@ -83,13 +85,6 @@
             "priority": 0
           }
         ]
-      }
-    },
-    {
-      "name": "Commercially.OwnableChild",
-      "properties": {
-        "ownableType": "ShopStall",
-        "allowedTypes": [ "ShopRegister" ]
       }
     },
     { "name": "Commercially.TextureSwappable" }

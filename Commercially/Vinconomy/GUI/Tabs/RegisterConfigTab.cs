@@ -2,10 +2,11 @@
 using Commercially.Common.GUI;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
+using Commercially.Vinconomy.ModSystems;
 using Commercially.Vinconomy.Registry;
+using Commercially.Vinconomy.Util;
 using System;
 using System.IO;
-using Vinconomy.Util;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -178,7 +179,7 @@ namespace Commercially.Vinconomy.GUI.Tabs
             IOwnableReference ownable = entity.GetBehavior<IOwnableReference>();
             if (ownable != null)
             {
-                ShopConfiguration config = entity.Api.ModLoader.GetModSystem<VinconomyModSystem>().GetShopConfiguration(ownable.ID);
+                ShopConfiguration config = entity.Api.ModLoader.GetModSystem<VinconomyCoreSystem>().GetShopConfiguration(ownable.ID);
                 if (config == null)
                     return null;
 

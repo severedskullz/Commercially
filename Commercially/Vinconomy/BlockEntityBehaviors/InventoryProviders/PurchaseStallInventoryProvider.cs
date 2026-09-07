@@ -3,8 +3,8 @@ using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Inventory.Impl;
 using Commercially.Vinconomy.Inventory.StallSlots;
 using Commercially.Vinconomy.Trading;
+using Commercially.Vinconomy.Util;
 using System.IO;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 

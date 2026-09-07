@@ -36,6 +36,7 @@ namespace Commercially.Common.Interfaces
         public string OwnerName { get; }
 
         void SetOwner(IPlayer byPlayer);
+        void SetOwner(string ownerUID, string ownerName);
 
         bool IsOwner(IPlayer byPlayer);
 

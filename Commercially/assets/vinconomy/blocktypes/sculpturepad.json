@@ -24,7 +24,13 @@
       }
     },
     { "name": "Vinconomy.SculptureDisplay" },
-    { "name": "Vinconomy.Stall" },
+    {
+      "name": "Vinconomy.Stall",
+      "properties": {
+        "ownableType": "ShopStall",
+        "allowedTypes": [ "ShopRegister" ]
+      }
+    },
     {
       "name": "Commercially.InteractionManager",
       "properties": {
@@ -48,13 +54,6 @@
       "name": "Commercially.GuiManager",
       "properties": {
         "tabs": [ "Vinconomy.SculptureOwner", "Vinconomy.ShopCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
-      }
-    },
-    {
-      "name": "Commercially.OwnableChild",
-      "properties": {
-        "ownableType": "ShopStall",
-        "allowedTypes": [ "ShopRegister" ]
       }
     },
     { "name": "Commercially.TextureSwappable" }

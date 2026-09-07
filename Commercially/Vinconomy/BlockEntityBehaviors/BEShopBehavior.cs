@@ -3,8 +3,9 @@ using Commercially.Common.Blocks.BlockEntityBehaviors;
 using Commercially.Common.Interfaces;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.ModSystems;
+using Commercially.Vinconomy.Util;
 using System.IO;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -58,7 +59,7 @@ namespace Commercially.Vinconomy.BlockEntityBehaviors
                         string shortDescription = reader.ReadString();
                         string webhook = reader.ReadString();
                         this.Name = name;
-                        Api.ModLoader.GetModSystem<VinconomyModSystem>().UpdateShopConfiguration(this.Ownable.ID, description, shortDescription, webhook);
+                        Api.ModLoader.GetModSystem<VinconomyCoreSystem>().UpdateShopConfiguration(this.Ownable.ID, description, shortDescription, webhook);
                         Ownable.UpdateOwnership(OwnerUID, OwnerName, name, IsAdminOwned);
                     }
                     else

@@ -3,16 +3,16 @@ using Commercially.Vinconomy.Interfaces;
 using Commercially.Vinconomy.Network.Packets;
 using Commercially.Vinconomy.Registry;
 using Commercially.Vinconomy.Trading;
+using Commercially.Vinconomy.Util;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using Vinconomy.Network.Packets;
-using Vinconomy.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace Commercially.Vinconomy
+namespace Commercially.Vinconomy.Database
 {
     public class VinconomyDatabase : BaseDatabase
     {

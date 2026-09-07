@@ -1,13 +1,21 @@
 {
   "code": "gachaball",
   "class": "Vinconomy.GachaBall",
-  "maxstacksize": 128,
+  "maxstacksize": 1,
 
   "shape": { "base": "item/gachaball" },
-  "creativeinventory": {
-    "vinconomy": [ "*" ],
-    "general": [ "*" ]
-  },
+  "transitionableProps": [
+    {
+      "type": "Perish",
+      "freshHours": { "avg": 72 },
+      "transitionHours": { "avg": 0 },
+      "transitionedStack": {
+        "type": "item",
+        "code": "game:rot"
+      },
+      "transitionRatio": 0.25
+    }
+  ],
   "guiTransform": {
     "translation": {
       "x": 0,

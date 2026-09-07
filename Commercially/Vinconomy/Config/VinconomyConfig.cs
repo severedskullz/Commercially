@@ -1,4 +1,4 @@
-﻿namespace Commercially.Vinconomy
+﻿namespace Commercially.Vinconomy.Config
 {
     public class VinconomyConfig
     {

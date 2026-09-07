@@ -1,6 +1,7 @@
 {
   "Commercially": "Commercially",
-  "game:maplayer-commercially-ownables": "Player Shops",
+  "game:maplayer-CommerciallyOwnables": "Commercial Blocks",
+  "game:maplayer-commerciallyownables": "ccccommercial Blocks",
 
   "tabname-ownership": "Ownership",
   "tabname-debug": "Entity Debug",

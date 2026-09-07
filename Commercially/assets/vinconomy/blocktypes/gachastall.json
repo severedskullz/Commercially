@@ -28,8 +28,8 @@
     {
       "name": "Vinconomy.GachaStall",
       "properties": {
-
-
+        "ownableType": "ShopStall",
+        "allowedTypes": [ "ShopRegister" ]
       }
     },
     {
@@ -59,13 +59,6 @@
       "name": "Commercially.GuiManager",
       "properties": {
         "tabs": [ "Vinconomy.GachaStallOwner", "Vinconomy.GachaStallCustomer", "Commercially.ContainerDebug", "Vinconomy.DisplayDebug", "Commercially.BlockEntityDebug" ]
-      }
-    },
-    {
-      "name": "Commercially.OwnableChild",
-      "properties": {
-        "ownableType": "ShopStall",
-        "allowedTypes": [ "ShopRegister" ]
       }
     },
     { "name": "Commercially.TextureSwappable" }

@@ -1,6 +1,7 @@
 ﻿using Commercially.Common.Inventory.Slots;
 using Commercially.Common.Util;
 using Commercially.Vinconomy.Interfaces;
+using Commercially.Vinconomy.ModSystems;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
@@ -118,11 +119,11 @@ namespace Commercially.Vinconomy.Trading.Processor
 
         public static void AuditLogError(PurchaseResult res, string message)
         {
-            res.Request.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Error(message);
+            res.Request.Api.ModLoader.GetModSystem<VinconomyCoreSystem>().Mod.Logger.Error(message);
         }
         public static void AuditLogDebug(PurchaseResult res, string message)
         {
-            res.Request.Api.ModLoader.GetModSystem<VinconomyModSystem>().Mod.Logger.Debug(message);
+            res.Request.Api.ModLoader.GetModSystem<VinconomyCoreSystem>().Mod.Logger.Debug(message);
         }
     }
 }

@@ -24,6 +24,8 @@
     {
       "name": "Vinconomy.Stall",
       "properties": {
+        "ownableType": "ShopStall",
+        "allowedTypes": [ "ShopRegister" ]
       }
     },
     {
@@ -45,13 +47,6 @@
             "priority": 0
           }
         ]
-      }
-    },
-    {
-      "name": "Commercially.OwnableChild",
-      "properties": {
-        "ownableType": "ShopStall",
-        "allowedTypes": [ "ShopRegister" ]
       }
     },
     { "name": "Commercially.TextureSwappable" }

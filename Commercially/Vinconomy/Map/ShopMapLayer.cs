@@ -1,6 +1,6 @@
 ﻿using Cairo;
 using Commercially.Common.Registry;
-using Commercially.Vinconomy;
+using Commercially.Vinconomy.ModSystems;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +15,7 @@ namespace Vinconomy.Map
 {
     public class ShopMapLayer : MapLayer
     {
-        private VinconomyModSystem core;
+        private VinconomyCoreSystem core;
         private List<MapComponent> wayPointComponents = new List<MapComponent>();
         public MeshRef quadModel;
         public Dictionary<string, LoadedTexture> texturesByIcon;
@@ -64,7 +64,7 @@ namespace Vinconomy.Map
 
         public ShopMapLayer(ICoreAPI api, IWorldMapManager mapSink) : base(api, mapSink)
         {
-            core = api.ModLoader.GetModSystem<VinconomyModSystem>();
+            core = api.ModLoader.GetModSystem<VinconomyCoreSystem>();
             if (api.Side == EnumAppSide.Client)
             {
                 core.ShopMapLayer = this;

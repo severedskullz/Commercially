@@ -19,6 +19,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace Commercially.Common
@@ -94,7 +95,7 @@ namespace Commercially.Common
                 ;
 
             api.Event.OnTestBlockAccess += TestAccess;
-
+            OnTestAccess += AllowStallUse;
 
             // I made these methods to support harmony patching. Why you would NEED to do that instead of just calling the register methods directly, I don't know.
             // But I guess it's a thing people might do. So here we are.
@@ -107,8 +108,17 @@ namespace Commercially.Common
             Lifecycle_RegisterInteractions(api);
             Lifecycle_RegisterFilters(api);
 
+        }
 
-
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_CoreClientApi != null )
+            {
+                Dictionary<string, MeshData> cache = ObjectCacheUtil.TryGet<Dictionary<string, MeshData>>(_CoreClientApi, "textureSwappableMeshes");
+                foreach (MeshData data in cache.Values) { data.Dispose(); }
+                ObjectCacheUtil.Delete(_CoreClientApi, "textureSwappableMeshes");
+            }
         }
 
         public void Lifecycle_RegisterBlocks(ICoreAPI api)
@@ -671,6 +681,32 @@ namespace Commercially.Common
             var m = server.GetType().GetMethod("DisconnectPlayer",
                 new[] { client.GetType(), typeof(string), typeof(string) });
             m?.Invoke(server, new object[] { client, msgToOthers, msgToKicked });
+        }
+
+        public EnumWorldAccessResponse AllowStallUse(IPlayer player, BlockSelection blockSelection, EnumBlockAccessFlags accessType, string claimant, EnumWorldAccessResponse response)
+        {
+            ICoreAPI api = this._CoreServerApi;
+            if (api == null)
+            {
+                // We are the Client!
+                api = this._CoreClientApi;
+            }
+
+            //this.Mod.Logger.Debug("AllowStallUse - Claimant is:" + claimant + " Response: " + response + " accessType: " + accessType);
+
+            if (accessType == EnumBlockAccessFlags.Use && response == EnumWorldAccessResponse.LandClaimed)
+            {
+                Block block = blockSelection.Block;
+                if (block == null)
+                {
+                    // I dont know why Block isnt set.
+                    block = api.World.BlockAccessor.GetBlock(blockSelection.Position);
+                }
+
+                if (block is BlockCommercialBase)
+                    return EnumWorldAccessResponse.Granted;
+            }
+            return response;
         }
 
     }

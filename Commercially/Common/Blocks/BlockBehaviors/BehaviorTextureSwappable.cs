@@ -188,7 +188,7 @@ namespace Commercially.Common.Blocks.BlockBehaviors
             foreach (string primary in config.PrimaryMaterials)
             {
                 JToken token = new JObject();
-                token["Code"] = config.BaseBlock;
+                //token["Code"] = config.BaseBlock;
                 token["PrimaryMaterial"] = primary;
                 if (config.SecondaryMaterials?.Count > 0)
                 {
